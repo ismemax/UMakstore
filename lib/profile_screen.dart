@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'manage_apps_screen.dart';
 import 'account_settings_screen.dart';
+import 'notifications_screen.dart';
+import 'bookmarks_screen.dart';
+import 'settings_screen.dart';
+import 'help_and_feedback_screen.dart';
+import 'widgets/sign_out_dialog.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -45,8 +50,29 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    _buildListItem(Icons.notifications_none_rounded, 'Notifications', hasBorder: true, hasRedDot: true),
-                    _buildListItem(Icons.bookmark_border_rounded, 'Bookmarks', hasBorder: true),
+                    _buildListItem(
+                      Icons.notifications_none_rounded,
+                      'Notifications',
+                      hasBorder: true,
+                      hasRedDot: true,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                        );
+                      },
+                    ),
+                    _buildListItem(
+                      Icons.bookmark_border_rounded,
+                      'Bookmarks',
+                      hasBorder: true,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const BookmarksScreen()),
+                        );
+                      },
+                    ),
                     _buildListItem(Icons.payments_outlined, 'Payments', hasBorder: false),
                   ]),
                   
@@ -54,19 +80,39 @@ class ProfileScreen extends StatelessWidget {
                   _buildSectionTitle('PREFERENCES'),
                   const SizedBox(height: 8),
                   _buildListCard([
-                    _buildListItem(Icons.settings_outlined, 'Settings', hasBorder: false),
+                    _buildListItem(
+                      Icons.settings_outlined,
+                      'Settings',
+                      hasBorder: false,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                        );
+                      },
+                    ),
                   ]),
 
                   const SizedBox(height: 24),
                   _buildSectionTitle('SUPPORT'),
                   const SizedBox(height: 8),
                   _buildListCard([
-                    _buildListItem(Icons.help_outline_rounded, 'Help & Feedback', hasBorder: true),
+                    _buildListItem(
+                      Icons.help_outline_rounded,
+                      'Help & Feedback',
+                      hasBorder: true,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const HelpAndFeedbackScreen()),
+                        );
+                      },
+                    ),
                     _buildListItem(Icons.info_outline_rounded, 'About', hasBorder: false),
                   ]),
 
                   const SizedBox(height: 32),
-                  _buildSignOutButton(),
+                  _buildSignOutButton(context),
 
                   const SizedBox(height: 16),
                   Center(
@@ -299,9 +345,16 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSignOutButton() {
+  Widget _buildSignOutButton(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          barrierColor: const Color(0xfff5f7f8).withValues(alpha: 0.9),
+          builder: (context) => const SignOutDialog(),
+        );
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: double.infinity,

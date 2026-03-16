@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'app_details_screen.dart';
+
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
@@ -31,6 +33,7 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: const EdgeInsets.only(top: 16, bottom: 96, left: 16, right: 16),
             children: [
               _buildAppListItem(
+                context,
                 title: 'UMak Portal',
                 subtitle: 'IT Department',
                 chipLabel: 'OFFICIAL',
@@ -43,6 +46,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               _buildDivider(),
               _buildAppListItem(
+                context,
                 title: 'Heron Library',
                 subtitle: 'Library Services',
                 chipLabel: 'ACADEMIC',
@@ -69,6 +73,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               _buildDivider(),
               _buildAppListItem(
+                context,
                 title: 'ComSci Calc',
                 subtitle: 'Student Project',
                 chipLabel: 'CCIS',
@@ -81,6 +86,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               _buildDivider(),
               _buildAppListItem(
+                context,
                 title: 'Campus Nav',
                 subtitle: 'Admin Office',
                 chipLabel: 'UTILITY',
@@ -102,6 +108,7 @@ class _SearchScreenState extends State<SearchScreen> {
               Opacity(
                 opacity: 0.6,
                 child: _buildAppListItem(
+                  context,
                   title: 'Old Enroll System',
                   subtitle: 'Registrar',
                   chipLabel: 'DEPRECATED',
@@ -274,7 +281,8 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildAppListItem({
+  Widget _buildAppListItem(
+    BuildContext context, {
     required String title,
     required String subtitle,
     required String chipLabel,
@@ -285,72 +293,80 @@ class _SearchScreenState extends State<SearchScreen> {
     required Widget actionWidget,
     required Widget iconWidget,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          iconWidget,
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.lexend(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xff0a1929),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.lexend(
-                    fontSize: 12,
-                    color: const Color(0xff6b7280),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: chipBgColor,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: chipBorderColor),
-                      ),
-                      child: Text(
-                        chipLabel,
-                        style: GoogleFonts.lexend(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          color: chipColor,
-                        ),
-                      ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            iconWidget,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.lexend(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xff0a1929),
                     ),
-                    if (rating != null) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        rating,
-                        style: GoogleFonts.lexend(
-                          fontSize: 10,
-                          color: const Color(0xff9ca3af),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.lexend(
+                      fontSize: 12,
+                      color: const Color(0xff6b7280),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: chipBgColor,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: chipBorderColor),
+                        ),
+                        child: Text(
+                          chipLabel,
+                          style: GoogleFonts.lexend(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: chipColor,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 2),
-                      const Icon(Icons.star_rounded, color: Color(0xfffbbf24), size: 10),
+                      if (rating != null) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          rating,
+                          style: GoogleFonts.lexend(
+                            fontSize: 10,
+                            color: const Color(0xff9ca3af),
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        const Icon(Icons.star_rounded, color: Color(0xfffbbf24), size: 10),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          actionWidget,
-        ],
+            const SizedBox(width: 8),
+            actionWidget,
+          ],
+        ),
       ),
     );
   }

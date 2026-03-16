@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'change_password_screen.dart';
+import 'widgets/profile_photo_bottom_sheet.dart';
 
 class AccountSettingsScreen extends StatelessWidget {
   const AccountSettingsScreen({super.key});
@@ -43,62 +44,72 @@ class AccountSettingsScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 32),
               Center(
-                child: Column(
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 128,
-                          height: 128,
-                          decoration: BoxDecoration(
-                            color: const Color(0xfffad9c1), // Matches the Figma screenshot
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 4),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x1A000000),
-                                blurRadius: 15,
-                                offset: Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.person, size: 80, color: Colors.white),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 4,
-                          right: 4,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
+                child: GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      isScrollControlled: true,
+                      builder: (context) => const ProfilePhotoBottomSheet(),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 128,
+                            height: 128,
                             decoration: BoxDecoration(
-                              color: const Color(0xff2094f3),
+                              color: const Color(0xfffad9c1), // Matches the Figma screenshot
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
+                              border: Border.all(color: Colors.white, width: 4),
                               boxShadow: const [
                                 BoxShadow(
                                   color: Color(0x1A000000),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
+                                  blurRadius: 15,
+                                  offset: Offset(0, 8),
                                 ),
                               ],
                             ),
-                            child: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 16),
+                            child: const Center(
+                              child: Icon(Icons.person, size: 80, color: Colors.white),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Change Profile Photo',
-                      style: GoogleFonts.lexend(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xff2094f3),
+                          Positioned(
+                            bottom: 4,
+                            right: 4,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xff2094f3),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x1A000000),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 16),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      Text(
+                        'Change Profile Photo',
+                        style: GoogleFonts.lexend(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xff2094f3),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 40),

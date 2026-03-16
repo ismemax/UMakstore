@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
+import 'app_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -379,8 +380,15 @@ class _HomeScreenState extends State<HomeScreen> {
     required Widget iconWidget,
     required bool isButtonOutlined,
   }) {
-    return Container(
-      decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xffe2e8f0)),
@@ -510,6 +518,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -540,9 +549,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFeaturedAppCard() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Container(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Container(
         height: 224,
         decoration: BoxDecoration(
           color: Colors.white, // In a real app, use DecorationImage for the background
@@ -719,9 +735,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -809,9 +826,16 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData iconData,
     required Color iconColor,
   }) {
-    return SizedBox(
-      width: 144,
-      child: Column(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+        );
+      },
+      child: SizedBox(
+        width: 144,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
@@ -936,6 +960,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -1021,9 +1046,16 @@ class _HomeScreenState extends State<HomeScreen> {
     required String actionText,
     required bool isUpdate,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xfff1f5f9)),
@@ -1122,6 +1154,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
