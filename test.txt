@@ -1,0 +1,16 @@
+Resolving dependencies...
+Downloading packages...
+  matcher 0.12.18 (0.12.19 available)
+  meta 1.17.0 (1.18.1 available)
+  test_api 0.7.9 (0.7.10 available)
+Got dependencies!
+3 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/vonca/Desktop/Programming/VibeCode/UMakstore/test/generate_png_test.dart
+00:00 +0: C:/Users/vonca/Desktop/Programming/VibeCode/UMakstore/test/generate_png_test.dart: Generate PNG from SVG
+00:00 +1: C:/Users/vonca/Desktop/Programming/VibeCode/UMakstore/test/generate_png_test.dart: Generate PNG from SVG
+10:00 +1 -1: C:/Users/vonca/Desktop/Programming/VibeCode/UMakstore/test/generate_png_test.dart: Generate PNG from SVG [E]
+  TimeoutException after 0:10:00.000000: Test timed out after 10 minutes.
+  dart:isolate  _RawReceivePort._handleMessage
+  
+10:00 +1 -1: Some tests failed.
