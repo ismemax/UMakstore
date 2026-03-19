@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:disk_space_plus/disk_space_plus.dart';
 import 'updates_screen.dart';
 
 class ManageAppsScreen extends StatefulWidget {
@@ -11,6 +12,38 @@ class ManageAppsScreen extends StatefulWidget {
 
 class _ManageAppsScreenState extends State<ManageAppsScreen> {
   int _selectedTabIndex = 0;
+  
+  // Real Storage States
+  double _totalStorage = 0;
+  double _freeStorage = 0;
+  double _usedStorage = 0;
+  bool _isLoadingStorage = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStorageInfo();
+  }
+
+  Future<void> _fetchStorageInfo() async {
+    try {
+      final diskSpacePlus = DiskSpacePlus();
+      final double? totalMB = await diskSpacePlus.getTotalDiskSpace;
+      final double? freeMB = await diskSpacePlus.getFreeDiskSpace;
+      
+      if (totalMB != null && freeMB != null) {
+        setState(() {
+          _totalStorage = totalMB / 1024;
+          _freeStorage = freeMB / 1024;
+          _usedStorage = _totalStorage - _freeStorage;
+          _isLoadingStorage = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching storage: $e');
+      setState(() => _isLoadingStorage = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -280,6 +313,16 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
   }
 
   Widget _buildStorageCard() {
+    if (_isLoadingStorage) {
+      return Container(
+        height: 150,
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+
+    final usedPercent = (_totalStorage > 0) ? (_usedStorage / _totalStorage) : 0.0;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -321,7 +364,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 textBaseline: TextBaseline.alphabetic,
                 children: [
                   Text(
-                    '48GB',
+                    '${_usedStorage.toStringAsFixed(1)}GB',
                     style: GoogleFonts.lexend(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -339,7 +382,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 ],
               ),
               Text(
-                '64GB total',
+                '${_totalStorage.toStringAsFixed(0)}GB total',
                 style: GoogleFonts.lexend(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -358,7 +401,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
-              widthFactor: 48 / 64,
+              widthFactor: usedPercent,
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xff1e293b),
@@ -369,7 +412,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '16GB free for new apps and data',
+            '${_freeStorage.toStringAsFixed(1)}GB free for new apps and data',
             style: GoogleFonts.lexend(
               fontSize: 12,
               color: const Color(0xff64748b),

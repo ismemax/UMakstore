@@ -1,8 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ProfilePhotoBottomSheet extends StatelessWidget {
   const ProfilePhotoBottomSheet({super.key});
+
+  Future<void> _pickImage(BuildContext context, ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 75,
+      );
+
+      if (pickedFile != null && context.mounted) {
+        Navigator.of(context).pop(File(pickedFile.path));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +76,9 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
               InkWell(
                 onTap: () => Navigator.of(context).pop(),
                 borderRadius: BorderRadius.circular(24),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: const Icon(Icons.close_rounded, color: Color(0xff94a3b8), size: 20),
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.close_rounded, color: Color(0xff94a3b8), size: 20),
                 ),
               ),
             ],
@@ -68,9 +92,7 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
                 child: _buildActionSquare(
                   icon: Icons.camera_alt_outlined,
                   label: 'Take Photo',
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
+                  onTap: () => _pickImage(context, ImageSource.camera),
                 ),
               ),
               const SizedBox(width: 16),
@@ -78,9 +100,7 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
                 child: _buildActionSquare(
                   icon: Icons.photo_library_outlined,
                   label: 'From Gallery',
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
+                  onTap: () => _pickImage(context, ImageSource.gallery),
                 ),
               ),
             ],
@@ -97,7 +117,7 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
           // Remove Action
           InkWell(
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context, 'REMOVE');
             },
             borderRadius: BorderRadius.circular(12),
             child: Container(

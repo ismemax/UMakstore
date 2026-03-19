@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "834100945409",
+    "project_id": "makstore-12e5c",
+    "storage_bucket": "makstore-12e5c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:834100945409:android:969056d2d11a4c5fc65600",
+        "android_client_info": {
+          "package_name": "com.company.makstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC26wdBoc2nByE6_4oy440VgZ4CBw9Rrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:834100945409:android:c6b3740563b8e625c65600",
+        "android_client_info": {
+          "package_name": "com.example.umakstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC26wdBoc2nByE6_4oy440VgZ4CBw9Rrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/auth_service.dart';
 import 'password_changed_success_screen.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -10,9 +11,90 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final _currentController = TextEditingController();
+  final _newController = TextEditingController();
+  final _confirmController = TextEditingController();
+  
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
+  bool _isSaving = false;
+
+  // Real-time validation states
+  bool _hasMin8Chars = false;
+  bool _hasUppercase = false;
+  bool _hasNumber = false;
+  bool _hasSpecialChar = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _newController.addListener(_validatePassword);
+  }
+
+  void _validatePassword() {
+    final p = _newController.text;
+    setState(() {
+      _hasMin8Chars = p.length >= 8;
+      _hasUppercase = p.contains(RegExp(r'[A-Z]'));
+      _hasNumber = p.contains(RegExp(r'[0-9]'));
+      _hasSpecialChar = p.contains(RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:" ,.?\\:{}|<>=]'));
+    });
+  }
+
+  Future<void> _handleSave() async {
+    final current = _currentController.text;
+    final newPass = _newController.text;
+    final confirm = _confirmController.text;
+
+    if (current.isEmpty) {
+      _showError('Please enter your current password');
+      return;
+    }
+
+    if (newPass != confirm) {
+      _showError('Passwords do not match');
+      return;
+    }
+
+    bool allConditionsMet = _hasMin8Chars && _hasUppercase && _hasNumber && _hasSpecialChar;
+    if (!allConditionsMet) {
+      _showError('New password does not meet security requirements');
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      await AuthService().changePassword(
+        currentPassword: current,
+        newPassword: newPass,
+      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PasswordChangedSuccessScreen()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError('Error: $e');
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  @override
+  void dispose() {
+    _currentController.dispose();
+    _newController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +113,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           style: GoogleFonts.lexend(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: const Color(0xff1e3a8a), // Matches Figma
+            color: const Color(0xff1e3a8a),
             letterSpacing: -0.45,
           ),
         ),
@@ -59,9 +141,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ),
             const SizedBox(height: 24),
             
-            // TextFields
             _buildPasswordField(
               label: 'Current Password',
+              controller: _currentController,
               obscureText: _obscureCurrent,
               onToggleVisibility: () {
                 setState(() => _obscureCurrent = !_obscureCurrent);
@@ -70,6 +152,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             const SizedBox(height: 16),
             _buildPasswordField(
               label: 'New Password',
+              controller: _newController,
               obscureText: _obscureNew,
               onToggleVisibility: () {
                 setState(() => _obscureNew = !_obscureNew);
@@ -78,6 +161,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             const SizedBox(height: 16),
             _buildPasswordField(
               label: 'Confirm Password',
+              controller: _confirmController,
               obscureText: _obscureConfirm,
               onToggleVisibility: () {
                 setState(() => _obscureConfirm = !_obscureConfirm);
@@ -86,7 +170,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             
             const SizedBox(height: 24),
             
-            // Password Requirements Box
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -107,27 +190,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildRequirementItem('At least 8 characters long', isMet: true),
+                  _buildRequirementItem('At least 8 characters long', isMet: _hasMin8Chars),
                   const SizedBox(height: 12),
-                  _buildRequirementItem('Contains one uppercase letter'),
+                  _buildRequirementItem('Contains one uppercase letter', isMet: _hasUppercase),
                   const SizedBox(height: 12),
-                  _buildRequirementItem('Contains one number'),
+                  _buildRequirementItem('Contains one number', isMet: _hasNumber),
                   const SizedBox(height: 12),
-                  _buildRequirementItem('Contains one special character'),
+                  _buildRequirementItem('Contains one special character', isMet: _hasSpecialChar),
                 ],
               ),
             ),
             
             const SizedBox(height: 24),
             
-            // Save Button
             InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PasswordChangedSuccessScreen()),
-                );
-              },
+              onTap: _isSaving ? null : _handleSave,
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: double.infinity,
@@ -143,15 +220,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                   ],
                 ),
-                child: Text(
-                  'Save New Password',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.lexend(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isSaving
+                  ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+                  : Text(
+                      'Save New Password',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lexend(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
               ),
             ),
           ],
@@ -162,10 +241,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   Widget _buildPasswordField({
     required String label,
+    required TextEditingController controller,
     required bool obscureText,
     required VoidCallback onToggleVisibility,
   }) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       style: GoogleFonts.lexend(
         fontSize: 16,

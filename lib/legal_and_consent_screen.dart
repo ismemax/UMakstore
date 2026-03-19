@@ -4,10 +4,28 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'widgets/privacy_policy_sheet.dart';
 import 'widgets/terms_of_service_sheet.dart';
-import 'verifying_details_screen.dart';
+import 'services/auth_service.dart';
+import 'account_setup_screen.dart';
 
 class LegalAndConsentScreen extends StatefulWidget {
-  const LegalAndConsentScreen({super.key});
+  final String email;
+  final String studentId;
+  final String lastName;
+  final String firstName;
+  final String middleName;
+  final String college;
+  final String course;
+
+  const LegalAndConsentScreen({
+    super.key,
+    required this.email,
+    required this.studentId,
+    required this.lastName,
+    required this.firstName,
+    required this.middleName,
+    required this.college,
+    required this.course,
+  });
 
   @override
   State<LegalAndConsentScreen> createState() => _LegalAndConsentScreenState();
@@ -16,6 +34,7 @@ class LegalAndConsentScreen extends StatefulWidget {
 class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
   bool _termsAccepted = false;
   bool _marketingAccepted = false;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -248,13 +267,7 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _termsAccepted ? () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const VerifyingDetailsScreen(),
-                          ),
-                        );
-                      } : null,
+                      onPressed: (_termsAccepted && !_isLoading) ? _handleFinalRegistration : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff0f172a),
                         foregroundColor: Colors.white,
@@ -266,13 +279,15 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text(
-                        'Create Account',
-                        style: GoogleFonts.lexend(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              'Create Account',
+                              style: GoogleFonts.lexend(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -384,6 +399,22 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleFinalRegistration() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AccountSetupScreen(
+          email: widget.email,
+          studentId: widget.studentId,
+          lastName: widget.lastName,
+          firstName: widget.firstName,
+          middleName: widget.middleName,
+          college: widget.college,
+          course: widget.course,
         ),
       ),
     );

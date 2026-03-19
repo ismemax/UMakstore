@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'confirm_reset_password_screen.dart';
 
 class ResetLinkSentScreen extends StatelessWidget {
   final String email;
@@ -214,6 +215,36 @@ class ResetLinkSentScreen extends StatelessWidget {
                       ),
                       child: Text(
                         'Open Email App',
+                        style: GoogleFonts.lexend(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ConfirmResetPasswordScreen(email: email),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xff2094f3),
+                        side: const BorderSide(color: Color(0xff2094f3)),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Enter Reset Code',
                         style: GoogleFonts.lexend(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,

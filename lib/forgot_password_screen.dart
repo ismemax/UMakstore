@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/auth_service.dart';
 import 'reset_link_sent_screen.dart';
+import 'confirm_reset_password_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -11,10 +13,14 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _idEmailController = TextEditingController();
+  final TextEditingController _codeController = TextEditingController();
+  bool _isLoading = false;
+  bool _isCodeSent = false;
 
   @override
   void dispose() {
     _idEmailController.dispose();
+    _codeController.dispose();
     super.dispose();
   }
 
@@ -135,6 +141,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         // Input Field
                         TextFormField(
                           controller: _idEmailController,
+                          enabled: !_isCodeSent,
                           style: GoogleFonts.lexend(
                             fontSize: 16,
                             color: const Color(0xff0a192f),
@@ -155,12 +162,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                             prefixIcon: const Icon(Icons.mail_outline, color: Color(0xff6b7280)),
                             floatingLabelBehavior: FloatingLabelBehavior.always,
-                            floatingLabelStyle: GoogleFonts.lexend(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w300,
-                              color: const Color(0xff0a192f),
-                              letterSpacing: 0.3,
-                            ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -170,24 +171,144 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(color: Color(0xff2094f3)),
                             ),
+                            disabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xffe5e7eb)),
+                            ),
                           ),
                         ),
+                        if (_isCodeSent) ...[
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _codeController,
+                            keyboardType: TextInputType.number,
+                            style: GoogleFonts.lexend(
+                              fontSize: 16,
+                              color: const Color(0xff0a192f),
+                              letterSpacing: 4,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'VERIFICATION CODE',
+                              labelStyle: GoogleFonts.lexend(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w300,
+                                color: const Color(0xff0a192f),
+                                letterSpacing: 0.3,
+                              ),
+                              hintText: '      ••••••',
+                              hintStyle: GoogleFonts.lexend(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: const Color(0xff9ca3af),
+                                letterSpacing: 4,
+                              ),
+                              prefixIcon: const Icon(Icons.lock_open_outlined, color: Color(0xff6b7280)),
+                              floatingLabelBehavior: FloatingLabelBehavior.always,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xffd1d5db)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xff2094f3)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _isLoading ? null : () {
+                                setState(() => _isCodeSent = false);
+                                _codeController.clear();
+                              },
+                              child: Text(
+                                'Change Email',
+                                style: GoogleFonts.lexend(
+                                  fontSize: 13,
+                                  color: const Color(0xff2094f3),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 24),
                         // Button
                         SizedBox(
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => ResetLinkSentScreen(
-                                    email: _idEmailController.text.isNotEmpty 
-                                        ? _idEmailController.text 
-                                        : 'user@umak.edu.ph',
-                                  ),
-                                ),
-                              );
+                            onPressed: _isLoading ? null : () async {
+                              final email = _idEmailController.text;
+                              if (email.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please enter your email')),
+                                );
+                                return;
+                              }
+
+                              if (!_isCodeSent) {
+                                // STEP 1: SEND CODE
+                                setState(() => _isLoading = true);
+                                try {
+                                  // Use the standard OTP sender
+                                  await AuthService().sendVerificationCode(email);
+                                  if (mounted) {
+                                    setState(() {
+                                      _isCodeSent = true;
+                                      _isLoading = false;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Verification code sent!')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    setState(() => _isLoading = false);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error: $e')),
+                                    );
+                                  }
+                                }
+                              } else {
+                                // STEP 2: VERIFY AND PROCEED
+                                final code = _codeController.text;
+                                if (code.length < 6) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Please enter the 6-digit code')),
+                                  );
+                                  return;
+                                }
+
+                                setState(() => _isLoading = true);
+                                try {
+                                  await AuthService().confirmUser(
+                                    email: email,
+                                    confirmationCode: code,
+                                  );
+                                  if (mounted) {
+                                    // Success! Now go to the Reset Password Screen
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => ConfirmResetPasswordScreen(
+                                          email: email,
+                                          code: code,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Verification failed: $e')),
+                                    );
+                                  }
+                                } finally {
+                                  if (mounted) setState(() => _isLoading = false);
+                                }
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xff2094f3),
@@ -198,14 +319,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: Text(
-                              'Send Reset Link',
-                              style: GoogleFonts.lexend(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                letterSpacing: 0.4,
-                              ),
-                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : Text(
+                                    _isCodeSent ? 'Verify & Continue' : 'Send Recovery Code',
+                                    style: GoogleFonts.lexend(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],

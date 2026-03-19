@@ -1,9 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/auth_service.dart';
+import 'legal_and_consent_screen.dart';
 import 'legal_and_consent_screen.dart';
 
 class CreatePasswordScreen extends StatefulWidget {
-  const CreatePasswordScreen({super.key});
+  final String email;
+  final String studentId;
+  final String lastName;
+  final String firstName;
+  final String middleName;
+  final String college;
+  final String course;
+
+  const CreatePasswordScreen({
+    super.key,
+    required this.email,
+    required this.studentId,
+    required this.lastName,
+    required this.firstName,
+    required this.middleName,
+    required this.college,
+    required this.course,
+  });
 
   @override
   State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
@@ -15,6 +34,38 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
   
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+
+  // Real-time validation states
+  bool _hasMin8Chars = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasNumber = false;
+  bool _hasSpecialChar = false;
+  int _strength = 0; // 0-4
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_validatePassword);
+  }
+
+  void _validatePassword() {
+    final p = _passwordController.text;
+    setState(() {
+      _hasMin8Chars = p.length >= 8;
+      _hasUppercase = p.contains(RegExp(r'[A-Z]'));
+      _hasLowercase = p.contains(RegExp(r'[a-z]'));
+      _hasNumber = p.contains(RegExp(r'[0-9]'));
+      _hasSpecialChar = p.contains(RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:" ,.?\\:{}|<>=]'));
+      
+      _strength = 0;
+      if (_hasMin8Chars) _strength++;
+      if (_hasUppercase && _hasLowercase) _strength++;
+      if (_hasNumber) _strength++;
+      if (_hasSpecialChar) _strength++;
+    });
+  }
 
   @override
   void dispose() {
@@ -112,10 +163,10 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                         Expanded(
                           child: Row(
                             children: [
-                              _buildStrengthSegment(const Color(0xffef4444)), // Red
-                              _buildStrengthSegment(const Color(0xfff59e0b)), // Orange
-                              _buildStrengthSegment(const Color(0xffe2e8f0)), // Empty
-                              _buildStrengthSegment(const Color(0xffe2e8f0)), // Empty
+                              _buildStrengthSegment(_strength >= 1 ? const Color(0xffef4444) : const Color(0xffe2e8f0)), // Weak - Red
+                              _buildStrengthSegment(_strength >= 2 ? const Color(0xfff59e0b) : const Color(0xffe2e8f0)), // Medium - Orange
+                              _buildStrengthSegment(_strength >= 3 ? const Color(0xff22c55e) : const Color(0xffe2e8f0)), // Strong - Light Green
+                              _buildStrengthSegment(_strength >= 4 ? const Color(0xff15803d) : const Color(0xffe2e8f0)), // Very Strong - Dark Green
                             ],
                           ),
                         ),
@@ -179,15 +230,15 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          _buildRequirementItem('At least 8 characters', true),
+                          _buildRequirementItem('At least 8 characters', _hasMin8Chars),
                           const SizedBox(height: 10),
-                          _buildRequirementItem('One uppercase letter', true),
+                          _buildRequirementItem('One uppercase letter', _hasUppercase),
                           const SizedBox(height: 10),
-                          _buildRequirementItem('One lowercase letter', false),
+                          _buildRequirementItem('One lowercase letter', _hasLowercase),
                           const SizedBox(height: 10),
-                          _buildRequirementItem('One number', false),
+                          _buildRequirementItem('One number', _hasNumber),
                           const SizedBox(height: 10),
-                          _buildRequirementItem('One special character (!@#\$%)', true),
+                          _buildRequirementItem('One special character (!@#\$%=)', _hasSpecialChar),
                         ],
                       ),
                     ),
@@ -210,12 +261,67 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const LegalAndConsentScreen(),
-                      ),
-                    );
+                  onPressed: _isLoading ? null : () async {
+                    final password = _passwordController.text;
+                    final confirm = _confirmPasswordController.text;
+                    
+                    // CHECK ALL CONDITIONS ARE MET
+                    bool allConditionsMet = _hasMin8Chars && 
+                                           _hasUppercase && 
+                                           _hasLowercase && 
+                                           _hasNumber && 
+                                           _hasSpecialChar;
+
+                    if (!allConditionsMet) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please meet all password requirements first.')),
+                      );
+                      return;
+                    }
+
+                    if (password.isEmpty || confirm.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+                      return;
+                    }
+                    if (password != confirm) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
+                      return;
+                    }
+
+                    setState(() => _isLoading = true);
+                    try {
+                      // Perform sign up here if not done in Step 1, 
+                      // but since Step 1 was using email/pass, we'll assume we're doing it here or just updating.
+                      // Let's assume registration is a multi-step process where signUp happens here.
+                      await AuthService().signUpUser(
+                        email: widget.email,
+                        password: password,
+                      );
+                      
+                      if (!mounted) return;
+                      if (mounted) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => LegalAndConsentScreen(
+                              email: widget.email,
+                              studentId: widget.studentId,
+                              lastName: widget.lastName,
+                              firstName: widget.firstName,
+                              middleName: widget.middleName,
+                              college: widget.college,
+                              course: widget.course,
+                            ),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (!mounted) return;
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Account creation failed: $e')));
+                      }
+                    } finally {
+                      if (mounted) setState(() => _isLoading = false);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xff0a2540),
@@ -226,13 +332,15 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text(
-                    'Complete Registration',
-                    style: GoogleFonts.lexend(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                      : Text(
+                          'Complete Registration',
+                          style: GoogleFonts.lexend(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'onboarding_screen.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
@@ -25,14 +26,15 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2));
     
     final prefs = await SharedPreferences.getInstance();
-    // In actual implementation, 'hasLoggedIn' will dictate this, 
-    // we assume false for now unless specifically set during sign in/registration.
-    final bool hasLoggedIn = prefs.getBool('hasLoggedIn') ?? false;
-    final bool hasCreatedAccount = prefs.getBool('hasCreatedAccount') ?? false;
+    final bool hasFinishedOnboarding = prefs.getBool('hasFinishedOnboarding') ?? false;
+    
+    // Check actual Firebase Auth status
+    final user = FirebaseAuth.instance.currentUser;
 
     if (!mounted) return;
 
-    if (hasLoggedIn) {
+    if (user != null) {
+      // User is authenticated, go to Home
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
@@ -42,21 +44,23 @@ class _SplashScreenState extends State<SplashScreen> {
           },
         ),
       );
-    } else if (hasCreatedAccount) {
+    } else if (!hasFinishedOnboarding) {
+      // No user, and hasn't seen onboarding, go to Onboarding
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
         ),
       );
     } else {
+      // No user, but finished onboarding, go to Login
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

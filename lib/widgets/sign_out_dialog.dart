@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/auth_service.dart';
+import '../login_screen.dart';
 
 class SignOutDialog extends StatelessWidget {
   const SignOutDialog({super.key});
@@ -72,9 +74,14 @@ class SignOutDialog extends StatelessWidget {
               width: double.infinity,
               height: 54,
               child: ElevatedButton(
-                onPressed: () {
-                  // Implement actual sign out logic here
-                  Navigator.pop(context);
+                onPressed: () async {
+                  await AuthService().signOutUser();
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xffef4444),

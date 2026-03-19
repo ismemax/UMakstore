@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'screenshots_screen.dart';
+import 'about_app_screen.dart';
+import 'reviews_screen.dart';
+import 'write_review_screen.dart';
 
 class AppDetailsScreen extends StatelessWidget {
   const AppDetailsScreen({super.key});
@@ -35,11 +39,11 @@ class AppDetailsScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Divider(color: Color(0xfff1f5f9), height: 1),
             ),
-            _buildPreviewSection(),
+            _buildPreviewSection(context),
             const SizedBox(height: 32),
-            _buildAboutSection(),
+            _buildAboutSection(context),
             const SizedBox(height: 32),
-            _buildRatingsSection(),
+            _buildRatingsSection(context),
             const SizedBox(height: 32),
             _buildDeveloperSection(),
             const SizedBox(height: 48),
@@ -223,7 +227,7 @@ class AppDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPreviewSection() {
+  Widget _buildPreviewSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -240,12 +244,24 @@ class AppDetailsScreen extends StatelessWidget {
                   color: const Color(0xff0a192f),
                 ),
               ),
-              Text(
-                'View All',
-                style: GoogleFonts.lexend(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xff2094f3),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ScreenshotsScreen(
+                        appName: 'UMak Portal',
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'View All',
+                  style: GoogleFonts.lexend(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xff2094f3),
+                  ),
                 ),
               ),
             ],
@@ -258,11 +274,11 @@ class AppDetailsScreen extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 24),
             children: [
-              _buildScreenshotCard(const Color(0xfffef3c7)),
+              _buildScreenshotCard(context, const Color(0xfffef3c7)),
               const SizedBox(width: 16),
-              _buildScreenshotCard(const Color(0xfffee2e2)),
+              _buildScreenshotCard(context, const Color(0xfffee2e2)),
               const SizedBox(width: 16),
-              _buildScreenshotCard(const Color(0xffdbeafe)),
+              _buildScreenshotCard(context, const Color(0xffdbeafe)),
             ],
           ),
         ),
@@ -270,56 +286,68 @@ class AppDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildScreenshotCard(Color bgColor) {
-    return Container(
-      width: 200,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffe2e8f0)),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xff0a192f).withValues(alpha: 0.1), width: 4),
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const SizedBox(width: 8),
-                      const CircleAvatar(radius: 12, backgroundColor: Color(0xfff1f5f9)),
-                      const SizedBox(width: 8),
-                      Container(width: 40, height: 6, decoration: BoxDecoration(color: const Color(0xfff1f5f9), borderRadius: BorderRadius.circular(4))),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xfff8fafc),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
+  Widget _buildScreenshotCard(BuildContext context, Color bgColor) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ScreenshotsScreen(
+              appName: 'UMak Portal',
             ),
           ),
-        ],
+        );
+      },
+      child: Container(
+        width: 200,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xffe2e8f0)),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xff0a192f).withValues(alpha: 0.1), width: 4),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const SizedBox(width: 8),
+                        const CircleAvatar(radius: 12, backgroundColor: Color(0xfff1f5f9)),
+                        const SizedBox(width: 8),
+                        Container(width: 40, height: 6, decoration: BoxDecoration(color: const Color(0xfff1f5f9), borderRadius: BorderRadius.circular(4))),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xfff8fafc),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildAboutSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -345,12 +373,22 @@ class AppDetailsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Read More',
-            style: GoogleFonts.lexend(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xff2094f3),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AboutAppScreen(),
+                ),
+              );
+            },
+            child: Text(
+              'Read More',
+              style: GoogleFonts.lexend(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xff2094f3),
+              ),
             ),
           ),
         ],
@@ -358,7 +396,7 @@ class AppDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRatingsSection() {
+  Widget _buildRatingsSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -374,12 +412,22 @@ class AppDetailsScreen extends StatelessWidget {
                   color: const Color(0xff0a192f),
                 ),
               ),
-              Text(
-                'See All',
-                style: GoogleFonts.lexend(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xff2094f3),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ReviewsScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'See All',
+                  style: GoogleFonts.lexend(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xff2094f3),
+                  ),
                 ),
               ),
             ],
@@ -440,27 +488,37 @@ class AppDetailsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          Container(
-            width: double.infinity,
-            height: 54,
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xff0a192f), width: 2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.mode_edit_outline_outlined, color: Color(0xff0a192f), size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'Write a Review',
-                  style: GoogleFonts.lexend(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xff0a192f),
-                  ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const WriteReviewScreen(),
                 ),
-              ],
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              height: 54,
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xff0a192f), width: 2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.mode_edit_outline_outlined, color: Color(0xff0a192f), size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Write a Review',
+                    style: GoogleFonts.lexend(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xff0a192f),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 24),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'services/auth_service.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
@@ -16,12 +16,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _rememberMe = false;
-  final TextEditingController _studentIdController = TextEditingController();
+  bool _isLoading = false;
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _studentIdController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -129,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     
                     // Form
                     Text(
-                      'Student ID',
+                      'Email Address',
                       style: GoogleFonts.lexend(
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
@@ -138,20 +139,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     TextField(
-                      controller: _studentIdController,
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       style: GoogleFonts.lexend(
                         fontWeight: FontWeight.w400,
                         fontSize: 16,
                         color: const Color(0xff0f172a),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'K12345678',
+                        hintText: 'student@umak.edu.ph',
                         hintStyle: GoogleFonts.lexend(
                           fontWeight: FontWeight.w400,
                           fontSize: 16,
                           color: const Color(0xff94a3b8),
                         ),
-                        prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xff475569)),
+                        prefixIcon: const Icon(Icons.mail_outline_rounded, color: Color(0xff475569)),
                         filled: true,
                         fillColor: Colors.white,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -277,15 +279,38 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () async {
-                          // Simple mock sign in
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs.setBool('hasLoggedIn', true);
-                          
-                          if (!context.mounted) return;
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => const HomeScreen()),
-                          );
+                        onPressed: _isLoading ? null : () async {
+                          final email = _emailController.text;
+                          final password = _passwordController.text;
+
+                          if (email.isEmpty || password.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter email and password')),
+                            );
+                            return;
+                          }
+
+                          setState(() => _isLoading = true);
+                          try {
+                            await AuthService().signInUser(email, password);
+                            if (!mounted) return;
+                            if (mounted) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                              );
+                            }
+                          } catch (e) {
+                            if (!mounted) return;
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Login failed: $e')),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                            }
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xff2094f3),
@@ -296,12 +321,95 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text(
-                          'Sign In',
-                          style: GoogleFonts.lexend(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
+                        child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : Text(
+                              'Sign In',
+                              style: GoogleFonts.lexend(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    // Divider
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Divider(color: Color(0xffe2e8f0), thickness: 1),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            'OR',
+                            style: GoogleFonts.lexend(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xff94a3b8),
+                              letterSpacing: 0.7,
+                            ),
                           ),
+                        ),
+                        const Expanded(
+                          child: Divider(color: Color(0xffe2e8f0), thickness: 1),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Google Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: OutlinedButton(
+                        onPressed: _isLoading ? null : () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            final user = await AuthService().signInWithGoogle();
+                            if (!mounted) return;
+                            if (user != null) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Google Sign-In failed: $e')),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                            }
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xffe2e8f0)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          foregroundColor: const Color(0xff334155),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.g_mobiledata, size: 28), 
+                            const SizedBox(width: 12),
+                            Text(
+                              'Continue with Google',
+                              style: GoogleFonts.lexend(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

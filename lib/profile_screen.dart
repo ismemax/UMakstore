@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'manage_apps_screen.dart';
 import 'account_settings_screen.dart';
 import 'notifications_screen.dart';
@@ -7,134 +9,179 @@ import 'bookmarks_screen.dart';
 import 'settings_screen.dart';
 import 'help_and_feedback_screen.dart';
 import 'widgets/sign_out_dialog.dart';
+import 'services/auth_service.dart';
+import 'dart:io';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final User? _user = FirebaseAuth.instance.currentUser;
+  String? _localPhotoPath;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLocalPhoto();
+  }
+
+  Future<void> _loadLocalPhoto() async {
+    final path = await AuthService().getLocalProfilePhotoPath();
+    if (mounted) {
+      setState(() {
+        _localPhotoPath = path;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('ACCOUNT'),
-                  const SizedBox(height: 8),
-                  _buildListCard([
-                    _buildListItem(
-                      Icons.manage_accounts_outlined,
-                      'Account Settings',
-                      hasBorder: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
-                        );
-                      },
-                    ),
-                    _buildListItem(
-                      Icons.apps_rounded,
-                      'Manage Apps & Device',
-                      hasBorder: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ManageAppsScreen()),
-                        );
-                      },
-                    ),
-                    _buildListItem(
-                      Icons.notifications_none_rounded,
-                      'Notifications',
-                      hasBorder: true,
-                      hasRedDot: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                        );
-                      },
-                    ),
-                    _buildListItem(
-                      Icons.bookmark_border_rounded,
-                      'Bookmarks',
-                      hasBorder: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const BookmarksScreen()),
-                        );
-                      },
-                    ),
-                    _buildListItem(Icons.payments_outlined, 'Payments', hasBorder: false),
-                  ]),
-                  
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('PREFERENCES'),
-                  const SizedBox(height: 8),
-                  _buildListCard([
-                    _buildListItem(
-                      Icons.settings_outlined,
-                      'Settings',
-                      hasBorder: false,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                        );
-                      },
-                    ),
-                  ]),
+    if (_user == null) {
+      return const Scaffold(body: Center(child: Text('No user logged in')));
+    }
 
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('SUPPORT'),
-                  const SizedBox(height: 8),
-                  _buildListCard([
-                    _buildListItem(
-                      Icons.help_outline_rounded,
-                      'Help & Feedback',
-                      hasBorder: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const HelpAndFeedbackScreen()),
-                        );
-                      },
-                    ),
-                    _buildListItem(Icons.info_outline_rounded, 'About', hasBorder: false),
-                  ]),
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('users').doc(_user!.uid).snapshots(),
+      builder: (context, snapshot) {
+        final userData = snapshot.data?.data();
+        final firstName = userData?['firstName'] ?? '';
+        final lastName = userData?['lastName'] ?? '';
+        final studentId = userData?['studentId'] ?? 'ID: NOT SET';
+        final college = userData?['college'] ?? 'College of Computer Science';
+        final course = userData?['course'] ?? 'BS Application Development';
+        final name = (firstName.isEmpty && lastName.isEmpty) 
+          ? (_user!.displayName ?? 'User Name') 
+          : '$firstName $lastName';
 
-                  const SizedBox(height: 32),
-                  _buildSignOutButton(context),
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeader(name, studentId, college, course, _localPhotoPath),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('ACCOUNT'),
+                      const SizedBox(height: 8),
+                      _buildListCard([
+                        _buildListItem(
+                          Icons.manage_accounts_outlined,
+                          'Account Settings',
+                          hasBorder: true,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
+                            );
+                            _loadLocalPhoto();
+                          },
+                        ),
+                        _buildListItem(
+                          Icons.apps_rounded,
+                          'Manage Apps & Device',
+                          hasBorder: true,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ManageAppsScreen()),
+                            );
+                          },
+                        ),
+                        _buildListItem(
+                          Icons.notifications_none_rounded,
+                          'Notifications',
+                          hasBorder: true,
+                          hasRedDot: true,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                            );
+                          },
+                        ),
+                        _buildListItem(
+                          Icons.bookmark_border_rounded,
+                          'Bookmarks',
+                          hasBorder: true,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const BookmarksScreen()),
+                            );
+                          },
+                        ),
+                        _buildListItem(Icons.payments_outlined, 'Payments', hasBorder: false),
+                      ]),
+                      
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('PREFERENCES'),
+                      const SizedBox(height: 8),
+                      _buildListCard([
+                        _buildListItem(
+                          Icons.settings_outlined,
+                          'Settings',
+                          hasBorder: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                            );
+                          },
+                        ),
+                      ]),
 
-                  const SizedBox(height: 16),
-                  Center(
-                    child: Text(
-                      'Version 1.0.2 • Build 20231025',
-                      style: GoogleFonts.lexend(
-                        fontSize: 12,
-                        color: const Color(0xff94a3b8),
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('SUPPORT'),
+                      const SizedBox(height: 8),
+                      _buildListCard([
+                        _buildListItem(
+                          Icons.help_outline_rounded,
+                          'Help & Feedback',
+                          hasBorder: true,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const HelpAndFeedbackScreen()),
+                            );
+                          },
+                        ),
+                        _buildListItem(Icons.info_outline_rounded, 'About', hasBorder: false),
+                      ]),
+
+                      const SizedBox(height: 32),
+                      _buildSignOutButton(context),
+
+                      const SizedBox(height: 16),
+                      Center(
+                        child: Text(
+                          'Version 1.0.2 • Build 20231025',
+                          style: GoogleFonts.lexend(
+                            fontSize: 12,
+                            color: const Color(0xff94a3b8),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 32),
+                    ],
                   ),
-                  const SizedBox(height: 32),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(String name, String studentId, String college, String course, String? localPhotoPath) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -160,6 +207,12 @@ class ProfileScreen extends StatelessWidget {
                   color: const Color(0xffe2e8f0),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 4),
+                  image: (localPhotoPath != null && File(localPhotoPath).existsSync())
+                      ? DecorationImage(
+                          image: FileImage(File(localPhotoPath)),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x1A000000),
@@ -168,9 +221,11 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const ClipOval(
-                  child: Icon(Icons.person, size: 60, color: Color(0xff94a3b8)),
-                ),
+                child: (localPhotoPath == null || !File(localPhotoPath).existsSync())
+                    ? const ClipOval(
+                        child: Icon(Icons.person, size: 60, color: Color(0xff94a3b8)),
+                      )
+                    : null,
               ),
               Positioned(
                 bottom: 0,
@@ -199,7 +254,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Juan Dela Cruz',
+            name,
             style: GoogleFonts.lexend(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -209,7 +264,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'ID: 2023-10293',
+            'ID: $studentId',
             style: GoogleFonts.lexend(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -225,7 +280,7 @@ class ProfileScreen extends StatelessWidget {
               border: Border.all(color: const Color(0xff0f172a).withValues(alpha: 0.1)),
             ),
             child: Text(
-              'College of Computer Science',
+              college,
               style: GoogleFonts.lexend(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -235,7 +290,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'BS Application Development',
+            course,
             style: GoogleFonts.lexend(
               fontSize: 12,
               fontWeight: FontWeight.w500,

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/auth_service.dart';
 import 'create_password_screen.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
-  const PersonalInfoScreen({super.key});
+  final String email;
+  const PersonalInfoScreen({super.key, required this.email});
 
   @override
   State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
@@ -11,9 +13,29 @@ class PersonalInfoScreen extends StatefulWidget {
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _studentIdController;
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _middleInitialController = TextEditingController();
   
   String? _selectedCollege;
   String? _selectedCourse;
+
+  @override
+  void initState() {
+    super.initState();
+    final studentId = AuthService().extractStudentId(widget.email);
+    _studentIdController = TextEditingController(text: studentId);
+  }
+
+  @override
+  void dispose() {
+    _studentIdController.dispose();
+    _lastNameController.dispose();
+    _firstNameController.dispose();
+    _middleInitialController.dispose();
+    super.dispose();
+  }
 
   final List<String> _colleges = [
     'College of Arts and Letters',
@@ -109,6 +131,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                           border: Border.all(color: const Color(0xffe2e8f0)),
                         ),
                         child: TextField(
+                          controller: _studentIdController,
                           readOnly: true,
                           decoration: InputDecoration(
                             hintText: 'K12345678',
@@ -134,17 +157,17 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       
                       // Last Name
                       _buildLabel('Last Name'),
-                      _buildTextField('e.g. Dela Cruz'),
+                      _buildTextField(_lastNameController, 'e.g. Dela Cruz'),
                       const SizedBox(height: 20),
                       
                       // First Name
                       _buildLabel('First Name'),
-                      _buildTextField('e.g. Juan'),
+                      _buildTextField(_firstNameController, 'e.g. Juan'),
                       const SizedBox(height: 20),
                       
                       // Middle Initial
                       _buildLabel('Middle Initial'),
-                      _buildTextField('e.g. A'),
+                      _buildTextField(_middleInitialController, 'e.g. A'),
                       const SizedBox(height: 20),
                       
                       // College
@@ -186,11 +209,23 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const CreatePasswordScreen(),
-                      ),
-                    );
+                    if (_formKey.currentState!.validate()) {
+                      // Navigate with all collected profile data
+                      // Note: We'll pass these forward to avoid saving until registration completes
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => CreatePasswordScreen(
+                            email: widget.email,
+                            studentId: _studentIdController.text,
+                            lastName: _lastNameController.text,
+                            firstName: _firstNameController.text,
+                            middleName: _middleInitialController.text,
+                            college: _selectedCollege ?? '',
+                            course: _selectedCourse ?? '',
+                          ),
+                        ),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xff003366),
@@ -243,8 +278,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  Widget _buildTextField(String hint) {
-    return TextField(
+  Widget _buildTextField(TextEditingController controller, String hint) {
+    return TextFormField(
+      controller: controller,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Field is required';
+        }
+        return null;
+      },
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.lexend(

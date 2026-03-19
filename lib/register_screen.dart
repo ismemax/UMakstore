@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/auth_service.dart';
 import 'verification_screen.dart';
+import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,6 +13,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -140,29 +143,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
-                    // Info Message
-                    Row(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 4.0),
-                          child: Icon(
-                            Icons.info_outline_rounded,
-                            color: Color(0xff0056d2),
-                            size: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Please use a valid @umak.edu.ph email.',
-                          style: GoogleFonts.lexend(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xff0056d2),
-                          ),
-                        ),
-                      ],
-                    ),
+                    const SizedBox(height: 24),
+
+                    // Removed Password Field
                     const SizedBox(height: 32),
                     
                     // Send Code Button
@@ -170,19 +153,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: _isLoading ? null : () async {
                           final email = _emailController.text;
-                          if (email.isNotEmpty) {
+                          
+                          if (email.isEmpty || !email.endsWith('@umak.edu.ph')) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter a valid UMak email')),
+                            );
+                            return;
+                          }
+
+                          setState(() => _isLoading = true);
+                          try {
+                            // CHECK IF EMAIL ALREADY EXISTS
+                            final exists = await AuthService().isEmailRegistered(email);
+                            if (exists && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('This email is already registered. Please log in instead.')),
+                              );
+                              setState(() => _isLoading = false);
+                              return;
+                            }
+
+                            await AuthService().sendVerificationCode(email);
+                            if (!mounted) return;
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => VerificationScreen(email: email),
                               ),
                             );
-                          } else {
-                            // Simple snackbar if empty for now
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please enter your email')),
-                            );
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to send code: $e')),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -196,15 +205,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              'Send Verification Code',
-                              style: GoogleFonts.lexend(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            _isLoading 
+                              ? const SizedBox(
+                                  height: 20, 
+                                  width: 20, 
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                                )
+                              : Text(
+                                  'Send Verification Code',
+                                  style: GoogleFonts.lexend(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                             const SizedBox(width: 8),
-                            const Icon(Icons.arrow_forward_rounded, size: 20),
+                            if (!_isLoading) const Icon(Icons.arrow_forward_rounded, size: 20),
                           ],
                         ),
                       ),
@@ -241,8 +256,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: double.infinity,
                       height: 56,
                       child: OutlinedButton(
-                        onPressed: () {
-                          // TODO: Implement Google Sign In
+                        onPressed: _isLoading ? null : () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            final user = await AuthService().signInWithGoogle();
+                            if (!mounted) return;
+                            if (user != null) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Google Sign-In failed: $e')),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                            }
+                          }
                         },
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xffe2e8f0)),

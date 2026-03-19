@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
+import 'services/auth_service.dart';
 import 'personal_info_screen.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -11,13 +13,17 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
-  // Controllers for digits
   final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  bool _isLoading = false;
+  
+  int _secondsRemaining = 120; // 2 minutes
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+    _startTimer();
     for (var f in _focusNodes) {
       f.addListener(() {
         if (mounted) setState(() {});
@@ -25,14 +31,29 @@ class _VerificationScreenState extends State<VerificationScreen> {
     }
   }
 
+  void _startTimer() {
+    _timer?.cancel();
+    _secondsRemaining = 120;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining > 0) {
+        setState(() => _secondsRemaining--);
+      } else {
+        _timer?.cancel();
+      }
+    });
+  }
+
+  String get _timerText {
+    int minutes = _secondsRemaining ~/ 60;
+    int seconds = _secondsRemaining % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
   @override
   void dispose() {
-    for (var c in _controllers) {
-      c.dispose();
-    }
-    for (var f in _focusNodes) {
-      f.dispose();
-    }
+    _timer?.cancel();
+    for (var c in _controllers) c.dispose();
+    for (var f in _focusNodes) f.dispose();
     super.dispose();
   }
 
@@ -44,69 +65,53 @@ class _VerificationScreenState extends State<VerificationScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xff002855)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xff00205b)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          'Step 2 of 4',
-          style: GoogleFonts.lexend(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xff64748b),
-          ),
-        ),
-        centerTitle: true,
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Progress Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-              child: Row(
-                children: [
-                  _buildProgressBar(true),
-                  const SizedBox(width: 8),
-                  _buildProgressBar(true),
-                  const SizedBox(width: 8),
-                  _buildProgressBar(false),
-                  const SizedBox(width: 8),
-                  _buildProgressBar(false),
-                ],
-              ),
-            ),
-            
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   children: [
-                    const SizedBox(height: 32),
-                    // Envelope Icon
+                    const SizedBox(height: 16),
+                    // Header Icon Container
                     Container(
-                      width: 64,
-                      height: 64,
-                      decoration: const BoxDecoration(
-                        color: Color(0xffeff6ff),
-                        shape: BoxShape.circle,
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xfff1f5f9)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: const Center(
                         child: Icon(
-                          Icons.mail_outline_rounded,
-                          color: Color(0xff002855),
-                          size: 28,
+                          Icons.verified_user_outlined,
+                          color: Color(0xff00205b),
+                          size: 32,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     
                     // Title
                     Text(
-                      'Verify your email',
+                      'Verifying Details',
                       style: GoogleFonts.lexend(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xff002855),
+                        color: const Color(0xff00205b),
+                        letterSpacing: -0.5,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -115,7 +120,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     Text.rich(
                       TextSpan(
                         children: [
-                          const TextSpan(text: "We've sent a 6-digit verification code to\n"),
+                          const TextSpan(text: "We’ve sent a 6-digit verification code to\n"),
                           TextSpan(
                             text: widget.email,
                             style: GoogleFonts.lexend(
@@ -123,127 +128,125 @@ class _VerificationScreenState extends State<VerificationScreen> {
                               color: const Color(0xff0f172a),
                             ),
                           ),
+                          const TextSpan(text: ". Please enter it below."),
                         ],
                       ),
                       textAlign: TextAlign.center,
                       style: GoogleFonts.lexend(
-                        fontSize: 16,
+                        fontSize: 15,
                         color: const Color(0xff64748b),
                         height: 1.5,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    
-                    // Wrong email link
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Wrong email address?',
-                        style: GoogleFonts.lexend(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xff002855),
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 48),
                     
-                    // OTP Fields
+                    // OTP Input Fields
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: List.generate(6, (index) => _buildOtpBox(index)),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 40),
                     
-                    // Timer Section
+                    // Timer display
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.access_time_rounded,
-                          size: 16,
-                          color: Color(0xff64748b),
-                        ),
+                        const Icon(Icons.timer_outlined, size: 18, color: Color(0xff64748b)),
                         const SizedBox(width: 8),
                         Text(
-                          '01:54',
-                          style: TextStyle(
-                            fontFamily: 'Liberation Mono', // As specified in design data
-                            fontSize: 16,
-                            color: const Color(0xff64748b),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Resend Link
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Didn't receive the code? ",
+                          'Resend code in $_timerText',
                           style: GoogleFonts.lexend(
                             fontSize: 14,
                             color: const Color(0xff64748b),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            // TODO: Implement Resend
-                          },
-                          child: Text(
-                            "Resend Code",
-                            style: GoogleFonts.lexend(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xff002855),
-                            ),
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 24),
+                    
+                    // Resend Link
+                    if (_secondsRemaining == 0)
+                      GestureDetector(
+                        onTap: _startTimer,
+                        child: Text(
+                          "Resend Code",
+                          style: GoogleFonts.lexend(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xff0056d2),
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
             
-            // Bottom Button
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
-                border: const Border(
-                  top: BorderSide(color: Color(0xfff1f5f9)),
-                ),
-              ),
+            // Confirm Button
+            Padding(
+              padding: const EdgeInsets.all(24.0),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const PersonalInfoScreen(),
-                      ),
-                    );
+                  onPressed: _isLoading ? null : () async {
+                    String code = _controllers.map((c) => c.text).join();
+                    if (code.length < 6) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please enter the 6-digit code')),
+                      );
+                      return;
+                    }
+
+                    setState(() => _isLoading = true);
+                    try {
+                      // Note: confirmUser is mocked to delay 1s in AuthService
+                      await AuthService().confirmUser(
+                        email: widget.email, 
+                        confirmationCode: code,
+                      );
+                      if (!mounted) return;
+                      // Navigate to PersonalInfoScreen
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => PersonalInfoScreen(email: widget.email),
+                        ),
+                      );
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Verification failed: $e')),
+                        );
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() => _isLoading = false);
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff002855),
+                    backgroundColor: const Color(0xff0056d2),
                     foregroundColor: Colors.white,
-                    elevation: 4,
-                    shadowColor: const Color(0x33002855),
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    'Verify Email',
-                    style: GoogleFonts.lexend(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text(
+                        'Confirm Code',
+                        style: GoogleFonts.lexend(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                 ),
               ),
             ),
@@ -253,28 +256,17 @@ class _VerificationScreenState extends State<VerificationScreen> {
     );
   }
 
-  Widget _buildProgressBar(bool filled) {
-    return Expanded(
-      child: Container(
-        height: 6,
-        decoration: BoxDecoration(
-          color: filled ? const Color(0xff002855) : const Color(0xffe2e8f0),
-          borderRadius: BorderRadius.circular(9999),
-        ),
-      ),
-    );
-  }
-
   Widget _buildOtpBox(int index) {
+    bool isFocused = _focusNodes[index].hasFocus;
     return Container(
-      width: 48,
+      width: 46,
       height: 56,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _focusNodes[index].hasFocus ? const Color(0xff002855) : const Color(0x4d002855), // 0.3 opacity
-          width: 2,
+          color: isFocused ? const Color(0xff0056d2) : const Color(0xffe2e8f0),
+          width: isFocused ? 2 : 1.5,
         ),
       ),
       child: Center(
@@ -285,9 +277,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
           keyboardType: TextInputType.number,
           maxLength: 1,
           style: GoogleFonts.lexend(
-            fontSize: 24,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: const Color(0xff002855),
+            color: const Color(0xff0f172a),
           ),
           decoration: const InputDecoration(
             counterText: "",
