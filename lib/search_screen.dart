@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app_details_screen.dart';
+import 'models/app_model.dart';
+import 'services/installer_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -20,6 +22,25 @@ class _SearchScreenState extends State<SearchScreen> {
     'Utility',
     'Events',
   ];
+  late InstallerService _installer;
+
+  @override
+  void initState() {
+    super.initState();
+    _installer = InstallerService();
+    _installer.addListener(_updateState);
+    _installer.updateAllStatuses();
+  }
+
+  @override
+  void dispose() {
+    _installer.removeListener(_updateState);
+    super.dispose();
+  }
+
+  void _updateState() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +67,16 @@ class _SearchScreenState extends State<SearchScreen> {
                 chipBgColor: const Color(0xffeff6ff),
                 chipBorderColor: const Color(0xffdbeafe),
                 rating: '4.8',
-                actionWidget: _buildActionButton('OPEN'),
+                actionWidget: _buildActionButton(
+                  AppModel.sampleApps[0].status == AppStatus.installed ? 'OPEN' : 'GET',
+                  onTap: () {
+                    if (AppModel.sampleApps[0].status == AppStatus.installed) {
+                      _installer.launchApp(AppModel.sampleApps[0]);
+                    } else {
+                       _installer.installApp(AppModel.sampleApps[0]);
+                    }
+                  },
+                ),
                 iconWidget: _buildAppIcon(
                   const Color(0xff0a192f),
                   Icons.grid_view_rounded,
@@ -347,7 +377,11 @@ class _SearchScreenState extends State<SearchScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+          MaterialPageRoute(
+            builder: (context) => AppDetailsScreen(
+              app: AppModel.sampleApps[0],
+            ),
+          ),
         );
       },
       child: Padding(
@@ -428,20 +462,23 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildActionButton(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xfff2f4f6),
-        borderRadius: BorderRadius.circular(9999),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.lexend(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: const Color(0xff2094f3),
-          letterSpacing: 0.6,
+  Widget _buildActionButton(String text, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xfff2f4f6),
+          borderRadius: BorderRadius.circular(9999),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.lexend(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xff2094f3),
+            letterSpacing: 0.6,
+          ),
         ),
       ),
     );

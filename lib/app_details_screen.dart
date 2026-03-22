@@ -4,77 +4,53 @@ import 'screenshots_screen.dart';
 import 'about_app_screen.dart';
 import 'reviews_screen.dart';
 import 'write_review_screen.dart';
-import 'package:open_filex/open_filex.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:dio/dio.dart';
-import 'dart:async';
+import 'models/app_model.dart';
+import 'services/installer_service.dart';
 
 class AppDetailsScreen extends StatefulWidget {
-  const AppDetailsScreen({super.key});
+  final AppModel app;
+  const AppDetailsScreen({super.key, required this.app});
 
   @override
   State<AppDetailsScreen> createState() => _AppDetailsScreenState();
 }
 
 class _AppDetailsScreenState extends State<AppDetailsScreen> {
-  bool _isDownloading = false;
-  double _downloadProgress = 0.0;
-  bool _isInstalled = false;
+  late InstallerService _installer;
 
-  // ⚠️ PASTE YOUR GITHUB RELEASE URL HERE!
-  final String _apkUrl =
-      "https://github.com/ismemax/scamester_apk/releases/download/Test/ScamesterV.0.1.2.4a.apk";
+  @override
+  void initState() {
+    super.initState();
+    _installer = InstallerService();
+    _installer.addListener(_updateState);
+    // Verify current status on entry
+    _installer.updateAppStatus(widget.app);
+  }
 
-  Future<void> _downloadAndInstallApp() async {
-    if (_isDownloading || _isInstalled) return;
+  @override
+  void dispose() {
+    _installer.removeListener(_updateState);
+    super.dispose();
+  }
 
-    setState(() {
-      _isDownloading = true;
-      _downloadProgress = 0.0;
-    });
-
-    try {
-      final dio = Dio();
-      final tempDir = await getTemporaryDirectory();
-      final String savePath = "${tempDir.path}/umak_portal.apk";
-
-      await dio.download(
-        _apkUrl,
-        savePath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            setState(() {
-              _downloadProgress = received / total;
-            });
-          }
-        },
-      );
-
-      setState(() {
-        _isDownloading = false;
-        _isInstalled = true;
-      });
-
-      // Trigger native installation
-      final result = await OpenFilex.open(savePath);
-
-      if (result.type != ResultType.done && mounted) {
+  void _updateState() {
+    if (mounted) {
+      if (widget.app.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Installation failed: ${result.message}')),
+          SnackBar(
+            content: Text(widget.app.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
         );
-        setState(() => _isInstalled = false);
+        // Clear it so it doesn't show again
+        widget.app.errorMessage = null;
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error downloading app: $e')));
-      }
-      setState(() {
-        _isDownloading = false;
-        _downloadProgress = 0.0;
-      });
+      setState(() {});
     }
+  }
+
+  void _onInstallPressed() {
+    _installer.installApp(widget.app);
   }
 
   @override
@@ -184,7 +160,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         ),
         const SizedBox(height: 24),
         Text(
-          'Scamester',
+          widget.app.title,
           style: GoogleFonts.lexend(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -196,7 +172,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Text(
-            'Your essential academic companion for grades, schedules, and campus news.',
+            widget.app.description,
             textAlign: TextAlign.center,
             style: GoogleFonts.lexend(
               fontSize: 14,
@@ -216,13 +192,13 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStatItem('4.8 ★', 'RATING'),
+          _buildStatItem('${widget.app.rating} ★', 'RATING'),
           _buildStatDivider(),
-          _buildStatItem('12k+', 'REPORTS'),
+          _buildStatItem('${widget.app.reviews}+', 'REPORTS'),
           _buildStatDivider(),
-          _buildStatItem('12 MB', 'SIZE'),
+          _buildStatItem(widget.app.size, 'SIZE'),
           _buildStatDivider(),
-          _buildStatItem('Sec', 'CATEGORY'),
+          _buildStatItem(widget.app.id.length > 3 ? widget.app.id.substring(0, 3) : widget.app.id, 'CATEGORY'),
         ],
       ),
     );
@@ -264,23 +240,23 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: _isDownloading || _isInstalled
-                  ? null
-                  : _downloadAndInstallApp,
+              onTap: () {
+                if (widget.app.status == AppStatus.notInstalled) {
+                  _onInstallPressed();
+                } else if (widget.app.status == AppStatus.installed) {
+                  _installer.launchApp(widget.app);
+                }
+              },
               child: Container(
                 height: 54,
                 decoration: BoxDecoration(
-                  color: _isInstalled
-                      ? const Color(0xff4ade80)
+                  color: widget.app.status == AppStatus.installed
+                      ? const Color(0xff2094f3)
                       : const Color(0xff2094f3),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color:
-                          (_isInstalled
-                                  ? const Color(0xff4ade80)
-                                  : const Color(0xff2094f3))
-                              .withValues(alpha: 0.25),
+                      color: const Color(0xff2094f3).withValues(alpha: 0.25),
                       blurRadius: 15,
                       offset: const Offset(0, 10),
                       spreadRadius: -3,
@@ -289,12 +265,14 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 ),
                 child: Stack(
                   children: [
-                    if (_isDownloading)
+                    if (widget.app.status == AppStatus.downloading)
                       Positioned.fill(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: LinearProgressIndicator(
-                            value: _downloadProgress,
+                            value: widget.app.progress == -1.0
+                                ? null
+                                : widget.app.progress,
                             backgroundColor: Colors.transparent,
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Colors.white.withValues(alpha: 0.3),
@@ -304,9 +282,15 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                       ),
                     Center(
                       child: Text(
-                        _isDownloading
-                            ? '${(_downloadProgress * 100).toInt()}%'
-                            : (_isInstalled ? 'Installed' : 'Install'),
+                        widget.app.status == AppStatus.downloading
+                            ? (widget.app.progress == -1.0
+                                ? 'Downloading...'
+                                : '${(widget.app.progress * 100).toInt()}%')
+                            : (widget.app.status == AppStatus.installing
+                                ? 'Installing...'
+                                : (widget.app.status == AppStatus.installed
+                                    ? 'Open'
+                                    : 'Install')),
                         style: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -320,17 +304,32 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: const Color(0xff2094f3).withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.bookmark_border_rounded,
-              color: Color(0xff2094f3),
-              size: 24,
+          GestureDetector(
+            onTap: () {
+              if (widget.app.status == AppStatus.installed) {
+                setState(() {
+                  widget.app.status = AppStatus.notInstalled;
+                });
+                _installer.persistAppStatus(widget.app.id, false);
+              } else {
+                // Keep bookmark logic if needed, or just follow Figma
+              }
+            },
+            child: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xfff1f5f9), width: 2),
+              ),
+              child: Icon(
+                widget.app.status == AppStatus.installed
+                    ? Icons.delete_outline_rounded
+                    : Icons.bookmark_border_rounded,
+                color: const Color(0xff64748b),
+                size: 24,
+              ),
             ),
           ),
         ],

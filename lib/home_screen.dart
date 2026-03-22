@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
 import 'app_details_screen.dart';
+import 'models/app_model.dart';
+import 'services/installer_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +16,26 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   int _selectedTabIndex = 0;
+  late InstallerService _installer;
+
+  @override
+  void initState() {
+    super.initState();
+    _installer = InstallerService();
+    _installer.addListener(_updateState);
+    // Refresh the status on startup for all sample apps
+    _installer.updateAllStatuses();
+  }
+
+  @override
+  void dispose() {
+    _installer.removeListener(_updateState);
+    super.dispose();
+  }
+
+  void _updateState() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -446,7 +468,11 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+          MaterialPageRoute(
+            builder: (context) => AppDetailsScreen(
+              app: AppModel.sampleApps[0],
+            ),
+          ),
         );
       },
       child: Container(
@@ -556,40 +582,55 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isButtonOutlined
-                          ? Colors.white
-                          : const Color(0xff2094f3),
-                      borderRadius: BorderRadius.circular(12),
-                      border: isButtonOutlined
-                          ? Border.all(
-                              color: const Color(
-                                0xff2094f3,
-                              ).withValues(alpha: 0.2),
-                            )
-                          : null,
-                      boxShadow: isButtonOutlined
-                          ? []
-                          : const [
-                              BoxShadow(
-                                color: Color(0x0D000000),
-                                blurRadius: 2,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
-                    ),
-                    child: Text(
-                      'Install',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.lexend(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                  GestureDetector(
+                    onTap: () {
+                      if (title == 'Scamester') {
+                        if (AppModel.sampleApps[0].status == AppStatus.notInstalled) {
+                          _installer.installApp(AppModel.sampleApps[0]);
+                        } else if (AppModel.sampleApps[0].status == AppStatus.installed) {
+                          _installer.launchApp(AppModel.sampleApps[0]);
+                        }
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
                         color: isButtonOutlined
-                            ? const Color(0xff2094f3)
-                            : Colors.white,
+                            ? Colors.white
+                            : const Color(0xff2094f3),
+                        borderRadius: BorderRadius.circular(12),
+                        border: isButtonOutlined
+                            ? Border.all(
+                                color: const Color(
+                                  0xff2094f3,
+                                ).withValues(alpha: 0.2),
+                              )
+                            : null,
+                        boxShadow: isButtonOutlined
+                            ? []
+                            : const [
+                                BoxShadow(
+                                  color: Color(0x0D000000),
+                                  blurRadius: 2,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
+                      ),
+                      child: Text(
+                        (title == 'Scamester' && AppModel.sampleApps[0].status == AppStatus.downloading)
+                            ? '${(AppModel.sampleApps[0].progress * 100).toInt()}%'
+                            : (title == 'Scamester' && AppModel.sampleApps[0].status == AppStatus.installed)
+                                ? 'Open'
+                                : 'Install',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.lexend(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isButtonOutlined
+                              ? const Color(0xff2094f3)
+                              : Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -633,7 +674,11 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+          MaterialPageRoute(
+            builder: (context) => AppDetailsScreen(
+              app: AppModel.sampleApps[0],
+            ),
+          ),
         );
       },
       child: Padding(
@@ -754,7 +799,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Scamester',
+                                AppModel.sampleApps[0].title,
                                 style: GoogleFonts.lexend(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -762,7 +807,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                'Detect scams & stay secure on campus...',
+                                AppModel.sampleApps[0].description,
                                 style: GoogleFonts.lexend(
                                   fontSize: 14,
                                   color: const Color(0xff64748b),
@@ -779,38 +824,53 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Container(
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: const Color(0xff2094f3),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x332094f3),
-                                  blurRadius: 15,
-                                  offset: Offset(0, 10),
-                                  spreadRadius: -3,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.download_rounded,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Install',
-                                  style: GoogleFonts.lexend(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (AppModel.sampleApps[0].status == AppStatus.notInstalled) {
+                                _installer.installApp(AppModel.sampleApps[0]);
+                              } else if (AppModel.sampleApps[0].status == AppStatus.installed) {
+                                _installer.launchApp(AppModel.sampleApps[0]);
+                              }
+                            },
+                            child: Container(
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: const Color(0xff2094f3),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x332094f3),
+                                    blurRadius: 15,
+                                    offset: Offset(0, 10),
+                                    spreadRadius: -3,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    AppModel.sampleApps[0].status == AppStatus.installed
+                                        ? Icons.open_in_new_rounded
+                                        : Icons.download_rounded,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    AppModel.sampleApps[0].status == AppStatus.downloading
+                                        ? '${(AppModel.sampleApps[0].progress * 100).toInt()}%'
+                                        : (AppModel.sampleApps[0].status == AppStatus.installed
+                                            ? 'Open'
+                                            : 'Install'),
+                                    style: GoogleFonts.lexend(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -931,7 +991,11 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+          MaterialPageRoute(
+            builder: (context) => AppDetailsScreen(
+              app: AppModel.sampleApps[0],
+            ),
+          ),
         );
       },
       child: SizedBox(
@@ -1162,7 +1226,11 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AppDetailsScreen()),
+          MaterialPageRoute(
+            builder: (context) => AppDetailsScreen(
+              app: AppModel.sampleApps[0],
+            ),
+          ),
         );
       },
       child: Container(

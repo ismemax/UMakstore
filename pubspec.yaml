@@ -49,6 +49,10 @@ dependencies:
   open_filex: ^4.7.0
   permission_handler: ^12.0.1
   dio: ^5.9.2
+  package_info_plus: ^9.0.0
+  device_info_plus: ^11.1.1
+  flutter_downloader: ^1.11.9
+  external_app_launcher: ^4.0.3
 
 dev_dependencies:
   flutter_test:

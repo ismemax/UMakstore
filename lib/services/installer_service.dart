@@ -1,0 +1,178 @@
+import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../models/app_model.dart';
+import 'package:external_app_launcher/external_app_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'dart:async';
+
+class InstallerService with ChangeNotifier {
+  // Singleton pattern
+  static final InstallerService _instance = InstallerService._internal();
+  factory InstallerService() => _instance;
+  InstallerService._internal();
+
+  final Dio _dio = Dio();
+  final Map<String, AppModel> _apps = {};
+  final Map<String, Timer?> _installationCheckers = {};
+
+  AppModel? getApp(String id) => _apps[id];
+
+  Future<void> installApp(AppModel app) async {
+    if (app.status == AppStatus.downloading || app.status == AppStatus.installing) {
+      return;
+    }
+
+    _apps[app.id] = app;
+    app.status = AppStatus.downloading;
+    app.progress = 0.0;
+    notifyListeners();
+
+    try {
+      // 1. Check Permissions (Android Specific)
+      if (Platform.isAndroid) {
+        final status = await Permission.requestInstallPackages.request();
+        if (status.isDenied) {
+          app.status = AppStatus.notInstalled;
+          notifyListeners();
+          return;
+        }
+      }
+
+      // 2. Setup Save Path
+      final tempDir = await getTemporaryDirectory();
+      final String savePath = "${tempDir.path}/${app.id}.apk";
+
+      // CLEANUP: If an old APK exists, delete it first to avoid installing the wrong app
+      final oldFile = File(savePath);
+      if (await oldFile.exists()) {
+        await oldFile.delete();
+      }
+
+      // 3. Download
+      int lastUpdate = 0;
+      await _dio.download(
+        app.downloadUrl,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            app.progress = received / total;
+          } else {
+            // If total is unknown, set progress to -1 to indicate indeterminate state
+            app.progress = -1.0;
+          }
+          
+          // Throttle UI updates to once every 100ms for performance
+          final now = DateTime.now().millisecondsSinceEpoch;
+          if (now - lastUpdate > 100) {
+            lastUpdate = now;
+            notifyListeners();
+          }
+        },
+      );
+
+      // 4. Installing
+      app.status = AppStatus.installing;
+      notifyListeners();
+
+      // 5. Trigger Native Installation
+      final result = await OpenFilex.open(savePath);
+
+      if (result.type == ResultType.done) {
+        app.status = AppStatus.installing; // Keep as installing until verified
+        _startInstallationCheck(app); // Start polling
+        await persistAppStatus(app.id, true);
+      } else {
+        app.status = AppStatus.notInstalled;
+        debugPrint('Installation failed: ${result.message}');
+      }
+    } catch (e) {
+      app.status = AppStatus.notInstalled;
+      app.errorMessage = e.toString();
+      debugPrint('Error during installation: $e');
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  void _startInstallationCheck(AppModel app) {
+    if (_installationCheckers[app.id]?.isActive ?? false) return;
+    
+    int checks = 0;
+    _installationCheckers[app.id] = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      checks++;
+      await updateAppStatus(app);
+      
+      // Stop checking if installed or after 5 mins
+      if (app.status == AppStatus.installed || checks > 100) {
+        timer.cancel();
+        _installationCheckers[app.id] = null;
+      }
+    });
+  }
+
+  Future<void> launchApp(AppModel app) async {
+    if (app.packageName != null) {
+      await LaunchApp.openApp(
+        androidPackageName: app.packageName!,
+        iosUrlScheme: '', // Implement if needed
+        appStoreLink: '',
+      );
+    }
+  }
+
+  Future<void> persistAppStatus(String id, bool installed) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('installed_$id', installed);
+  }
+
+  Future<bool> getPersistedStatus(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('installed_$id') ?? false;
+  }
+
+  // A method to sync an app's status with reality (e.g. on app start)
+  Future<void> updateAppStatus(AppModel app) async {
+    // 1. Check persistent memory first for a quick answer
+    final persisted = await getPersistedStatus(app.id);
+    if (persisted) {
+      app.status = AppStatus.installed;
+      notifyListeners();
+    }
+
+    if (app.packageName == null) return;
+    
+    try {
+      final isInstalled = await LaunchApp.isAppInstalled(
+        androidPackageName: app.packageName!,
+        iosUrlScheme: '',
+      );
+      
+      debugPrint('Checking status for ${app.packageName}: $isInstalled');
+      
+      if (isInstalled) {
+        app.status = AppStatus.installed;
+        // Also update persistence if it was different
+        if (!persisted) await persistAppStatus(app.id, true);
+      } else {
+        // Only mark as not installed if we were NOT just installing it
+        if (app.status != AppStatus.downloading && app.status != AppStatus.installing) {
+          app.status = AppStatus.notInstalled;
+          if (persisted) await persistAppStatus(app.id, false);
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error checking app status for ${app.packageName}: $e');
+    }
+  }
+
+  Future<void> updateAllStatuses() async {
+    for (var app in AppModel.sampleApps) {
+      await updateAppStatus(app);
+    }
+  }
+}
