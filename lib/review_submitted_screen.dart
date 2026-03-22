@@ -51,23 +51,39 @@ class ReviewSubmittedScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.check_rounded, color: Colors.white, size: 48),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 48,
+                    ),
                   ),
                   // Small decorative stars
                   Positioned(
                     top: 0,
                     right: 0,
-                    child: const Icon(Icons.star_rounded, color: Color(0xffffc107), size: 24),
+                    child: const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xffffc107),
+                      size: 24,
+                    ),
                   ),
                   Positioned(
                     bottom: 20,
                     left: 0,
-                    child: const Icon(Icons.star_rounded, color: Color(0xffffc107), size: 16),
+                    child: const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xffffc107),
+                      size: 16,
+                    ),
                   ),
                   Positioned(
                     bottom: 40,
                     right: -10,
-                    child: const Icon(Icons.star_rounded, color: Color(0xffffc107), size: 18),
+                    child: const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xffffc107),
+                      size: 18,
+                    ),
                   ),
                 ],
               ),
@@ -119,7 +135,9 @@ class ReviewSubmittedScreen extends StatelessWidget {
                         color: const Color(0xff0a1f35),
                         borderRadius: BorderRadius.circular(12),
                         image: const DecorationImage(
-                          image: AssetImage('assets/images/umak_logo.png'), // Fallback or placeholder
+                          image: AssetImage(
+                            'assets/images/umak_logo.png',
+                          ), // Fallback or placeholder
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -139,7 +157,11 @@ class ReviewSubmittedScreen extends StatelessWidget {
                           ),
                           Row(
                             children: List.generate(5, (index) {
-                              return const Icon(Icons.star_rounded, size: 13, color: Color(0xffffc107));
+                              return const Icon(
+                                Icons.star_rounded,
+                                size: 13,
+                                color: Color(0xffffc107),
+                              );
                             }),
                           ),
                         ],
@@ -152,7 +174,11 @@ class ReviewSubmittedScreen extends StatelessWidget {
                         color: const Color(0xff22c55e).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check_rounded, color: Color(0xff22c55e), size: 16),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: Color(0xff22c55e),
+                        size: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -193,7 +219,11 @@ class ReviewSubmittedScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ],
                       ),
                     ),

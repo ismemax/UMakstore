@@ -24,10 +24,11 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkInitialNavigation() async {
     // Delay for a visual splash effect
     await Future.delayed(const Duration(seconds: 2));
-    
+
     final prefs = await SharedPreferences.getInstance();
-    final bool hasFinishedOnboarding = prefs.getBool('hasFinishedOnboarding') ?? false;
-    
+    final bool hasFinishedOnboarding =
+        prefs.getBool('hasFinishedOnboarding') ?? false;
+
     // Check actual Firebase Auth status
     final user = FirebaseAuth.instance.currentUser;
 
@@ -38,7 +39,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomeScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
@@ -49,7 +51,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const OnboardingScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
@@ -60,7 +63,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const LoginScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

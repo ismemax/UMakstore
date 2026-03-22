@@ -6,11 +6,7 @@ void main() {
     // Build a simple widget to verify the CI can run tests
     await tester.pumpWidget(
       const MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Text('CI Check Passed'),
-          ),
-        ),
+        home: Scaffold(body: Center(child: Text('CI Check Passed'))),
       ),
     );
 

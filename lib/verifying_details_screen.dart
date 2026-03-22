@@ -9,7 +9,8 @@ class VerifyingDetailsScreen extends StatefulWidget {
   State<VerifyingDetailsScreen> createState() => _VerifyingDetailsScreenState();
 }
 
-class _VerifyingDetailsScreenState extends State<VerifyingDetailsScreen> with SingleTickerProviderStateMixin {
+class _VerifyingDetailsScreenState extends State<VerifyingDetailsScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -19,7 +20,7 @@ class _VerifyingDetailsScreenState extends State<VerifyingDetailsScreen> with Si
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
-    
+
     // Simulate network delay and navigation
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -57,12 +58,14 @@ class _VerifyingDetailsScreenState extends State<VerifyingDetailsScreen> with Si
                       width: 128,
                       height: 128,
                       child: CircularProgressIndicator(
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xff0a2540)),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xff0a2540),
+                        ),
                         backgroundColor: const Color(0xffe2e8f0),
                         strokeWidth: 4,
                       ),
                     ),
-                    
+
                     // Central 'U' Logo
                     Container(
                       width: 80,
@@ -102,7 +105,7 @@ class _VerifyingDetailsScreenState extends State<VerifyingDetailsScreen> with Si
                 ),
               ),
               const SizedBox(height: 40),
-              
+
               // Text Content
               Text(
                 'Verifying your details...',
@@ -113,7 +116,7 @@ class _VerifyingDetailsScreenState extends State<VerifyingDetailsScreen> with Si
                 ),
               ),
               const SizedBox(height: 8),
-              
+
               Text(
                 'Please wait a moment',
                 style: GoogleFonts.lexend(

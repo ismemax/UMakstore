@@ -17,7 +17,8 @@ class ScreenshotsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Default placeholder colors if no screenshots or colors are provided
-    final List<Color> colors = placeholderColors ??
+    final List<Color> colors =
+        placeholderColors ??
         [
           const Color(0xfffef3c7), // Yellow
           const Color(0xfffee2e2), // Orange/Peach
@@ -41,7 +42,11 @@ class ScreenshotsScreen extends StatelessWidget {
               scrolledUnderElevation: 0,
               centerTitle: true,
               leading: IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, color: Color(0xff0f172a), size: 28),
+                icon: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: Color(0xff0f172a),
+                  size: 28,
+                ),
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
@@ -96,7 +101,11 @@ class ScreenshotsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildScreenshotCard(BuildContext context, Color? bgColor, String? imageUrl) {
+  Widget _buildScreenshotCard(
+    BuildContext context,
+    Color? bgColor,
+    String? imageUrl,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: bgColor ?? const Color(0xfff8fafc),
@@ -119,7 +128,10 @@ class ScreenshotsScreen extends StatelessWidget {
                 imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Icon(Icons.broken_image_rounded, color: Color(0xff94a3b8)),
+                  child: Icon(
+                    Icons.broken_image_rounded,
+                    color: Color(0xff94a3b8),
+                  ),
                 ),
               ),
             )

@@ -44,13 +44,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ),
-            
+
             _buildSectionHeader('APPEARANCE'),
             const SizedBox(height: 8),
-            _buildSettingsCard([
-              _buildThemeSelectionRow(),
-            ]),
-            
+            _buildSettingsCard([_buildThemeSelectionRow()]),
+
             const SizedBox(height: 24),
             _buildSectionHeader('GENERAL'),
             const SizedBox(height: 8),
@@ -64,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {},
               ),
             ]),
-            
+
             const SizedBox(height: 24),
             _buildSectionHeader('DOWNLOADS'),
             const SizedBox(height: 8),
@@ -87,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (val) => setState(() => _autoUpdate = val),
               ),
             ]),
-            
+
             const SizedBox(height: 24),
             _buildSectionHeader('NOTIFICATIONS'),
             const SizedBox(height: 8),
@@ -106,13 +104,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSectionHeader('STORAGE'),
             const SizedBox(height: 8),
             _buildSettingsCard([
-               _buildStorageActionItem(
+              _buildStorageActionItem(
                 icon: Icons.cleaning_services_rounded,
                 iconColor: const Color(0xff3b82f6),
                 iconBgColor: const Color(0xffeff6ff),
                 title: 'Clear cache',
                 trailingWidget: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xfff1f5f9),
                     borderRadius: BorderRadius.circular(4),
@@ -138,9 +139,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {},
               ),
             ]),
-            
+
             const SizedBox(height: 48),
-            
+
             // App Info footer
             Center(
               child: Column(
@@ -216,9 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xffe2e8f0)),
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -236,7 +235,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: const Color(0xfff1f5f9),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.dark_mode_outlined, color: Color(0xff0f172a), size: 16),
+                child: const Icon(
+                  Icons.dark_mode_outlined,
+                  color: Color(0xff0f172a),
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -289,7 +292,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: Color(0x0D000000),
                       blurRadius: 2,
                       offset: Offset(0, 1),
-                    )
+                    ),
                   ]
                 : [],
           ),
@@ -407,7 +410,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Row(
           children: [
-             Container(
+            Container(
               width: 32,
               height: 32,
               decoration: BoxDecoration(
@@ -438,7 +441,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xff94a3b8), size: 16),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xff94a3b8),
+              size: 16,
+            ),
           ],
         ),
       ),
@@ -446,9 +453,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildDivider() {
-    return Container(
-      height: 1,
-      color: const Color(0xfff1f5f9),
-    );
+    return Container(height: 1, color: const Color(0xfff1f5f9));
   }
 }

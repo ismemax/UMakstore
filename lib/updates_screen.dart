@@ -63,14 +63,16 @@ class UpdatesScreen extends StatelessWidget {
                 _buildUpdateItem(
                   title: 'UMak Messenger',
                   versionSize: 'Version 2.4.1 • 45.2 MB',
-                  description: 'We\'ve added crystal-clear HD video calling and squashed those pesky bugs...',
+                  description:
+                      'We\'ve added crystal-clear HD video calling and squashed those pesky bugs...',
                   iconBgColor: const Color(0xffe2b48e),
                   iconData: Icons.chat_bubble_outline_rounded,
                 ),
                 _buildUpdateItem(
                   title: 'Student Portal',
                   versionSize: 'Version 1.10.0 • 120 MB',
-                  description: 'Major redesign for the course enrollment page. Added dark mode support and...',
+                  description:
+                      'Major redesign for the course enrollment page. Added dark mode support and...',
                   iconBgColor: Colors.white,
                   iconData: Icons.account_circle_outlined,
                   iconColor: const Color(0xff0f172a),
@@ -78,14 +80,16 @@ class UpdatesScreen extends StatelessWidget {
                 _buildUpdateItem(
                   title: 'UMak Library',
                   versionSize: 'Version 3.2.5 • 32.8 MB',
-                  description: 'Improved book reservation system and fixed checkout errors. You can now sca...',
+                  description:
+                      'Improved book reservation system and fixed checkout errors. You can now sca...',
                   iconBgColor: const Color(0xff22726d),
                   iconData: Icons.menu_book_rounded,
                 ),
                 _buildUpdateItem(
                   title: 'Campus Maps',
                   versionSize: 'Version 5.0.2 • 88.4 MB',
-                  description: 'New offline map support for main campus buildings. Updated paths for th...',
+                  description:
+                      'New offline map support for main campus buildings. Updated paths for th...',
                   iconBgColor: const Color(0xffe9eee9),
                   iconData: Icons.map_rounded,
                   iconColor: const Color(0xff86b389),
@@ -108,9 +112,7 @@ class UpdatesScreen extends StatelessWidget {
   }) {
     return Container(
       decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xfff1f5f9), width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xfff1f5f9), width: 1)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Row(
@@ -131,9 +133,7 @@ class UpdatesScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: Center(
-              child: Icon(iconData, color: iconColor, size: 32),
-            ),
+            child: Center(child: Icon(iconData, color: iconColor, size: 32)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -173,7 +173,10 @@ class UpdatesScreen extends StatelessWidget {
                       onTap: () {},
                       borderRadius: BorderRadius.circular(9999),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xff2094f3),
                           borderRadius: BorderRadius.circular(9999),

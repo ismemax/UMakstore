@@ -13,10 +13,13 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
-  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   bool _isLoading = false;
-  
+
   int _secondsRemaining = 120; // 2 minutes
   Timer? _timer;
 
@@ -107,7 +110,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Title
                     Text(
                       'Verifying Details',
@@ -119,12 +122,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Subtitle
                     Text.rich(
                       TextSpan(
                         children: [
-                          const TextSpan(text: "We’ve sent a 6-digit verification code to\n"),
+                          const TextSpan(
+                            text: "We’ve sent a 6-digit verification code to\n",
+                          ),
                           TextSpan(
                             text: widget.email,
                             style: GoogleFonts.lexend(
@@ -143,19 +148,26 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       ),
                     ),
                     const SizedBox(height: 48),
-                    
+
                     // OTP Input Fields
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: List.generate(6, (index) => _buildOtpBox(index)),
+                      children: List.generate(
+                        6,
+                        (index) => _buildOtpBox(index),
+                      ),
                     ),
                     const SizedBox(height: 40),
-                    
+
                     // Timer display
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.timer_outlined, size: 18, color: Color(0xff64748b)),
+                        const Icon(
+                          Icons.timer_outlined,
+                          size: 18,
+                          color: Color(0xff64748b),
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Resend code in $_timerText',
@@ -168,7 +180,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Resend Link
                     if (_secondsRemaining == 0)
                       GestureDetector(
@@ -187,7 +199,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ),
               ),
             ),
-            
+
             // Confirm Button
             Padding(
               padding: const EdgeInsets.all(24.0),
@@ -195,41 +207,48 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : () async {
-                    String code = _controllers.map((c) => c.text).join();
-                    if (code.length < 6) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter the 6-digit code')),
-                      );
-                      return;
-                    }
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          String code = _controllers.map((c) => c.text).join();
+                          if (code.length < 6) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter the 6-digit code'),
+                              ),
+                            );
+                            return;
+                          }
 
-                    setState(() => _isLoading = true);
-                    try {
-                      // Note: confirmUser is mocked to delay 1s in AuthService
-                      await AuthService().confirmUser(
-                        email: widget.email, 
-                        confirmationCode: code,
-                      );
-                      if (!mounted) return;
-                      // Navigate to PersonalInfoScreen
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => PersonalInfoScreen(email: widget.email),
-                        ),
-                      );
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Verification failed: $e')),
-                        );
-                      }
-                    } finally {
-                      if (mounted) {
-                        setState(() => _isLoading = false);
-                      }
-                    }
-                  },
+                          setState(() => _isLoading = true);
+                          try {
+                            // Note: confirmUser is mocked to delay 1s in AuthService
+                            await AuthService().confirmUser(
+                              email: widget.email,
+                              confirmationCode: code,
+                            );
+                            if (!mounted) return;
+                            // Navigate to PersonalInfoScreen
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    PersonalInfoScreen(email: widget.email),
+                              ),
+                            );
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Verification failed: $e'),
+                                ),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                            }
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xff0056d2),
                     foregroundColor: Colors.white,
@@ -239,18 +258,21 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     ),
                   ),
                   child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                      )
-                    : Text(
-                        'Confirm Code',
-                        style: GoogleFonts.lexend(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Confirm Code',
+                          style: GoogleFonts.lexend(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
                 ),
               ),
             ),

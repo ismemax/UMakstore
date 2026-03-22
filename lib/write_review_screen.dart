@@ -70,7 +70,11 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                   padding: const EdgeInsets.only(left: 16),
                   child: Row(
                     children: [
-                      const Icon(Icons.chevron_left_rounded, color: Color(0xff2094f3), size: 28),
+                      const Icon(
+                        Icons.chevron_left_rounded,
+                        color: Color(0xff2094f3),
+                        size: 28,
+                      ),
                       Text(
                         'Back',
                         style: GoogleFonts.lexend(
@@ -126,7 +130,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                         child: Icon(
                           Icons.star_rounded,
                           size: 48,
-                          color: index < _rating ? const Color(0xffffc107) : const Color(0xffcbd5e1),
+                          color: index < _rating
+                              ? const Color(0xffffc107)
+                              : const Color(0xffcbd5e1),
                         ),
                       ),
                     );
@@ -160,7 +166,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                           style: GoogleFonts.lexend(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: const Color(0xff1e3a5f).withValues(alpha: 0.7),
+                            color: const Color(
+                              0xff1e3a5f,
+                            ).withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -187,7 +195,8 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                           color: const Color(0xff0a1f35),
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Tell others what you think about this app. Was it helpful? Easy to use?',
+                          hintText:
+                              'Tell others what you think about this app. Was it helpful? Easy to use?',
                           hintStyle: GoogleFonts.lexend(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
@@ -202,7 +211,10 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                         bottom: 12,
                         right: 12,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(9999),
@@ -245,7 +257,11 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.visibility_off_outlined, color: Color(0xff1e3a5f), size: 18),
+                        child: const Icon(
+                          Icons.visibility_off_outlined,
+                          color: Color(0xff1e3a5f),
+                          size: 18,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -264,7 +280,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                               "Your name won't be displayed",
                               style: GoogleFonts.lexend(
                                 fontSize: 12,
-                                color: const Color(0xff1e3a5f).withValues(alpha: 0.8),
+                                color: const Color(
+                                  0xff1e3a5f,
+                                ).withValues(alpha: 0.8),
                               ),
                             ),
                           ],
@@ -273,7 +291,8 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                       Switch.adaptive(
                         value: _isAnonymous,
                         activeColor: const Color(0xff2094f3),
-                        onChanged: (value) => setState(() => _isAnonymous = value),
+                        onChanged: (value) =>
+                            setState(() => _isAnonymous = value),
                       ),
                     ],
                   ),
@@ -293,7 +312,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                   padding: const EdgeInsets.fromLTRB(24, 25, 24, 32),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.9),
-                    border: const Border(top: BorderSide(color: Color(0xfff3f4f6))),
+                    border: const Border(
+                      top: BorderSide(color: Color(0xfff3f4f6)),
+                    ),
                   ),
                   child: Container(
                     width: double.infinity,
@@ -317,7 +338,8 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ReviewSubmittedScreen(),
+                              builder: (context) =>
+                                  const ReviewSubmittedScreen(),
                             ),
                           );
                         },

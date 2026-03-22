@@ -11,9 +11,11 @@ import 'package:umakstore/main.dart';
 import 'package:umakstore/onboarding_screen.dart';
 
 void main() {
-  testWidgets('App renders splash screen and navigates to onboarding', (WidgetTester tester) async {
+  testWidgets('App renders splash screen and navigates to onboarding', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
-    
+
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
 

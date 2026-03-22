@@ -22,7 +22,8 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   bool _isInstalled = false;
 
   // ⚠️ PASTE YOUR GITHUB RELEASE URL HERE!
-  final String _apkUrl = "https://github.com/ismemax/scamester_apk/releases/download/Test/ScamesterV.0.1.2.4a.apk"; 
+  final String _apkUrl =
+      "https://github.com/ismemax/scamester_apk/releases/download/Test/ScamesterV.0.1.2.4a.apk";
 
   Future<void> _downloadAndInstallApp() async {
     if (_isDownloading || _isInstalled) return;
@@ -56,19 +57,18 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
 
       // Trigger native installation
       final result = await OpenFilex.open(savePath);
-      
+
       if (result.type != ResultType.done && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Installation failed: ${result.message}')),
         );
         setState(() => _isInstalled = false);
       }
-
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error downloading app: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error downloading app: $e')));
       }
       setState(() {
         _isDownloading = false;
@@ -86,12 +86,20 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left_rounded, color: Color(0xff2094f3), size: 32),
+          icon: const Icon(
+            Icons.chevron_left_rounded,
+            color: Color(0xff2094f3),
+            size: 32,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_outlined, color: Color(0xff2094f3), size: 24),
+            icon: const Icon(
+              Icons.share_outlined,
+              color: Color(0xff2094f3),
+              size: 24,
+            ),
             onPressed: () {},
           ),
           const SizedBox(width: 8),
@@ -154,7 +162,11 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   const Icon(Icons.shield_rounded, color: Colors.white, size: 48),
+                  const Icon(
+                    Icons.shield_rounded,
+                    color: Colors.white,
+                    size: 48,
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     'SECURITY',
@@ -242,11 +254,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildStatDivider() {
-    return Container(
-      height: 24,
-      width: 1,
-      color: const Color(0xfff1f5f9),
-    );
+    return Container(height: 24, width: 1, color: const Color(0xfff1f5f9));
   }
 
   Widget _buildActionButtons() {
@@ -256,15 +264,23 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: _isDownloading || _isInstalled ? null : _downloadAndInstallApp,
+              onTap: _isDownloading || _isInstalled
+                  ? null
+                  : _downloadAndInstallApp,
               child: Container(
                 height: 54,
                 decoration: BoxDecoration(
-                  color: _isInstalled ? const Color(0xff4ade80) : const Color(0xff2094f3),
+                  color: _isInstalled
+                      ? const Color(0xff4ade80)
+                      : const Color(0xff2094f3),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: (_isInstalled ? const Color(0xff4ade80) : const Color(0xff2094f3)).withValues(alpha: 0.25),
+                      color:
+                          (_isInstalled
+                                  ? const Color(0xff4ade80)
+                                  : const Color(0xff2094f3))
+                              .withValues(alpha: 0.25),
                       blurRadius: 15,
                       offset: const Offset(0, 10),
                       spreadRadius: -3,
@@ -280,14 +296,16 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                           child: LinearProgressIndicator(
                             value: _downloadProgress,
                             backgroundColor: Colors.transparent,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.3)),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white.withValues(alpha: 0.3),
+                            ),
                           ),
                         ),
                       ),
                     Center(
                       child: Text(
-                        _isDownloading 
-                            ? '${(_downloadProgress * 100).toInt()}%' 
+                        _isDownloading
+                            ? '${(_downloadProgress * 100).toInt()}%'
                             : (_isInstalled ? 'Installed' : 'Install'),
                         style: GoogleFonts.lexend(
                           fontSize: 16,
@@ -309,7 +327,11 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
               color: const Color(0xff2094f3).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.bookmark_border_rounded, color: Color(0xff2094f3), size: 24),
+            child: const Icon(
+              Icons.bookmark_border_rounded,
+              color: Color(0xff2094f3),
+              size: 24,
+            ),
           ),
         ],
       ),
@@ -337,10 +359,9 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                     MaterialPageRoute(
-                      builder: (context) => const ScreenshotsScreen(
-                        appName: 'Scamester',
-                      ),
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const ScreenshotsScreen(appName: 'Scamester'),
                     ),
                   );
                 },
@@ -381,9 +402,8 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const ScreenshotsScreen(
-              appName: 'UMak Portal',
-            ),
+            builder: (context) =>
+                const ScreenshotsScreen(appName: 'UMak Portal'),
           ),
         );
       },
@@ -402,7 +422,10 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xff0a192f).withValues(alpha: 0.1), width: 4),
+                  border: Border.all(
+                    color: const Color(0xff0a192f).withValues(alpha: 0.1),
+                    width: 4,
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -410,9 +433,19 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                     Row(
                       children: [
                         const SizedBox(width: 8),
-                        const CircleAvatar(radius: 12, backgroundColor: Color(0xfff1f5f9)),
+                        const CircleAvatar(
+                          radius: 12,
+                          backgroundColor: Color(0xfff1f5f9),
+                        ),
                         const SizedBox(width: 8),
-                        Container(width: 40, height: 6, decoration: BoxDecoration(color: const Color(0xfff1f5f9), borderRadius: BorderRadius.circular(4))),
+                        Container(
+                          width: 40,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: const Color(0xfff1f5f9),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -466,9 +499,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AboutAppScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const AboutAppScreen()),
               );
             },
             child: Text(
@@ -596,7 +627,11 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.mode_edit_outline_outlined, color: Color(0xff0a192f), size: 18),
+                  const Icon(
+                    Icons.mode_edit_outline_outlined,
+                    color: Color(0xff0a192f),
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Write a Review',
@@ -675,7 +710,13 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
     );
   }
 
-  Widget _buildReviewCard(String user, String date, String title, String content, int rating) {
+  Widget _buildReviewCard(
+    String user,
+    String date,
+    String title,
+    String content,
+    int rating,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -720,7 +761,9 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 children: List.generate(5, (index) {
                   return Icon(
                     Icons.star_rounded,
-                    color: index < rating ? const Color(0xff0a192f) : const Color(0xffe2e8f0),
+                    color: index < rating
+                        ? const Color(0xff0a192f)
+                        : const Color(0xffe2e8f0),
                     size: 14,
                   );
                 }),
@@ -789,7 +832,11 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: Icon(Icons.code_rounded, color: Color(0xff2094f3), size: 24),
+                    child: Icon(
+                      Icons.code_rounded,
+                      color: Color(0xff2094f3),
+                      size: 24,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -815,7 +862,11 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: Color(0xff2094f3), size: 20),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xff2094f3),
+                  size: 20,
+                ),
               ],
             ),
           ),
@@ -852,10 +903,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
     return Center(
       child: Text(
         'Version 2.4.1 • Updated Oct 24, 2023',
-        style: GoogleFonts.lexend(
-          fontSize: 12,
-          color: const Color(0xff94a3b8),
-        ),
+        style: GoogleFonts.lexend(fontSize: 12, color: const Color(0xff94a3b8)),
       ),
     );
   }

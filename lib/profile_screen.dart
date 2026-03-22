@@ -45,7 +45,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('users').doc(_user.uid).snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(_user.uid)
+          .snapshots(),
       builder: (context, snapshot) {
         final userData = snapshot.data?.data();
         final firstName = userData?['firstName'] ?? '';
@@ -53,9 +56,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final studentId = userData?['studentId'] ?? 'ID: NOT SET';
         final college = userData?['college'] ?? 'College of Computer Science';
         final course = userData?['course'] ?? 'BS Application Development';
-        final name = (firstName.isEmpty && lastName.isEmpty) 
-          ? (_user.displayName ?? 'User Name') 
-          : '$firstName $lastName';
+        final name = (firstName.isEmpty && lastName.isEmpty)
+            ? (_user.displayName ?? 'User Name')
+            : '$firstName $lastName';
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -79,7 +82,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () async {
                             await Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const AccountSettingsScreen(),
+                              ),
                             );
                             _loadLocalPhoto();
                           },
@@ -91,7 +97,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const ManageAppsScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => const ManageAppsScreen(),
+                              ),
                             );
                           },
                         ),
@@ -103,7 +111,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const NotificationsScreen(),
+                              ),
                             );
                           },
                         ),
@@ -114,13 +125,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const BookmarksScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => const BookmarksScreen(),
+                              ),
                             );
                           },
                         ),
-                        _buildListItem(Icons.payments_outlined, 'Payments', hasBorder: false),
+                        _buildListItem(
+                          Icons.payments_outlined,
+                          'Payments',
+                          hasBorder: false,
+                        ),
                       ]),
-                      
+
                       const SizedBox(height: 24),
                       _buildSectionTitle('PREFERENCES'),
                       const SizedBox(height: 8),
@@ -132,7 +149,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => const SettingsScreen(),
+                              ),
                             );
                           },
                         ),
@@ -149,11 +168,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const HelpAndFeedbackScreen()),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const HelpAndFeedbackScreen(),
+                              ),
                             );
                           },
                         ),
-                        _buildListItem(Icons.info_outline_rounded, 'About', hasBorder: false),
+                        _buildListItem(
+                          Icons.info_outline_rounded,
+                          'About',
+                          hasBorder: false,
+                        ),
                       ]),
 
                       const SizedBox(height: 32),
@@ -181,17 +207,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeader(String name, String studentId, String college, String course, String? localPhotoPath) {
+  Widget _buildHeader(
+    String name,
+    String studentId,
+    String college,
+    String course,
+    String? localPhotoPath,
+  ) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xffdbeafe),
-            Colors.white,
-          ],
+          colors: [Color(0xffdbeafe), Colors.white],
           stops: [0.0, 1.0],
         ),
       ),
@@ -207,7 +236,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: const Color(0xffe2e8f0),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 4),
-                  image: (localPhotoPath != null && File(localPhotoPath).existsSync())
+                  image:
+                      (localPhotoPath != null &&
+                          File(localPhotoPath).existsSync())
                       ? DecorationImage(
                           image: FileImage(File(localPhotoPath)),
                           fit: BoxFit.cover,
@@ -221,9 +252,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
-                child: (localPhotoPath == null || !File(localPhotoPath).existsSync())
+                child:
+                    (localPhotoPath == null ||
+                        !File(localPhotoPath).existsSync())
                     ? const ClipOval(
-                        child: Icon(Icons.person, size: 60, color: Color(0xff94a3b8)),
+                        child: Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Color(0xff94a3b8),
+                        ),
                       )
                     : null,
               ),
@@ -246,7 +283,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   child: const Center(
-                    child: Icon(Icons.camera_alt_outlined, size: 18, color: Color(0xff2094f3)),
+                    child: Icon(
+                      Icons.camera_alt_outlined,
+                      size: 18,
+                      color: Color(0xff2094f3),
+                    ),
                   ),
                 ),
               ),
@@ -277,7 +318,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(
               color: const Color(0xff0f172a).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(9999),
-              border: Border.all(color: const Color(0xff0f172a).withValues(alpha: 0.1)),
+              border: Border.all(
+                color: const Color(0xff0f172a).withValues(alpha: 0.1),
+              ),
             ),
             child: Text(
               college,
@@ -332,17 +375,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
-  Widget _buildListItem(IconData icon, String title, {bool hasBorder = false, bool hasRedDot = false, VoidCallback? onTap}) {
+  Widget _buildListItem(
+    IconData icon,
+    String title, {
+    bool hasBorder = false,
+    bool hasRedDot = false,
+    VoidCallback? onTap,
+  }) {
     return Container(
       decoration: BoxDecoration(
         border: hasBorder
-            ? const Border(bottom: BorderSide(color: Color(0xfff1f5f9), width: 1))
+            ? const Border(
+                bottom: BorderSide(color: Color(0xfff1f5f9), width: 1),
+              )
             : null,
       ),
       child: InkWell(
@@ -392,7 +441,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     shape: BoxShape.circle,
                   ),
                 ),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xff94a3b8), size: 20),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xff94a3b8),
+                size: 20,
+              ),
             ],
           ),
         ),
@@ -421,7 +474,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.logout_rounded, color: Color(0xff991b1b), size: 20),
+            const Icon(
+              Icons.logout_rounded,
+              color: Color(0xff991b1b),
+              size: 20,
+            ),
             const SizedBox(width: 8),
             Text(
               'Sign Out',

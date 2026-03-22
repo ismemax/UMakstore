@@ -16,8 +16,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   late final TextEditingController _studentIdController;
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _middleInitialController = TextEditingController();
-  
+  final TextEditingController _middleInitialController =
+      TextEditingController();
+
   String? _selectedCollege;
   String? _selectedCourse;
 
@@ -77,7 +78,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           children: [
             // Progress Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 children: [
                   _buildProgressBar(true),
@@ -90,7 +94,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 ],
               ),
             ),
-            
+
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -110,7 +114,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Subtitle
                       Text(
                         'Please provide your details exactly as they\nappear in your official school records.',
@@ -121,7 +125,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         ),
                       ),
                       const SizedBox(height: 48),
-                      
+
                       // Student ID (Locked/Read-only)
                       _buildLabel('Student ID'),
                       Container(
@@ -154,39 +158,41 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Last Name
                       _buildLabel('Last Name'),
                       _buildTextField(_lastNameController, 'e.g. Dela Cruz'),
                       const SizedBox(height: 20),
-                      
+
                       // First Name
                       _buildLabel('First Name'),
                       _buildTextField(_firstNameController, 'e.g. Juan'),
                       const SizedBox(height: 20),
-                      
+
                       // Middle Initial
                       _buildLabel('Middle Initial'),
                       _buildTextField(_middleInitialController, 'e.g. A'),
                       const SizedBox(height: 20),
-                      
+
                       // College
                       _buildLabel('College'),
                       _buildDropdown(
                         hint: 'Select your college',
                         value: _selectedCollege,
                         items: _colleges,
-                        onChanged: (val) => setState(() => _selectedCollege = val),
+                        onChanged: (val) =>
+                            setState(() => _selectedCollege = val),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Course
                       _buildLabel('Course'),
                       _buildDropdown(
                         hint: 'Select your course',
                         value: _selectedCourse,
                         items: _courses,
-                        onChanged: (val) => setState(() => _selectedCourse = val),
+                        onChanged: (val) =>
+                            setState(() => _selectedCourse = val),
                       ),
                       const SizedBox(height: 48),
                     ],
@@ -194,15 +200,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 ),
               ),
             ),
-            
+
             // Bottom Button
             Container(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.95),
-                border: const Border(
-                  top: BorderSide(color: Color(0xfff1f5f9)),
-                ),
+                border: const Border(top: BorderSide(color: Color(0xfff1f5f9))),
               ),
               child: SizedBox(
                 width: double.infinity,
@@ -331,9 +335,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           color: const Color(0xff0f172a),
         ),
       ),
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xff64748b)),
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: Color(0xff64748b),
+      ),
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 15,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xff003366)),

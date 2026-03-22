@@ -21,9 +21,9 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
       }
     }
   }
@@ -59,7 +59,7 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Header title & close button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -78,7 +78,11 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.close_rounded, color: Color(0xff94a3b8), size: 20),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: Color(0xff94a3b8),
+                    size: 20,
+                  ),
                 ),
               ),
             ],
@@ -108,10 +112,7 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Divider
-          Container(
-            height: 1,
-            color: const Color(0xfff3f4f6),
-          ),
+          Container(height: 1, color: const Color(0xfff3f4f6)),
           const SizedBox(height: 8),
 
           // Remove Action
@@ -126,7 +127,11 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.delete_outline_rounded, color: Color(0xffdc2626), size: 20),
+                  const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Color(0xffdc2626),
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Remove Current Photo',
@@ -164,7 +169,7 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
               color: Color(0x0D000000),
               blurRadius: 2,
               offset: Offset(0, 1),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -181,7 +186,7 @@ class ProfilePhotoBottomSheet extends StatelessWidget {
                     color: Color(0x0D000000),
                     blurRadius: 2,
                     offset: Offset(0, 1),
-                  )
+                  ),
                 ],
               ),
               child: Center(

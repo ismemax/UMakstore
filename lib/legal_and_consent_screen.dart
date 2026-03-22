@@ -61,7 +61,10 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
           children: [
             // Progress Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 children: [
                   _buildProgressBar(true),
@@ -76,7 +79,7 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                 ],
               ),
             ),
-            
+
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -94,7 +97,7 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Subtitle
                     Text(
                       'Please review and accept our policies to\ncomplete your registration.',
@@ -105,7 +108,7 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Terms of Service Checkbox Box
                     _buildCheckboxCard(
                       value: _termsAccepted,
@@ -126,22 +129,25 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                           children: [
                             const TextSpan(text: 'I agree to the '),
                             TextSpan(
-                              recognizer: TapGestureRecognizer()..onTap = () async {
-                                final accepted = await showModalBottomSheet<bool>(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) => const FractionallySizedBox(
-                                    heightFactor: 0.9,
-                                    child: TermsOfServiceSheet(),
-                                  ),
-                                );
-                                if (accepted == true) {
-                                  setState(() {
-                                    _termsAccepted = true;
-                                  });
-                                }
-                              },
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () async {
+                                  final accepted =
+                                      await showModalBottomSheet<bool>(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) =>
+                                            const FractionallySizedBox(
+                                              heightFactor: 0.9,
+                                              child: TermsOfServiceSheet(),
+                                            ),
+                                      );
+                                  if (accepted == true) {
+                                    setState(() {
+                                      _termsAccepted = true;
+                                    });
+                                  }
+                                },
                               text: 'Terms of Service',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w500,
@@ -151,29 +157,32 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                             ),
                             const TextSpan(text: ' and\n'),
                             TextSpan(
-                              recognizer: TapGestureRecognizer()..onTap = () async {
-                                final accepted = await showModalBottomSheet<bool>(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) => const FractionallySizedBox(
-                                    heightFactor: 0.9,
-                                    child: PrivacyPolicySheet(),
-                                  ),
-                                );
-                                if (accepted == true) {
-                                  setState(() {
-                                    // Normally you might want a separate checkbox, but since
-                                    // the design lumps them together, accepting the privacy policy
-                                    // can also check the main terms box if it isn't already, or 
-                                    // it could just be informational. Let's just check the box
-                                    // if both sheets were accepted, or simply checking this box is 
-                                    // indicating agreement to both. Let's set it to true here as well
-                                    // as a convenience.
-                                    _termsAccepted = true;
-                                  });
-                                }
-                              },
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () async {
+                                  final accepted =
+                                      await showModalBottomSheet<bool>(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) =>
+                                            const FractionallySizedBox(
+                                              heightFactor: 0.9,
+                                              child: PrivacyPolicySheet(),
+                                            ),
+                                      );
+                                  if (accepted == true) {
+                                    setState(() {
+                                      // Normally you might want a separate checkbox, but since
+                                      // the design lumps them together, accepting the privacy policy
+                                      // can also check the main terms box if it isn't already, or
+                                      // it could just be informational. Let's just check the box
+                                      // if both sheets were accepted, or simply checking this box is
+                                      // indicating agreement to both. Let's set it to true here as well
+                                      // as a convenience.
+                                      _termsAccepted = true;
+                                    });
+                                  }
+                                },
                               text: 'Privacy Policy',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w500,
@@ -181,7 +190,10 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                                 decoration: TextDecoration.underline,
                               ),
                             ),
-                            const TextSpan(text: '. This includes\npermission to process my personal\ndata for account management.'),
+                            const TextSpan(
+                              text:
+                                  '. This includes\npermission to process my personal\ndata for account management.',
+                            ),
                           ],
                         ),
                       ),
@@ -249,15 +261,13 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                 ),
               ),
             ),
-            
+
             // Bottom Button Section
             Container(
               padding: const EdgeInsets.fromLTRB(24, 17, 24, 24),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                border: Border(
-                  top: BorderSide(color: Color(0xffe2e8f0)),
-                ),
+                border: Border(top: BorderSide(color: Color(0xffe2e8f0))),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -266,7 +276,9 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: (_termsAccepted && !_isLoading) ? _handleFinalRegistration : null,
+                      onPressed: (_termsAccepted && !_isLoading)
+                          ? _handleFinalRegistration
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff0f172a),
                         foregroundColor: Colors.white,
@@ -379,7 +391,10 @@ class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
                   if (isOptional) ...[
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xfff1f5f9),
                         borderRadius: BorderRadius.circular(4),

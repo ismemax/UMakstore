@@ -9,9 +9,7 @@ class SignOutDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: Container(
@@ -47,7 +45,7 @@ class SignOutDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Title
             render_text(
               'Sign out?',
@@ -56,7 +54,7 @@ class SignOutDialog extends StatelessWidget {
               color: const Color(0xff0a1929),
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             Text(
               "You'll need to sign in again to access the app store.",
@@ -68,7 +66,7 @@ class SignOutDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Sign Out Button
             SizedBox(
               width: double.infinity,
@@ -101,7 +99,7 @@ class SignOutDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Cancel Button
             SizedBox(
               width: double.infinity,
@@ -129,7 +127,12 @@ class SignOutDialog extends StatelessWidget {
     );
   }
 
-  Widget render_text(String text, {required double fontSize, required FontWeight fontWeight, required Color color}) {
+  Widget render_text(
+    String text, {
+    required double fontSize,
+    required FontWeight fontWeight,
+    required Color color,
+  }) {
     return Text(
       text,
       textAlign: TextAlign.center,

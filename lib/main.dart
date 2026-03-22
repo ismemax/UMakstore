@@ -30,7 +30,9 @@ class _MyAppState extends State<MyApp> {
         if (snapshot.hasError) {
           return MaterialApp(
             home: Scaffold(
-              body: Center(child: Text('Error initializing Firebase: ${snapshot.error}')),
+              body: Center(
+                child: Text('Error initializing Firebase: ${snapshot.error}'),
+              ),
             ),
           );
         }
@@ -40,7 +42,9 @@ class _MyAppState extends State<MyApp> {
             title: 'UMak App Store',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff0a192f)),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xff0a192f),
+              ),
               useMaterial3: true,
             ),
             home: const AuthGate(),
@@ -48,9 +52,7 @@ class _MyAppState extends State<MyApp> {
         }
 
         return const MaterialApp(
-          home: Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          ),
+          home: Scaffold(body: Center(child: CircularProgressIndicator())),
         );
       },
     );

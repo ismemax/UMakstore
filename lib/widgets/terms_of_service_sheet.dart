@@ -36,7 +36,7 @@ class _TermsOfServiceSheetState extends State<TermsOfServiceSheet> {
               ),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 17),
@@ -69,7 +69,11 @@ class _TermsOfServiceSheetState extends State<TermsOfServiceSheet> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close, color: Color(0xff0f172a), size: 24),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Color(0xff0f172a),
+                    size: 24,
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -95,46 +99,54 @@ class _TermsOfServiceSheetState extends State<TermsOfServiceSheet> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  
+
                   _buildSection(
                     number: '1',
                     title: 'Acceptance of Terms',
-                    content: 'By accessing or using the Service you agree to be\nbound by these Terms. If you disagree with any\npart of the terms then you may not access the\nService. Your access to and use of the Service is\nconditioned on your acceptance of and\ncompliance with these Terms. These Terms apply\nto all visitors, users and others who access or use\nthe Service.',
+                    content:
+                        'By accessing or using the Service you agree to be\nbound by these Terms. If you disagree with any\npart of the terms then you may not access the\nService. Your access to and use of the Service is\nconditioned on your acceptance of and\ncompliance with these Terms. These Terms apply\nto all visitors, users and others who access or use\nthe Service.',
                   ),
                   const SizedBox(height: 32),
-                  
+
                   _buildSection(
                     number: '2',
                     title: 'User Eligibility',
-                    content: 'The Service is not intended for users under the\nage of 13. By using the Service, you represent and\nwarrant that you meet all of the foregoing\neligibility requirements. If you do not meet all of\nthese requirements, you must not access or use\nthe Service. We reserve the right to refuse\nservice, terminate accounts, remove or edit\ncontent, or cancel orders in our sole discretion.',
+                    content:
+                        'The Service is not intended for users under the\nage of 13. By using the Service, you represent and\nwarrant that you meet all of the foregoing\neligibility requirements. If you do not meet all of\nthese requirements, you must not access or use\nthe Service. We reserve the right to refuse\nservice, terminate accounts, remove or edit\ncontent, or cancel orders in our sole discretion.',
                   ),
                   const SizedBox(height: 32),
 
                   _buildSection(
                     number: '3',
                     title: 'Data Privacy & Security',
-                    content: 'Your privacy is critical to us. We collect certain\ninformation about you and your device when you\nuse the UMak App Store. This may include:\n\n• Device identifiers and usage data to improve\n  app stability.\n• Account information provided during\n  registration.\n• Installed application history for compatibility\n  checks.\n\nWe implement industry-standard security\nmeasures to protect your data. However, no\nmethod of transmission over the Internet is 100%\nsecure.',
+                    content:
+                        'Your privacy is critical to us. We collect certain\ninformation about you and your device when you\nuse the UMak App Store. This may include:\n\n• Device identifiers and usage data to improve\n  app stability.\n• Account information provided during\n  registration.\n• Installed application history for compatibility\n  checks.\n\nWe implement industry-standard security\nmeasures to protect your data. However, no\nmethod of transmission over the Internet is 100%\nsecure.',
                   ),
                   const SizedBox(height: 32),
-                  
+
                   _buildSection(
                     number: '4',
                     title: 'Content Guidelines',
-                    content: 'Users are responsible for any content they upload\nor post to the UMak App Store. You agree not to\npost content that:\n\n• Is illegal, threatening, or defamatory.\n• Infringes on the intellectual property rights of\n  others.\n• Contains malware, viruses, or harmful code.',
+                    content:
+                        'Users are responsible for any content they upload\nor post to the UMak App Store. You agree not to\npost content that:\n\n• Is illegal, threatening, or defamatory.\n• Infringes on the intellectual property rights of\n  others.\n• Contains malware, viruses, or harmful code.',
                   ),
                   const SizedBox(height: 32),
-                  
+
                   _buildSection(
                     number: '5',
                     title: 'Termination',
-                    content: 'We may terminate or suspend access to our\nService immediately, without prior notice or\nliability, for any reason whatsoever, including\nwithout limitation if you breach the Terms. All\nprovisions of the Terms which by their nature\nshould survive termination shall survive\ntermination.',
+                    content:
+                        'We may terminate or suspend access to our\nService immediately, without prior notice or\nliability, for any reason whatsoever, including\nwithout limitation if you breach the Terms. All\nprovisions of the Terms which by their nature\nshould survive termination shall survive\ntermination.',
                   ),
-                  
+
                   const SizedBox(height: 32),
                   Center(
                     child: Column(
                       children: [
-                        const Icon(Icons.water_drop, color: Color(0xff94a3b8)), // Placeholder symbol
+                        const Icon(
+                          Icons.water_drop,
+                          color: Color(0xff94a3b8),
+                        ), // Placeholder symbol
                         const SizedBox(height: 8),
                         Text(
                           'End of Document',
@@ -157,9 +169,7 @@ class _TermsOfServiceSheetState extends State<TermsOfServiceSheet> {
             padding: const EdgeInsets.fromLTRB(24, 25, 24, 40),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.95),
-              border: const Border(
-                top: BorderSide(color: Color(0xccf1f5f9)),
-              ),
+              border: const Border(top: BorderSide(color: Color(0xccf1f5f9))),
             ),
             child: Column(
               children: [
@@ -277,7 +287,11 @@ class _TermsOfServiceSheetState extends State<TermsOfServiceSheet> {
     );
   }
 
-  Widget _buildSection({required String number, required String title, required String content}) {
+  Widget _buildSection({
+    required String number,
+    required String title,
+    required String content,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

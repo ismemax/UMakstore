@@ -5,10 +5,7 @@ import 'confirm_reset_password_screen.dart';
 class ResetLinkSentScreen extends StatelessWidget {
   final String email;
 
-  const ResetLinkSentScreen({
-    super.key,
-    this.email = 'user@umak.edu.ph',
-  });
+  const ResetLinkSentScreen({super.key, this.email = 'user@umak.edu.ph'});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +15,11 @@ class ResetLinkSentScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xff0a1825), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xff0a1825),
+            size: 20,
+          ),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -90,7 +91,9 @@ class ResetLinkSentScreen extends StatelessWidget {
                             const Icon(
                               Icons.mail_outline_rounded,
                               size: 72,
-                              color: Color(0xff0a1825), // Dark color for the envelope
+                              color: Color(
+                                0xff0a1825,
+                              ), // Dark color for the envelope
                             ),
                             // Top Right Blue Dot
                             Positioned(
@@ -173,7 +176,10 @@ class ResetLinkSentScreen extends StatelessWidget {
                       const SizedBox(height: 24),
                       // Email Pill
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xfff3f4f6),
                           borderRadius: BorderRadius.circular(12),
@@ -193,7 +199,7 @@ class ResetLinkSentScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Bottom Action Buttons
               Column(
                 children: [
@@ -230,7 +236,8 @@ class ResetLinkSentScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => ConfirmResetPasswordScreen(email: email),
+                            builder: (_) =>
+                                ConfirmResetPasswordScreen(email: email),
                           ),
                         );
                       },
@@ -260,10 +267,15 @@ class ResetLinkSentScreen extends StatelessWidget {
                       onPressed: () {
                         // Back to sign in logic
                         // Pop back to the LoginScreen
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.of(
+                          context,
+                        ).popUntil((route) => route.isFirst);
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xff0f2438), width: 2),
+                        side: const BorderSide(
+                          color: Color(0xff0f2438),
+                          width: 2,
+                        ),
                         foregroundColor: const Color(0xff0f2438),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

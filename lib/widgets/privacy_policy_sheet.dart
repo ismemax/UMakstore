@@ -36,7 +36,7 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
               ),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 17),
@@ -84,18 +84,20 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  
+
                   _buildSection(
                     icon: Icons.fingerprint,
                     title: '1. Information We Collect',
-                    content: 'To provide a seamless academic experience, we\ncollect specific data points directly linked to your\nstudent profile:\n\n• **Academic Identity:** Student ID number, full\n  name, enrolled course, year level, and section.\n• **Contact Details:** University email address\n  (@umak.edu.ph) and registered mobile\n  number.\n• **Device Information:** Device model, OS\n  version, and unique identifiers for security\n  authentication.',
+                    content:
+                        'To provide a seamless academic experience, we\ncollect specific data points directly linked to your\nstudent profile:\n\n• **Academic Identity:** Student ID number, full\n  name, enrolled course, year level, and section.\n• **Contact Details:** University email address\n  (@umak.edu.ph) and registered mobile\n  number.\n• **Device Information:** Device model, OS\n  version, and unique identifiers for security\n  authentication.',
                   ),
                   const SizedBox(height: 32),
-                  
+
                   _buildSection(
                     icon: Icons.pie_chart_outline,
                     title: '2. How We Use Your Data',
-                    content: 'Your data is utilized strictly for academic and\nadministrative purposes within the university\necosystem:',
+                    content:
+                        'Your data is utilized strictly for academic and\nadministrative purposes within the university\necosystem:',
                   ),
                   const SizedBox(height: 16),
                   Container(
@@ -169,12 +171,16 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
                   _buildSection(
                     icon: Icons.share_outlined,
                     title: '3. Third-Party Services',
-                    content: 'We may employ third-party companies and\nindividuals due to the following reasons:\n\n✓ To facilitate our Service;\n✓ To provide the Service on our behalf;\n✓ To perform Service-related services; or',
+                    content:
+                        'We may employ third-party companies and\nindividuals due to the following reasons:\n\n✓ To facilitate our Service;\n✓ To provide the Service on our behalf;\n✓ To perform Service-related services; or',
                   ),
                   const SizedBox(height: 16),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 17.6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 13,
+                      vertical: 17.6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xffeff6ff),
                       border: Border.all(color: const Color(0xffdbeafe)),
@@ -193,7 +199,8 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           TextSpan(
-                            text: 'We do not sell your personal data to\nadvertisers. External sharing is limited strictly to\nacademic partners authorized by the University\nRegistrar.',
+                            text:
+                                'We do not sell your personal data to\nadvertisers. External sharing is limited strictly to\nacademic partners authorized by the University\nRegistrar.',
                             style: TextStyle(fontWeight: FontWeight.w400),
                           ),
                         ],
@@ -206,9 +213,10 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
                   _buildSection(
                     icon: Icons.shield_outlined,
                     title: '4. Data Retention',
-                    content: 'We will retain your personal information only for\nas long as is necessary for the purposes set out in\nthis Privacy Policy. We will retain and use your\ninformation to the extent necessary to comply\nwith our legal obligations.',
+                    content:
+                        'We will retain your personal information only for\nas long as is necessary for the purposes set out in\nthis Privacy Policy. We will retain and use your\ninformation to the extent necessary to comply\nwith our legal obligations.',
                   ),
-                  
+
                   const SizedBox(height: 128), // Padding equivalent
                 ],
               ),
@@ -220,9 +228,7 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
             padding: const EdgeInsets.fromLTRB(16, 17, 16, 48),
             decoration: const BoxDecoration(
               color: Colors.white,
-              border: Border(
-                top: BorderSide(color: Color(0xfff3f4f6)),
-              ),
+              border: Border(top: BorderSide(color: Color(0xfff3f4f6))),
             ),
             child: Column(
               children: [
@@ -300,27 +306,36 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
     );
   }
 
-  Widget _buildSection({required IconData icon, required String title, required String content}) {
+  Widget _buildSection({
+    required IconData icon,
+    required String title,
+    required String content,
+  }) {
     List<TextSpan> parseContent(String text) {
       final spans = <TextSpan>[];
       final regex = RegExp(r'\*\*([^*]+)\*\*'); // Match text between **
       int currentIndex = 0;
-      
+
       for (final match in regex.allMatches(text)) {
         if (match.start > currentIndex) {
           spans.add(TextSpan(text: text.substring(currentIndex, match.start)));
         }
-        spans.add(TextSpan(
-          text: match.group(1),
-          style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xff0f172a)),
-        ));
+        spans.add(
+          TextSpan(
+            text: match.group(1),
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Color(0xff0f172a),
+            ),
+          ),
+        );
         currentIndex = match.end;
       }
-      
+
       if (currentIndex < text.length) {
         spans.add(TextSpan(text: text.substring(currentIndex)));
       }
-      
+
       return spans;
     }
 
@@ -347,10 +362,10 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
         RichText(
           text: TextSpan(
             style: GoogleFonts.lexend(
-               fontSize: 14,
-               fontWeight: FontWeight.w400,
-               color: const Color(0xff374151),
-               height: 1.625,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xff374151),
+              height: 1.625,
             ),
             children: parseContent(content),
           ),

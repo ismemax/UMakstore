@@ -57,9 +57,9 @@ class _AccountSetupScreenState extends State<AccountSetupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to set up account: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to set up account: $e')));
         Navigator.of(context).pop(); // Go back to legal screen to retry
       }
     }

@@ -28,10 +28,7 @@ class NotificationsScreen extends StatelessWidget {
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: const Color(0xfff3f4f6),
-            height: 1.0,
-          ),
+          child: Container(color: const Color(0xfff3f4f6), height: 1.0),
         ),
       ),
       body: ListView(
@@ -41,7 +38,8 @@ class NotificationsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _buildNotificationCard(
             title: 'Welcome to UMak App Store!',
-            description: 'Your account has been successfully created. Explore the apps now.',
+            description:
+                'Your account has been successfully created. Explore the apps now.',
             timeAgo: '2h ago',
             iconData: Icons.celebration_rounded,
             iconColor: const Color(0xff2094f3),
@@ -51,20 +49,22 @@ class NotificationsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _buildNotificationCard(
             title: 'Security Update',
-            description: 'Your password was successfully updated via OTP verification.',
+            description:
+                'Your password was successfully updated via OTP verification.',
             timeAgo: '5h ago',
             iconData: Icons.shield_rounded,
             iconColor: const Color(0xff10b981),
             iconBgColor: const Color(0xff10b981).withValues(alpha: 0.1),
             isUnread: false,
           ),
-          
+
           const SizedBox(height: 32),
           _buildDateHeader('Yesterday'),
           const SizedBox(height: 12),
           _buildNotificationCard(
             title: 'System Maintenance',
-            description: 'The portal will be down for maintenance from 12 AM to 4 AM on Sunday.',
+            description:
+                'The portal will be down for maintenance from 12 AM to 4 AM on Sunday.',
             timeAgo: '1d ago',
             iconData: Icons.construction_rounded,
             iconColor: const Color(0xfffb923c),
@@ -74,7 +74,8 @@ class NotificationsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _buildNotificationCard(
             title: 'Campus Map Updated',
-            description: 'Version 5.0.2 is now available with new offline support paths.',
+            description:
+                'Version 5.0.2 is now available with new offline support paths.',
             timeAgo: '1d ago',
             iconData: Icons.map_rounded,
             iconColor: const Color(0xff8b5cf6),
@@ -137,9 +138,7 @@ class NotificationsScreen extends StatelessWidget {
               color: iconBgColor,
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: Icon(iconData, color: iconColor, size: 24),
-            ),
+            child: Center(child: Icon(iconData, color: iconColor, size: 24)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -154,7 +153,9 @@ class NotificationsScreen extends StatelessWidget {
                         title,
                         style: GoogleFonts.lexend(
                           fontSize: 14,
-                          fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                          fontWeight: isUnread
+                              ? FontWeight.bold
+                              : FontWeight.w600,
                           color: const Color(0xff1a3b5d),
                         ),
                       ),

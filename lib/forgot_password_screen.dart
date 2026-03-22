@@ -87,7 +87,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   ),
                                   child: const Center(
                                     child: Icon(
-                                      Icons.restore_page_outlined, // Fallback icon
+                                      Icons
+                                          .restore_page_outlined, // Fallback icon
                                       color: Color(0xff0a192f),
                                       size: 26,
                                     ),
@@ -159,20 +160,32 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               fontWeight: FontWeight.w300,
                               color: const Color(0xff9ca3af),
                             ),
-                            prefixIcon: const Icon(Icons.mail_outline, color: Color(0xff6b7280)),
+                            prefixIcon: const Icon(
+                              Icons.mail_outline,
+                              color: Color(0xff6b7280),
+                            ),
                             floatingLabelBehavior: FloatingLabelBehavior.always,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xffd1d5db)),
+                              borderSide: const BorderSide(
+                                color: Color(0xffd1d5db),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xff2094f3)),
+                              borderSide: const BorderSide(
+                                color: Color(0xff2094f3),
+                              ),
                             ),
                             disabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xffe5e7eb)),
+                              borderSide: const BorderSide(
+                                color: Color(0xffe5e7eb),
+                              ),
                             ),
                           ),
                         ),
@@ -201,16 +214,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 color: const Color(0xff9ca3af),
                                 letterSpacing: 4,
                               ),
-                              prefixIcon: const Icon(Icons.lock_open_outlined, color: Color(0xff6b7280)),
-                              floatingLabelBehavior: FloatingLabelBehavior.always,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              prefixIcon: const Icon(
+                                Icons.lock_open_outlined,
+                                color: Color(0xff6b7280),
+                              ),
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xffd1d5db)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xffd1d5db),
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xff2094f3)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xff2094f3),
+                                ),
                               ),
                             ),
                           ),
@@ -218,10 +242,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: _isLoading ? null : () {
-                                setState(() => _isCodeSent = false);
-                                _codeController.clear();
-                              },
+                              onPressed: _isLoading
+                                  ? null
+                                  : () {
+                                      setState(() => _isCodeSent = false);
+                                      _codeController.clear();
+                                    },
                               child: Text(
                                 'Change Email',
                                 style: GoogleFonts.lexend(
@@ -239,76 +265,109 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : () async {
-                              final email = _idEmailController.text;
-                              if (email.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Please enter your email')),
-                                );
-                                return;
-                              }
-
-                              if (!_isCodeSent) {
-                                // STEP 1: SEND CODE
-                                setState(() => _isLoading = true);
-                                try {
-                                  // Use the standard OTP sender
-                                  await AuthService().sendVerificationCode(email);
-                                  if (mounted) {
-                                    setState(() {
-                                      _isCodeSent = true;
-                                      _isLoading = false;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Verification code sent!')),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (mounted) {
-                                    setState(() => _isLoading = false);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Error: $e')),
-                                    );
-                                  }
-                                }
-                              } else {
-                                // STEP 2: VERIFY AND PROCEED
-                                final code = _codeController.text;
-                                if (code.length < 6) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please enter the 6-digit code')),
-                                  );
-                                  return;
-                                }
-
-                                setState(() => _isLoading = true);
-                                try {
-                                  await AuthService().confirmUser(
-                                    email: email,
-                                    confirmationCode: code,
-                                  );
-                                  if (mounted) {
-                                    // Success! Now go to the Reset Password Screen
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => ConfirmResetPasswordScreen(
-                                          email: email,
-                                          code: code,
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    final email = _idEmailController.text;
+                                    if (email.isEmpty) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Please enter your email',
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Verification failed: $e')),
-                                    );
-                                  }
-                                } finally {
-                                  if (mounted) setState(() => _isLoading = false);
-                                }
-                              }
-                            },
+                                      );
+                                      return;
+                                    }
+
+                                    if (!_isCodeSent) {
+                                      // STEP 1: SEND CODE
+                                      setState(() => _isLoading = true);
+                                      try {
+                                        // Use the standard OTP sender
+                                        await AuthService()
+                                            .sendVerificationCode(email);
+                                        if (mounted) {
+                                          setState(() {
+                                            _isCodeSent = true;
+                                            _isLoading = false;
+                                          });
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Verification code sent!',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (mounted) {
+                                          setState(() => _isLoading = false);
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Error: $e'),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    } else {
+                                      // STEP 2: VERIFY AND PROCEED
+                                      final code = _codeController.text;
+                                      if (code.length < 6) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Please enter the 6-digit code',
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      setState(() => _isLoading = true);
+                                      try {
+                                        await AuthService().confirmUser(
+                                          email: email,
+                                          confirmationCode: code,
+                                        );
+                                        if (mounted) {
+                                          // Success! Now go to the Reset Password Screen
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  ConfirmResetPasswordScreen(
+                                                    email: email,
+                                                    code: code,
+                                                  ),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Verification failed: $e',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        if (mounted)
+                                          setState(() => _isLoading = false);
+                                      }
+                                    }
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xff2094f3),
                               foregroundColor: Colors.white,
@@ -322,10 +381,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 ? const SizedBox(
                                     height: 20,
                                     width: 20,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : Text(
-                                    _isCodeSent ? 'Verify & Continue' : 'Send Recovery Code',
+                                    _isCodeSent
+                                        ? 'Verify & Continue'
+                                        : 'Send Recovery Code',
                                     style: GoogleFonts.lexend(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w400,

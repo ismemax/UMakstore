@@ -16,7 +16,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   final _firstNameController = TextEditingController();
   final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  
+
   String? _selectedCollege;
   String? _selectedCourse;
   String? _localPhotoPath;
@@ -64,9 +64,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading profile: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -90,9 +90,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving changes: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving changes: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -135,10 +135,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: const Color(0xfff3f4f6),
-            height: 1.0,
-          ),
+          child: Container(color: const Color(0xfff3f4f6), height: 1.0),
         ),
       ),
       body: SingleChildScrollView(
@@ -168,7 +165,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     } else if (result is File) {
                       setState(() => _isSaving = true);
                       // Save locally instead of Firebase
-                      final newPath = await AuthService().saveProfilePhotoLocally(result);
+                      final newPath = await AuthService()
+                          .saveProfilePhotoLocally(result);
                       setState(() {
                         _localPhotoPath = newPath;
                         _isSaving = false;
@@ -184,10 +182,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                             width: 128,
                             height: 128,
                             decoration: BoxDecoration(
-                              color: const Color(0xfffad9c1), 
+                              color: const Color(0xfffad9c1),
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 4),
-                              image: (_localPhotoPath != null && File(_localPhotoPath!).existsSync())
+                              image:
+                                  (_localPhotoPath != null &&
+                                      File(_localPhotoPath!).existsSync())
                                   ? DecorationImage(
                                       image: FileImage(File(_localPhotoPath!)),
                                       fit: BoxFit.cover,
@@ -201,9 +201,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                                 ),
                               ],
                             ),
-                            child: (_localPhotoPath == null || !File(_localPhotoPath!).existsSync())
+                            child:
+                                (_localPhotoPath == null ||
+                                    !File(_localPhotoPath!).existsSync())
                                 ? const Center(
-                                    child: Icon(Icons.person, size: 80, color: Colors.white),
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: Colors.white,
+                                    ),
                                   )
                                 : null,
                           ),
@@ -215,7 +221,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                               decoration: BoxDecoration(
                                 color: const Color(0xff2094f3),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                                 boxShadow: const [
                                   BoxShadow(
                                     color: Color(0x1A000000),
@@ -224,7 +233,11 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                                   ),
                                 ],
                               ),
-                              child: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 16),
+                              child: const Icon(
+                                Icons.camera_alt_outlined,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
                         ],
@@ -243,7 +256,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              
+
               Padding(
                 padding: const EdgeInsets.only(left: 4.0, bottom: 16.0),
                 child: Text(
@@ -256,19 +269,29 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   ),
                 ),
               ),
-              
+
               _buildEditableField('First Name', _firstNameController),
               const SizedBox(height: 16),
               _buildEditableField('Middle Initial', _middleNameController),
               const SizedBox(height: 16),
               _buildEditableField('Last Name', _lastNameController),
               const SizedBox(height: 16),
-              _buildDropdownField('College', _selectedCollege, _colleges, (val) => setState(() => _selectedCollege = val)),
+              _buildDropdownField(
+                'College',
+                _selectedCollege,
+                _colleges,
+                (val) => setState(() => _selectedCollege = val),
+              ),
               const SizedBox(height: 16),
-              _buildDropdownField('Course', _selectedCourse, _courses, (val) => setState(() => _selectedCourse = val)),
-              
+              _buildDropdownField(
+                'Course',
+                _selectedCourse,
+                _courses,
+                (val) => setState(() => _selectedCourse = val),
+              ),
+
               const SizedBox(height: 40),
-              
+
               // SECURITY Section
               Padding(
                 padding: const EdgeInsets.only(left: 4.0, bottom: 16.0),
@@ -295,7 +318,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const ChangePasswordScreen(),
+                        ),
                       );
                     },
                     child: Padding(
@@ -315,7 +340,11 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                                 ),
                               ],
                             ),
-                            child: const Icon(Icons.restore_rounded, color: Color(0xff1a3b5d), size: 20),
+                            child: const Icon(
+                              Icons.restore_rounded,
+                              color: Color(0xff1a3b5d),
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -328,16 +357,20 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                               ),
                             ),
                           ),
-                          const Icon(Icons.chevron_right_rounded, color: Color(0xff94a3b8), size: 20),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Color(0xff94a3b8),
+                            size: 20,
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Action Buttons
               InkWell(
                 borderRadius: BorderRadius.circular(12),
@@ -357,16 +390,25 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     ],
                   ),
                   child: _isSaving
-                    ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
-                    : Text(
-                        'Save Changes',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.lexend(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      ? const Center(
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          'Save Changes',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.lexend(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -394,7 +436,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 40),
             ],
           ),
@@ -441,7 +483,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  Widget _buildDropdownField(String label, String? value, List<String> items, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownField(
+    String label,
+    String? value,
+    List<String> items,
+    ValueChanged<String?> onChanged,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 8, bottom: 0, left: 16, right: 16),
@@ -464,13 +511,25 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           DropdownButton<String>(
             value: value,
             isExpanded: true,
-            hint: Text('Select $label', style: GoogleFonts.lexend(fontSize: 16, color: const Color(0xff94a3b8))),
+            hint: Text(
+              'Select $label',
+              style: GoogleFonts.lexend(
+                fontSize: 16,
+                color: const Color(0xff94a3b8),
+              ),
+            ),
             icon: const Icon(Icons.arrow_drop_down, color: Color(0xff1a3b5d)),
             underline: const SizedBox(),
             items: items.map((String item) {
               return DropdownMenuItem<String>(
                 value: item,
-                child: Text(item, style: GoogleFonts.lexend(fontSize: 16, color: const Color(0xff102a43))),
+                child: Text(
+                  item,
+                  style: GoogleFonts.lexend(
+                    fontSize: 16,
+                    color: const Color(0xff102a43),
+                  ),
+                ),
               );
             }).toList(),
             onChanged: onChanged,

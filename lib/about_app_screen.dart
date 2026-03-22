@@ -21,7 +21,11 @@ class AboutAppScreen extends StatelessWidget {
               scrolledUnderElevation: 0,
               centerTitle: true,
               leading: IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, color: Color(0xff2094f3), size: 32),
+                icon: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: Color(0xff2094f3),
+                  size: 32,
+                ),
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
@@ -56,11 +60,26 @@ class AboutAppScreen extends StatelessWidget {
             const SizedBox(height: 32),
             _buildSectionTitle('Key Features', fontSize: 18),
             const SizedBox(height: 16),
-            _buildBulletItem('Real-time Grades:', 'Check your latest grades as soon as they are posted by your professors. View a detailed breakdown of your academic performance across all semesters.'),
-            _buildBulletItem('Smart Schedule:', 'View your daily class schedule with room assignments, instructor details, and time slots. The smart view highlights your current and upcoming classes.'),
-            _buildBulletItem('Campus News & Announcements:', 'Receive real-time push notifications for important campus announcements, class suspensions, and university events.'),
-            _buildBulletItem('Student Profile:', 'Access your digital ID and student information anytime. Update your contact details directly through the app.'),
-            _buildBulletItem('Library Access:', 'Search for books, check availability, and view your borrowed history and due dates.'),
+            _buildBulletItem(
+              'Real-time Grades:',
+              'Check your latest grades as soon as they are posted by your professors. View a detailed breakdown of your academic performance across all semesters.',
+            ),
+            _buildBulletItem(
+              'Smart Schedule:',
+              'View your daily class schedule with room assignments, instructor details, and time slots. The smart view highlights your current and upcoming classes.',
+            ),
+            _buildBulletItem(
+              'Campus News & Announcements:',
+              'Receive real-time push notifications for important campus announcements, class suspensions, and university events.',
+            ),
+            _buildBulletItem(
+              'Student Profile:',
+              'Access your digital ID and student information anytime. Update your contact details directly through the app.',
+            ),
+            _buildBulletItem(
+              'Library Access:',
+              'Search for books, check availability, and view your borrowed history and due dates.',
+            ),
             const SizedBox(height: 24),
             _buildText(
               'Whether you are a freshman navigating the campus for the first time or a graduating senior tracking your final requirements, the UMak Portal is your essential companion for a successful academic year.',
@@ -127,9 +146,7 @@ class AboutAppScreen extends StatelessWidget {
                   text: title,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                TextSpan(
-                  text: ' $description',
-                ),
+                TextSpan(text: ' $description'),
               ],
             ),
           ),
@@ -175,7 +192,11 @@ class AboutAppScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.history_rounded, size: 14, color: Color(0xff64748b)),
+                  const Icon(
+                    Icons.history_rounded,
+                    size: 14,
+                    color: Color(0xff64748b),
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'UPDATED OCT 24, 2023',
@@ -189,11 +210,22 @@ class AboutAppScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildText("We're constantly improving the app to make your experience better! In this update:"),
+              _buildText(
+                "We're constantly improving the app to make your experience better! In this update:",
+              ),
               const SizedBox(height: 16),
-              _buildUpdateItem('New Dark Mode Support:', "The app now fully respects your system's dark mode settings for comfortable viewing at night."),
-              _buildUpdateItem('Schedule Widget:', 'Added a home screen widget so you can see your next class without opening the app.'),
-              _buildUpdateItem('Performance Improvements:', 'Faster loading times for the grades module and fixed a bug where notifications were sometimes delayed.'),
+              _buildUpdateItem(
+                'New Dark Mode Support:',
+                "The app now fully respects your system's dark mode settings for comfortable viewing at night.",
+              ),
+              _buildUpdateItem(
+                'Schedule Widget:',
+                'Added a home screen widget so you can see your next class without opening the app.',
+              ),
+              _buildUpdateItem(
+                'Performance Improvements:',
+                'Faster loading times for the grades module and fixed a bug where notifications were sometimes delayed.',
+              ),
             ],
           ),
         ),
@@ -220,7 +252,11 @@ class AboutAppScreen extends StatelessWidget {
         children: [
           const Padding(
             padding: EdgeInsets.only(top: 4),
-            child: Icon(Icons.check_circle_rounded, size: 16, color: Color(0xff2094f3)),
+            child: Icon(
+              Icons.check_circle_rounded,
+              size: 16,
+              color: Color(0xff2094f3),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -236,9 +272,7 @@ class AboutAppScreen extends StatelessWidget {
                     text: title,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  TextSpan(
-                    text: ' $description',
-                  ),
+                  TextSpan(text: ' $description'),
                 ],
               ),
             ),
@@ -252,7 +286,9 @@ class AboutAppScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        border: isLast ? null : const Border(bottom: BorderSide(color: Color(0xfff1f5f9))),
+        border: isLast
+            ? null
+            : const Border(bottom: BorderSide(color: Color(0xfff1f5f9))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

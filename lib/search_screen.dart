@@ -30,7 +30,12 @@ class _SearchScreenState extends State<SearchScreen> {
         _buildFilters(),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.only(top: 16, bottom: 96, left: 16, right: 16),
+            padding: const EdgeInsets.only(
+              top: 16,
+              bottom: 96,
+              left: 16,
+              right: 16,
+            ),
             children: [
               _buildAppListItem(
                 context,
@@ -42,7 +47,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 chipBorderColor: const Color(0xffdbeafe),
                 rating: '4.8',
                 actionWidget: _buildActionButton('OPEN'),
-                iconWidget: _buildAppIcon(const Color(0xff0a192f), Icons.grid_view_rounded, Colors.white),
+                iconWidget: _buildAppIcon(
+                  const Color(0xff0a192f),
+                  Icons.grid_view_rounded,
+                  Colors.white,
+                ),
               ),
               _buildDivider(),
               _buildAppListItem(
@@ -69,7 +78,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ],
                 ),
-                iconWidget: _buildAppIcon(const Color(0xfff97316), Icons.menu_book_rounded, Colors.white),
+                iconWidget: _buildAppIcon(
+                  const Color(0xfff97316),
+                  Icons.menu_book_rounded,
+                  Colors.white,
+                ),
               ),
               _buildDivider(),
               _buildAppListItem(
@@ -82,7 +95,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 chipBorderColor: const Color(0xffe0e7ff),
                 rating: '4.2',
                 actionWidget: _buildActionButton('GET'),
-                iconWidget: _buildAppIcon(const Color(0xff1e293b), Icons.calculate_rounded, const Color(0xff38bdf8)),
+                iconWidget: _buildAppIcon(
+                  const Color(0xff1e293b),
+                  Icons.calculate_rounded,
+                  const Color(0xff38bdf8),
+                ),
               ),
               _buildDivider(),
               _buildAppListItem(
@@ -95,14 +112,25 @@ class _SearchScreenState extends State<SearchScreen> {
                 chipBorderColor: const Color(0xffe5e7eb),
                 rating: '3.9',
                 actionWidget: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xff2094f3).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(9999),
                   ),
-                  child: const Icon(Icons.cloud_download_outlined, color: Color(0xff2094f3), size: 16),
+                  child: const Icon(
+                    Icons.cloud_download_outlined,
+                    color: Color(0xff2094f3),
+                    size: 16,
+                  ),
                 ),
-                iconWidget: _buildAppIcon(const Color(0xff22c55e), Icons.map_rounded, Colors.white),
+                iconWidget: _buildAppIcon(
+                  const Color(0xff22c55e),
+                  Icons.map_rounded,
+                  Colors.white,
+                ),
               ),
               _buildDivider(),
               Opacity(
@@ -127,7 +155,11 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                   ),
-                  iconWidget: _buildAppIcon(const Color(0xfff3f4f6), Icons.edit_rounded, const Color(0xff9ca3af)),
+                  iconWidget: _buildAppIcon(
+                    const Color(0xfff3f4f6),
+                    Icons.edit_rounded,
+                    const Color(0xff9ca3af),
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -161,9 +193,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 24, left: 16, right: 16, bottom: 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -190,7 +220,11 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.search_rounded, color: Color(0xff9ca3af), size: 20),
+                      const Icon(
+                        Icons.search_rounded,
+                        color: Color(0xff9ca3af),
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
@@ -202,7 +236,9 @@ class _SearchScreenState extends State<SearchScreen> {
                             hintText: 'Apps, professors, events...',
                             hintStyle: GoogleFonts.lexend(
                               fontSize: 14,
-                              color: const Color(0xff1e3a5f).withValues(alpha: 0.7),
+                              color: const Color(
+                                0xff1e3a5f,
+                              ).withValues(alpha: 0.7),
                             ),
                             border: InputBorder.none,
                             isDense: true,
@@ -223,7 +259,11 @@ class _SearchScreenState extends State<SearchScreen> {
                   border: Border.all(color: const Color(0xffe5e7eb)),
                 ),
                 child: const Center(
-                  child: Icon(Icons.tune_rounded, color: Color(0xff0a1929), size: 20),
+                  child: Icon(
+                    Icons.tune_rounded,
+                    color: Color(0xff0a1929),
+                    size: 20,
+                  ),
                 ),
               ),
             ],
@@ -257,13 +297,23 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xff2094f3) : Colors.transparent,
+                color: isSelected
+                    ? const Color(0xff2094f3)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(9999),
                 border: Border.all(
-                  color: isSelected ? const Color(0xff2094f3) : const Color(0xff0a1929).withValues(alpha: 0.3),
+                  color: isSelected
+                      ? const Color(0xff2094f3)
+                      : const Color(0xff0a1929).withValues(alpha: 0.3),
                 ),
                 boxShadow: isSelected
-                    ? [const BoxShadow(color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1))]
+                    ? [
+                        const BoxShadow(
+                          color: Color(0x0D000000),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                        ),
+                      ]
                     : null,
               ),
               child: Text(
@@ -331,7 +381,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: chipBgColor,
                           borderRadius: BorderRadius.circular(4),
@@ -356,7 +409,11 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                         const SizedBox(width: 2),
-                        const Icon(Icons.star_rounded, color: Color(0xfffbbf24), size: 10),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: Color(0xfffbbf24),
+                          size: 10,
+                        ),
                       ],
                     ],
                   ),
@@ -393,11 +450,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildDivider() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 8.0),
-      child: Divider(
-        color: Color(0xfff3f4f6),
-        height: 1,
-        thickness: 1,
-      ),
+      child: Divider(color: Color(0xfff3f4f6), height: 1, thickness: 1),
     );
   }
 
@@ -417,9 +470,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
-      child: Center(
-        child: Icon(iconData, color: iconColor, size: 32),
-      ),
+      child: Center(child: Icon(iconData, color: iconColor, size: 32)),
     );
   }
 }

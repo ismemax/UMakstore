@@ -10,7 +10,7 @@ class HelpAndFeedbackScreen extends StatefulWidget {
 
 class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
   // Simple state to handle tab switching for demonstration
-  int _selectedTabIndex = 0; 
+  int _selectedTabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,9 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: _selectedTabIndex == 0 ? Colors.white : Colors.transparent,
+                            color: _selectedTabIndex == 0
+                                ? Colors.white
+                                : Colors.transparent,
                             width: 4,
                           ),
                         ),
@@ -59,8 +61,12 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.lexend(
                           fontSize: 14,
-                          fontWeight: _selectedTabIndex == 0 ? FontWeight.bold : FontWeight.w500,
-                          color: _selectedTabIndex == 0 ? Colors.white : Colors.white.withValues(alpha: 0.7),
+                          fontWeight: _selectedTabIndex == 0
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: _selectedTabIndex == 0
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.7),
                         ),
                       ),
                     ),
@@ -74,7 +80,9 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: _selectedTabIndex == 1 ? Colors.white : Colors.transparent,
+                            color: _selectedTabIndex == 1
+                                ? Colors.white
+                                : Colors.transparent,
                             width: 4,
                           ),
                         ),
@@ -84,8 +92,12 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.lexend(
                           fontSize: 14,
-                          fontWeight: _selectedTabIndex == 1 ? FontWeight.bold : FontWeight.w500,
-                          color: _selectedTabIndex == 1 ? Colors.white : Colors.white.withValues(alpha: 0.7),
+                          fontWeight: _selectedTabIndex == 1
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: _selectedTabIndex == 1
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.7),
                         ),
                       ),
                     ),
@@ -94,9 +106,11 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
               ],
             ),
           ),
-          
+
           Expanded(
-            child: _selectedTabIndex == 0 ? _buildFaqsContent() : _buildFeedbackContent(),
+            child: _selectedTabIndex == 0
+                ? _buildFaqsContent()
+                : _buildFeedbackContent(),
           ),
         ],
       ),
@@ -118,7 +132,11 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
             ),
             child: TextField(
               decoration: InputDecoration(
-                icon: const Icon(Icons.search_rounded, color: Color(0xff1e3a8a), size: 18),
+                icon: const Icon(
+                  Icons.search_rounded,
+                  color: Color(0xff1e3a8a),
+                  size: 18,
+                ),
                 hintText: 'Search FAQs...',
                 hintStyle: GoogleFonts.lexend(
                   fontSize: 14,
@@ -133,9 +151,9 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           _buildSectionHeader('ACCOUNT'),
           const SizedBox(height: 12),
           _buildFaqGroupCard([
@@ -145,7 +163,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           ]),
 
           const SizedBox(height: 24),
-          
+
           _buildSectionHeader('INSTALLATION'),
           const SizedBox(height: 12),
           _buildFaqGroupCard([
@@ -155,7 +173,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           ]),
 
           const SizedBox(height: 24),
-          
+
           _buildSectionHeader('SECURITY'),
           const SizedBox(height: 12),
           _buildFaqGroupCard([
@@ -165,7 +183,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           ]),
 
           const SizedBox(height: 32),
-          
+
           Center(
             child: Column(
               children: [
@@ -191,7 +209,11 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.open_in_new_rounded, color: Color(0xff2094f3), size: 14),
+                      const Icon(
+                        Icons.open_in_new_rounded,
+                        color: Color(0xff2094f3),
+                        size: 14,
+                      ),
                     ],
                   ),
                 ),
@@ -229,24 +251,33 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                     color: const Color(0xff64748b),
                   ),
                 ),
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xff1e3a8a)),
-                items: ['Bug Report', 'Feature Request', 'Account Issue', 'Other']
-                    .map((item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item, style: GoogleFonts.lexend(fontSize: 16)),
-                        ))
-                    .toList(),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xff1e3a8a),
+                ),
+                items:
+                    ['Bug Report', 'Feature Request', 'Account Issue', 'Other']
+                        .map(
+                          (item) => DropdownMenuItem(
+                            value: item,
+                            child: Text(
+                              item,
+                              style: GoogleFonts.lexend(fontSize: 16),
+                            ),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (_) {},
               ),
             ),
           ),
           const SizedBox(height: 24),
-          
+
           _buildInputLabel('Subject'),
           const SizedBox(height: 8),
           _buildTextField(hintText: 'Brief summary of your feedback'),
           const SizedBox(height: 24),
-          
+
           _buildInputLabel('Details'),
           const SizedBox(height: 8),
           _buildTextField(
@@ -254,7 +285,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
             maxLines: 6,
           ),
           const SizedBox(height: 24),
-          
+
           // Screenshot Attachment
           _DottedBorderContainer(
             child: InkWell(
@@ -265,7 +296,11 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
-                    const Icon(Icons.add_a_photo_outlined, color: Color(0xff1e3a8a), size: 32),
+                    const Icon(
+                      Icons.add_a_photo_outlined,
+                      color: Color(0xff1e3a8a),
+                      size: 32,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'Attach Screenshot',
@@ -288,9 +323,9 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Submit Button
           SizedBox(
             width: double.infinity,
@@ -308,7 +343,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Text(
+                  Text(
                     'Submit Feedback',
                     style: GoogleFonts.lexend(
                       fontSize: 16,
@@ -356,10 +391,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           ),
           border: InputBorder.none,
         ),
-        style: GoogleFonts.lexend(
-          fontSize: 14,
-          color: const Color(0xff0f172a),
-        ),
+        style: GoogleFonts.lexend(fontSize: 14, color: const Color(0xff0f172a)),
       ),
     );
   }
@@ -387,15 +419,15 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
         border: Border.all(color: const Color(0xffe2e8f0)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0D000000), // very subtle shadow representing Figma mock
+            color: Color(
+              0x0D000000,
+            ), // very subtle shadow representing Figma mock
             blurRadius: 2,
             offset: Offset(0, 1),
           ),
         ],
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -417,7 +449,11 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xff94a3b8), size: 20),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xff94a3b8),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -425,10 +461,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
   }
 
   Widget _buildDivider() {
-    return Container(
-      height: 1,
-      color: const Color(0xfff1f5f9),
-    );
+    return Container(height: 1, color: const Color(0xfff1f5f9));
   }
 }
 
@@ -438,10 +471,7 @@ class _DottedBorderContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DottedBorderPainter(),
-      child: child,
-    );
+    return CustomPaint(painter: _DottedBorderPainter(), child: child);
   }
 }
 
@@ -455,7 +485,13 @@ class _DottedBorderPainter extends CustomPainter {
 
     const double dashWidth = 5;
     const double dashSpace = 3;
-    final RRect rrect = RRect.fromLTRBR(0, 0, size.width, size.height, const Radius.circular(12));
+    final RRect rrect = RRect.fromLTRBR(
+      0,
+      0,
+      size.width,
+      size.height,
+      const Radius.circular(12),
+    );
     final Path path = Path()..addRRect(rrect);
 
     for (var pathMetric in path.computeMetrics()) {

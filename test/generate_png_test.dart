@@ -8,7 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 void main() {
   testWidgets('Generate PNG from SVG', (WidgetTester tester) async {
     final key = GlobalKey();
-    
+
     // Pump a 1024x1024 widget with our SVG scaled up
     await tester.pumpWidget(
       MaterialApp(
@@ -35,9 +35,10 @@ void main() {
 
     // Give it time to render the SVG asset properly...
     await tester.pumpAndSettle();
-    
+
     // Capture the image
-    RenderRepaintBoundary boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    RenderRepaintBoundary boundary =
+        key.currentContext!.findRenderObject() as RenderRepaintBoundary;
     ui.Image image = await boundary.toImage(pixelRatio: 1.0);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     final pngBytes = byteData!.buffer.asUint8List();

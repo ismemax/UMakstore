@@ -39,7 +39,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 16.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -66,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Title
                     Text(
                       'Create Account',
@@ -78,7 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Subtitle
                     Text(
                       'Enter your university email to get\nstarted.',
@@ -91,7 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 48),
-                    
+
                     // Email Field Label
                     Align(
                       alignment: Alignment.centerLeft,
@@ -107,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                    
+
                     // Email Input
                     TextField(
                       controller: _emailController,
@@ -130,15 +133,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xffe2e8f0)),
+                          borderSide: const BorderSide(
+                            color: Color(0xffe2e8f0),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xffe2e8f0)),
+                          borderSide: const BorderSide(
+                            color: Color(0xffe2e8f0),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xff0056d2), width: 2),
+                          borderSide: const BorderSide(
+                            color: Color(0xff0056d2),
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -147,53 +157,72 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Removed Password Field
                     const SizedBox(height: 32),
-                    
+
                     // Send Code Button
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : () async {
-                          final email = _emailController.text;
-                          
-                          if (email.isEmpty || !email.endsWith('@umak.edu.ph')) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please enter a valid UMak email')),
-                            );
-                            return;
-                          }
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                final email = _emailController.text;
 
-                          setState(() => _isLoading = true);
-                          try {
-                            // CHECK IF EMAIL ALREADY EXISTS
-                            final exists = await AuthService().isEmailRegistered(email);
-                            if (exists && mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('This email is already registered. Please log in instead.')),
-                              );
-                              setState(() => _isLoading = false);
-                              return;
-                            }
+                                if (email.isEmpty ||
+                                    !email.endsWith('@umak.edu.ph')) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Please enter a valid UMak email',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
 
-                            await AuthService().sendVerificationCode(email);
-                            if (!mounted) return;
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => VerificationScreen(email: email),
-                              ),
-                            );
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Failed to send code: $e')),
-                              );
-                            }
-                          } finally {
-                            if (mounted) {
-                              setState(() => _isLoading = false);
-                            }
-                          }
-                        },
+                                setState(() => _isLoading = true);
+                                try {
+                                  // CHECK IF EMAIL ALREADY EXISTS
+                                  final exists = await AuthService()
+                                      .isEmailRegistered(email);
+                                  if (exists && mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'This email is already registered. Please log in instead.',
+                                        ),
+                                      ),
+                                    );
+                                    setState(() => _isLoading = false);
+                                    return;
+                                  }
+
+                                  await AuthService().sendVerificationCode(
+                                    email,
+                                  );
+                                  if (!mounted) return;
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          VerificationScreen(email: email),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Failed to send code: $e',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => _isLoading = false);
+                                  }
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xff0056d2),
                           foregroundColor: Colors.white,
@@ -205,32 +234,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _isLoading 
-                              ? const SizedBox(
-                                  height: 20, 
-                                  width: 20, 
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                                )
-                              : Text(
-                                  'Send Verification Code',
-                                  style: GoogleFonts.lexend(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
+                            _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    'Send Verification Code',
+                                    style: GoogleFonts.lexend(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
                             const SizedBox(width: 8),
-                            if (!_isLoading) const Icon(Icons.arrow_forward_rounded, size: 20),
+                            if (!_isLoading)
+                              const Icon(Icons.arrow_forward_rounded, size: 20),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Divider
                     Row(
                       children: [
                         const Expanded(
-                          child: Divider(color: Color(0xffe2e8f0), thickness: 1),
+                          child: Divider(
+                            color: Color(0xffe2e8f0),
+                            thickness: 1,
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -245,39 +281,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         const Expanded(
-                          child: Divider(color: Color(0xffe2e8f0), thickness: 1),
+                          child: Divider(
+                            color: Color(0xffe2e8f0),
+                            thickness: 1,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Google Button
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: OutlinedButton(
-                        onPressed: _isLoading ? null : () async {
-                          setState(() => _isLoading = true);
-                          try {
-                            final user = await AuthService().signInWithGoogle();
-                            if (!mounted) return;
-                            if (user != null) {
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(builder: (_) => const HomeScreen()),
-                              );
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Google Sign-In failed: $e')),
-                              );
-                            }
-                          } finally {
-                            if (mounted) {
-                              setState(() => _isLoading = false);
-                            }
-                          }
-                        },
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  final user = await AuthService()
+                                      .signInWithGoogle();
+                                  if (!mounted) return;
+                                  if (user != null) {
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (_) => const HomeScreen(),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Google Sign-In failed: $e',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => _isLoading = false);
+                                  }
+                                }
+                              },
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xffe2e8f0)),
                           shape: RoundedRectangleBorder(
@@ -289,7 +337,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // Placeholder for Google Icon
-                            const Icon(Icons.g_mobiledata, size: 28), // Using a material icon as fallback
+                            const Icon(
+                              Icons.g_mobiledata,
+                              size: 28,
+                            ), // Using a material icon as fallback
                             const SizedBox(width: 12),
                             Text(
                               'Continue with Google',
@@ -302,22 +353,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const Spacer(),
-                    
+
                     // Footer
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24.0),
                       child: Text.rich(
                         TextSpan(
                           children: [
-                            const TextSpan(text: 'By continuing, you agree to our '),
+                            const TextSpan(
+                              text: 'By continuing, you agree to our ',
+                            ),
                             TextSpan(
                               text: 'Terms of Service',
                               style: TextStyle(
                                 color: const Color(0xff0056d2),
                                 decoration: TextDecoration.underline,
-                                decorationColor: const Color(0xff0056d2).withValues(alpha: 0.3), // 0.3 opacity blue as per figma
+                                decorationColor: const Color(0xff0056d2)
+                                    .withValues(
+                                      alpha: 0.3,
+                                    ), // 0.3 opacity blue as per figma
                               ),
                             ),
                             const TextSpan(text: ' and '),
@@ -326,7 +382,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               style: TextStyle(
                                 color: const Color(0xff0056d2),
                                 decoration: TextDecoration.underline,
-                                decorationColor: const Color(0xff0056d2).withValues(alpha: 0.3),
+                                decorationColor: const Color(
+                                  0xff0056d2,
+                                ).withValues(alpha: 0.3),
                               ),
                             ),
                             const TextSpan(text: '.'),

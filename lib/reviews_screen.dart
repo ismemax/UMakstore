@@ -30,7 +30,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               scrolledUnderElevation: 0,
               centerTitle: true,
               leading: IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, color: Color(0xff1e3a8a), size: 32),
+                icon: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: Color(0xff1e3a8a),
+                  size: 32,
+                ),
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
@@ -138,7 +142,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               return Icon(
                 Icons.star_rounded,
                 size: 8,
-                color: index < stars ? const Color(0xff1e3a8a) : const Color(0xfff1f5f9),
+                color: index < stars
+                    ? const Color(0xff1e3a8a)
+                    : const Color(0xfff1f5f9),
               );
             }),
           ),
@@ -196,7 +202,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               decoration: BoxDecoration(
                 color: isSelected ? const Color(0xff1e3a8a) : Colors.white,
                 borderRadius: BorderRadius.circular(9999),
-                border: isSelected ? null : Border.all(color: const Color(0xff1e3a8a)),
+                border: isSelected
+                    ? null
+                    : Border.all(color: const Color(0xff1e3a8a)),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
@@ -235,7 +243,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             date: 'Oct 20, 2023',
             rating: 5,
             title: 'Super helpful!',
-            content: 'Finally, an app that works smoothly. Checking grades and schedules is so much easier now compared to the old website. The notification feature for class cancellations is a lifesaver!',
+            content:
+                'Finally, an app that works smoothly. Checking grades and schedules is so much easier now compared to the old website. The notification feature for class cancellations is a lifesaver!',
             helpfulCount: 12,
             bgColor: const Color(0xffdbeafe),
             textColor: const Color(0xff1e3a8a),
@@ -248,14 +257,16 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             date: 'Oct 18, 2023',
             rating: 4,
             title: 'Great UI, needs minor fixes',
-            content: 'The interface is clean and modern. Notifications sometimes come in a bit late, but overall a solid experience for students. Would love to see a dark mode toggle inside the app settings directly.',
+            content:
+                'The interface is clean and modern. Notifications sometimes come in a bit late, but overall a solid experience for students. Would love to see a dark mode toggle inside the app settings directly.',
             helpfulCount: 5,
             bgColor: const Color(0xfff3e8ff),
             textColor: const Color(0xff7e22ce),
             borderColor: const Color(0xffe9d5ff),
             developerResponse: {
               'date': 'Oct 19, 2023',
-              'content': "Hi K1198765, thanks for the feedback! We've noted the issue with notifications and will include a fix in the next patch. Dark mode toggle is coming in v2.5!",
+              'content':
+                  "Hi K1198765, thanks for the feedback! We've noted the issue with notifications and will include a fix in the next patch. Dark mode toggle is coming in v2.5!",
             },
           ),
           const SizedBox(height: 16),
@@ -265,7 +276,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             date: 'Sep 05, 2023',
             rating: 5,
             title: 'Essential for Freshmen',
-            content: 'As a freshman, I was getting lost finding rooms. The schedule with room numbers is perfect. Highly recommend downloading this immediately.',
+            content:
+                'As a freshman, I was getting lost finding rooms. The schedule with room numbers is perfect. Highly recommend downloading this immediately.',
             helpfulCount: 28,
             bgColor: const Color(0xffd1fae5),
             textColor: const Color(0xff047857),
@@ -278,14 +290,16 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             date: 'Aug 21, 2023',
             rating: 3,
             title: 'Crashing on login',
-            content: "The app crashes whenever I try to log in with my student ID. I've reinstalled it twice. Please fix this ASAP as enrollment is starting.",
+            content:
+                "The app crashes whenever I try to log in with my student ID. I've reinstalled it twice. Please fix this ASAP as enrollment is starting.",
             helpfulCount: 3,
             bgColor: const Color(0xffffedd5),
             textColor: const Color(0xffc2410c),
             borderColor: const Color(0xfffed7aa),
             developerResponse: {
               'date': 'Aug 22, 2023',
-              'content': 'We apologize for the inconvenience. This was a server-side issue that has now been resolved. Please try logging in again.',
+              'content':
+                  'We apologize for the inconvenience. This was a server-side issue that has now been resolved. Please try logging in again.',
             },
           ),
           const SizedBox(height: 16),
@@ -295,7 +309,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             date: 'Aug 10, 2023',
             rating: 5,
             title: 'Simple and Effective',
-            content: 'Does exactly what it says. No clutter. Just grades and sched. Perfect.',
+            content:
+                'Does exactly what it says. No clutter. Just grades and sched. Perfect.',
             helpfulCount: 8,
             bgColor: const Color(0xfffce7f3),
             textColor: const Color(0xffbe185d),
@@ -384,7 +399,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                             child: Icon(
                               Icons.star_rounded,
                               size: 11,
-                              color: index < rating ? const Color(0xff1e3a8a) : const Color(0xfff1f5f9),
+                              color: index < rating
+                                  ? const Color(0xff1e3a8a)
+                                  : const Color(0xfff1f5f9),
                             ),
                           );
                         }),
@@ -428,7 +445,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.thumb_up_alt_outlined, size: 14, color: Color(0xff64748b)),
+                  const Icon(
+                    Icons.thumb_up_alt_outlined,
+                    size: 14,
+                    color: Color(0xff64748b),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'Helpful ($helpfulCount)',

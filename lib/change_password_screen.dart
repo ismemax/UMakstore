@@ -14,7 +14,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _currentController = TextEditingController();
   final _newController = TextEditingController();
   final _confirmController = TextEditingController();
-  
+
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
@@ -38,7 +38,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _hasMin8Chars = p.length >= 8;
       _hasUppercase = p.contains(RegExp(r'[A-Z]'));
       _hasNumber = p.contains(RegExp(r'[0-9]'));
-      _hasSpecialChar = p.contains(RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:" ,.?\\:{}|<>=]'));
+      _hasSpecialChar = p.contains(
+        RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:" ,.?\\:{}|<>=]'),
+      );
     });
   }
 
@@ -57,7 +59,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
-    bool allConditionsMet = _hasMin8Chars && _hasUppercase && _hasNumber && _hasSpecialChar;
+    bool allConditionsMet =
+        _hasMin8Chars && _hasUppercase && _hasNumber && _hasSpecialChar;
     if (!allConditionsMet) {
       _showError('New password does not meet security requirements');
       return;
@@ -72,7 +75,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const PasswordChangedSuccessScreen()),
+          MaterialPageRoute(
+            builder: (context) => const PasswordChangedSuccessScreen(),
+          ),
         );
       }
     } catch (e) {
@@ -120,10 +125,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: const Color(0xfff3f4f6),
-            height: 1.0,
-          ),
+          child: Container(color: const Color(0xfff3f4f6), height: 1.0),
         ),
       ),
       body: SingleChildScrollView(
@@ -140,7 +142,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             _buildPasswordField(
               label: 'Current Password',
               controller: _currentController,
@@ -167,9 +169,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 setState(() => _obscureConfirm = !_obscureConfirm);
               },
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -190,19 +192,31 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildRequirementItem('At least 8 characters long', isMet: _hasMin8Chars),
+                  _buildRequirementItem(
+                    'At least 8 characters long',
+                    isMet: _hasMin8Chars,
+                  ),
                   const SizedBox(height: 12),
-                  _buildRequirementItem('Contains one uppercase letter', isMet: _hasUppercase),
+                  _buildRequirementItem(
+                    'Contains one uppercase letter',
+                    isMet: _hasUppercase,
+                  ),
                   const SizedBox(height: 12),
-                  _buildRequirementItem('Contains one number', isMet: _hasNumber),
+                  _buildRequirementItem(
+                    'Contains one number',
+                    isMet: _hasNumber,
+                  ),
                   const SizedBox(height: 12),
-                  _buildRequirementItem('Contains one special character', isMet: _hasSpecialChar),
+                  _buildRequirementItem(
+                    'Contains one special character',
+                    isMet: _hasSpecialChar,
+                  ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             InkWell(
               onTap: _isSaving ? null : _handleSave,
               borderRadius: BorderRadius.circular(12),
@@ -221,16 +235,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ],
                 ),
                 child: _isSaving
-                  ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
-                  : Text(
-                      'Save New Password',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.lexend(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    ? const Center(
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        'Save New Password',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.lexend(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
               ),
             ),
           ],
@@ -248,10 +271,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return TextField(
       controller: controller,
       obscureText: obscureText,
-      style: GoogleFonts.lexend(
-        fontSize: 16,
-        color: const Color(0xff1e3a8a),
-      ),
+      style: GoogleFonts.lexend(fontSize: 16, color: const Color(0xff1e3a8a)),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.lexend(
@@ -273,10 +293,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xff2094f3), width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 18,
+        ),
         suffixIcon: IconButton(
           icon: Icon(
-            obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            obscureText
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
             color: const Color(0xff94a3b8),
             size: 22,
           ),
@@ -290,7 +315,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Row(
       children: [
         Icon(
-          isMet ? Icons.check_circle_outline_rounded : Icons.radio_button_unchecked_rounded,
+          isMet
+              ? Icons.check_circle_outline_rounded
+              : Icons.radio_button_unchecked_rounded,
           color: isMet ? const Color(0xff22c55e) : const Color(0xffcbd5e1),
           size: 16,
         ),

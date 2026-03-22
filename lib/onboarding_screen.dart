@@ -36,7 +36,9 @@ class OnboardingScreen extends StatelessWidget {
                                 color: const Color(0xffeff6ff),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xffeff6ff).withValues(alpha: 0.5),
+                                    color: const Color(
+                                      0xffeff6ff,
+                                    ).withValues(alpha: 0.5),
                                     blurRadius: 30,
                                     spreadRadius: 30,
                                   ),
@@ -77,7 +79,9 @@ class OnboardingScreen extends StatelessWidget {
                                 const TextSpan(text: 'Your Gateway to\n'),
                                 TextSpan(
                                   text: 'UMak Apps',
-                                  style: TextStyle(color: const Color(0xff2094f3)), // brand blue
+                                  style: TextStyle(
+                                    color: const Color(0xff2094f3),
+                                  ), // brand blue
                                 ),
                               ],
                             ),
@@ -111,7 +115,9 @@ class OnboardingScreen extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: () {
                                 Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen(),
+                                  ),
                                 );
                               },
                               style: ElevatedButton.styleFrom(
@@ -140,11 +146,16 @@ class OnboardingScreen extends StatelessWidget {
                             child: OutlinedButton(
                               onPressed: () {
                                 Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginScreen(),
+                                  ),
                                 );
                               },
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xff2094f3), width: 2),
+                                side: const BorderSide(
+                                  color: Color(0xff2094f3),
+                                  width: 2,
+                                ),
                                 foregroundColor: const Color(0xff2094f3),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -167,7 +178,9 @@ class OnboardingScreen extends StatelessWidget {
                           Text.rich(
                             TextSpan(
                               children: [
-                                const TextSpan(text: 'By continuing, you agree to our '),
+                                const TextSpan(
+                                  text: 'By continuing, you agree to our ',
+                                ),
                                 TextSpan(
                                   text: 'Terms of Service',
                                   style: const TextStyle(

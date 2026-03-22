@@ -13,7 +13,7 @@ class ManageAppsScreen extends StatefulWidget {
 class _ManageAppsScreenState extends State<ManageAppsScreen> {
   static const platform = MethodChannel('com.example.umakstore/storage');
   int _selectedTabIndex = 0;
-  
+
   // Real Storage States
   double _totalStorage = 0;
   double _freeStorage = 0;
@@ -29,11 +29,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
   Future<void> _fetchStorageInfo() async {
     try {
       final dynamic storageInfo = await platform.invokeMethod('getStorageInfo');
-      
+
       if (storageInfo != null) {
         final totalBytes = storageInfo['totalSpace'] as int? ?? 0;
         final freeBytes = storageInfo['freeSpace'] as int? ?? 0;
-        
+
         setState(() {
           // 1024^3 for GB (Gibibytes)
           _totalStorage = totalBytes.toDouble() / (1024 * 1024 * 1024);
@@ -57,7 +57,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xff1e293b), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xff1e293b),
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -75,7 +79,9 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
         children: [
           Positioned.fill(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(bottom: _selectedTabIndex == 1 ? 100 : 32),
+              padding: EdgeInsets.only(
+                bottom: _selectedTabIndex == 1 ? 100 : 32,
+              ),
               child: Column(
                 children: [
                   _buildSegmentedControl(),
@@ -127,10 +133,18 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 onTap: () => setState(() => _selectedTabIndex = 0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: _selectedTabIndex == 0 ? const Color(0xff1e293b) : Colors.transparent,
+                    color: _selectedTabIndex == 0
+                        ? const Color(0xff1e293b)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(4),
                     boxShadow: _selectedTabIndex == 0
-                        ? [const BoxShadow(color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1))]
+                        ? [
+                            const BoxShadow(
+                              color: Color(0x0D000000),
+                              blurRadius: 2,
+                              offset: Offset(0, 1),
+                            ),
+                          ]
                         : null,
                   ),
                   child: Center(
@@ -139,7 +153,9 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                       style: GoogleFonts.lexend(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: _selectedTabIndex == 0 ? Colors.white : const Color(0xff64748b),
+                        color: _selectedTabIndex == 0
+                            ? Colors.white
+                            : const Color(0xff64748b),
                       ),
                     ),
                   ),
@@ -151,10 +167,18 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 onTap: () => setState(() => _selectedTabIndex = 1),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: _selectedTabIndex == 1 ? const Color(0xff1e293b) : Colors.transparent,
+                    color: _selectedTabIndex == 1
+                        ? const Color(0xff1e293b)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(4),
                     boxShadow: _selectedTabIndex == 1
-                        ? [const BoxShadow(color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1))]
+                        ? [
+                            const BoxShadow(
+                              color: Color(0x0D000000),
+                              blurRadius: 2,
+                              offset: Offset(0, 1),
+                            ),
+                          ]
                         : null,
                   ),
                   child: Center(
@@ -163,7 +187,9 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                       style: GoogleFonts.lexend(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: _selectedTabIndex == 1 ? Colors.white : const Color(0xff64748b),
+                        color: _selectedTabIndex == 1
+                            ? Colors.white
+                            : const Color(0xff64748b),
                       ),
                     ),
                   ),
@@ -204,7 +230,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Center(
-                  child: Icon(Icons.system_update_alt_rounded, color: Color(0xff1e293b), size: 20),
+                  child: Icon(
+                    Icons.system_update_alt_rounded,
+                    color: Color(0xff1e293b),
+                    size: 20,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -324,7 +354,9 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
       );
     }
 
-    final usedPercent = (_totalStorage > 0) ? (_usedStorage / _totalStorage) : 0.0;
+    final usedPercent = (_totalStorage > 0)
+        ? (_usedStorage / _totalStorage)
+        : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -345,7 +377,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.sd_storage_outlined, color: Color(0xff1e293b), size: 20),
+              const Icon(
+                Icons.sd_storage_outlined,
+                color: Color(0xff1e293b),
+                size: 20,
+              ),
               const SizedBox(width: 12),
               Text(
                 'Storage',
@@ -462,14 +498,22 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
               _buildRecentAppItem(
                 title: 'UMak Portal',
                 subtitle: 'Updated yesterday • 45 MB',
-                gradient: const LinearGradient(colors: [Color(0xff3b82f6), Color(0xff4f46e5)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: const LinearGradient(
+                  colors: [Color(0xff3b82f6), Color(0xff4f46e5)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 iconData: Icons.school_rounded,
                 hasBorder: true,
               ),
               _buildRecentAppItem(
                 title: 'Library Scan',
                 subtitle: 'Updated 2 days ago • 15 MB',
-                gradient: const LinearGradient(colors: [Color(0xff34d399), Color(0xff0d9488)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: const LinearGradient(
+                  colors: [Color(0xff34d399), Color(0xff0d9488)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 iconData: Icons.menu_book_rounded,
                 hasBorder: false,
               ),
@@ -487,7 +531,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                const Icon(Icons.star_rounded, color: Color(0xff1e293b), size: 24),
+                const Icon(
+                  Icons.star_rounded,
+                  color: Color(0xff1e293b),
+                  size: 24,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -512,7 +560,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: Color(0xff94a3b8), size: 20),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xff94a3b8),
+                  size: 20,
+                ),
               ],
             ),
           ),
@@ -530,7 +582,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        border: hasBorder ? const Border(bottom: BorderSide(color: Color(0xfff1f5f9), width: 1)) : null,
+        border: hasBorder
+            ? const Border(
+                bottom: BorderSide(color: Color(0xfff1f5f9), width: 1),
+              )
+            : null,
       ),
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -549,9 +605,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 ),
               ],
             ),
-            child: Center(
-              child: Icon(iconData, color: Colors.white, size: 20),
-            ),
+            child: Center(child: Icon(iconData, color: Colors.white, size: 20)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -577,7 +631,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: Color(0xff94a3b8), size: 20),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: Color(0xff94a3b8),
+            size: 20,
+          ),
         ],
       ),
     );
@@ -592,21 +650,38 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: const Color(0xffe2e8f0)),
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1))],
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0D000000),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.sort_rounded, color: Color(0xff475569), size: 16),
+                      const Icon(
+                        Icons.sort_rounded,
+                        color: Color(0xff475569),
+                        size: 16,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         'Recently used',
-                        style: GoogleFonts.lexend(fontSize: 12, fontWeight: FontWeight.w500, color: const Color(0xff475569)),
-                      )
+                        style: GoogleFonts.lexend(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xff475569),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -626,15 +701,22 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                     const SizedBox(width: 8),
                     Text(
                       'Select all',
-                      style: GoogleFonts.lexend(fontSize: 12, fontWeight: FontWeight.w500, color: const Color(0xff475569)),
-                    )
+                      style: GoogleFonts.lexend(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xff475569),
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
             Text(
               '12 apps',
-              style: GoogleFonts.lexend(fontSize: 12, color: const Color(0xff94a3b8)),
+              style: GoogleFonts.lexend(
+                fontSize: 12,
+                color: const Color(0xff94a3b8),
+              ),
             ),
           ],
         ),
@@ -644,7 +726,10 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           version: 'Version 2.4.1',
           size: '45 MB',
           usage: 'Used today',
-          iconWidget: _buildPhotoIcon(Icons.phone_iphone_rounded, const Color(0xff10b981)),
+          iconWidget: _buildPhotoIcon(
+            Icons.phone_iphone_rounded,
+            const Color(0xff10b981),
+          ),
           isSelected: true,
           isUsageGreen: true,
         ),
@@ -654,7 +739,10 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           version: 'Version 1.0.5',
           size: '18 MB',
           usage: 'Used 2 days ago',
-          iconWidget: _buildPhotoIcon(Icons.center_focus_weak_rounded, const Color(0xff3b82f6)),
+          iconWidget: _buildPhotoIcon(
+            Icons.center_focus_weak_rounded,
+            const Color(0xff3b82f6),
+          ),
           isSelected: false,
         ),
         const SizedBox(height: 12),
@@ -663,7 +751,10 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           version: 'Version 3.1.0',
           size: '82 MB',
           usage: 'Used 1 week ago',
-          iconWidget: _buildPhotoIcon(Icons.map_rounded, const Color(0xff14b8a6)),
+          iconWidget: _buildPhotoIcon(
+            Icons.map_rounded,
+            const Color(0xff14b8a6),
+          ),
           isSelected: false,
         ),
         const SizedBox(height: 12),
@@ -673,8 +764,20 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           size: '12 MB',
           usage: 'Used 3 weeks ago',
           iconWidget: Container(
-            decoration: BoxDecoration(color: const Color(0xff6366f1), borderRadius: BorderRadius.circular(12)),
-            child: const Center(child: Text('E', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
+            decoration: BoxDecoration(
+              color: const Color(0xff6366f1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: Text(
+                'E',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
           isSelected: false,
         ),
@@ -685,8 +788,20 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           size: '28 MB',
           usage: 'Used 1 month ago',
           iconWidget: Container(
-            decoration: BoxDecoration(color: const Color(0xfffb923c), borderRadius: BorderRadius.circular(12)),
-            child: const Center(child: Text('S', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
+            decoration: BoxDecoration(
+              color: const Color(0xfffb923c),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: Text(
+                'S',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
           isSelected: false,
         ),
@@ -706,10 +821,20 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isSelected ? const Color(0xff2094f3).withValues(alpha: 0.05) : Colors.white,
+        color: isSelected
+            ? const Color(0xff2094f3).withValues(alpha: 0.05)
+            : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isSelected ? const Color(0xff2094f3) : const Color(0xffe2e8f0)),
-        boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1))],
+        border: Border.all(
+          color: isSelected ? const Color(0xff2094f3) : const Color(0xffe2e8f0),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 2,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -723,19 +848,53 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(title, style: GoogleFonts.lexend(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xff0f172a))),
-                    Text(size, style: GoogleFonts.lexend(fontSize: 10, fontWeight: FontWeight.w500, color: const Color(0xff475569))),
+                    Text(
+                      title,
+                      style: GoogleFonts.lexend(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xff0f172a),
+                      ),
+                    ),
+                    Text(
+                      size,
+                      style: GoogleFonts.lexend(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xff475569),
+                      ),
+                    ),
                   ],
                 ),
-                Text(version, style: GoogleFonts.lexend(fontSize: 12, fontWeight: FontWeight.w500, color: const Color(0xff0f172a).withValues(alpha: 0.8))),
+                Text(
+                  version,
+                  style: GoogleFonts.lexend(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xff0f172a).withValues(alpha: 0.8),
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     if (isUsageGreen) ...[
-                      Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xff10b981), shape: BoxShape.circle)),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xff10b981),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
                       const SizedBox(width: 6),
                     ],
-                    Text(usage, style: GoogleFonts.lexend(fontSize: 10, color: const Color(0xff475569))),
+                    Text(
+                      usage,
+                      style: GoogleFonts.lexend(
+                        fontSize: 10,
+                        color: const Color(0xff475569),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -747,10 +906,16 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
             height: 22,
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xff2094f3) : Colors.white,
-              border: Border.all(color: isSelected ? const Color(0xff2094f3) : const Color(0xffcbd5e1)),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xff2094f3)
+                    : const Color(0xffcbd5e1),
+              ),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: isSelected ? const Icon(Icons.check_rounded, color: Colors.white, size: 16) : null,
+            child: isSelected
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                : null,
           ),
         ],
       ),
@@ -763,7 +928,13 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xfff1f5f9)),
-        boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1))],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 2,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Center(
         child: Container(
@@ -773,9 +944,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
             color: bgColor,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Center(
-            child: Icon(iconData, color: Colors.white, size: 16),
-          ),
+          child: Center(child: Icon(iconData, color: Colors.white, size: 16)),
         ),
       ),
     );
@@ -798,7 +967,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           color: const Color(0xff2094f3),
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
-            BoxShadow(color: Color(0x0D000000), blurRadius: 15, offset: Offset(0, 10)),
+            BoxShadow(
+              color: Color(0x0D000000),
+              blurRadius: 15,
+              offset: Offset(0, 10),
+            ),
           ],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -807,11 +980,19 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 18),
+                const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Uninstall selected',
-                  style: GoogleFonts.lexend(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                  style: GoogleFonts.lexend(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
@@ -823,7 +1004,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
               ),
               child: Text(
                 '1',
-                style: GoogleFonts.lexend(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                style: GoogleFonts.lexend(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],

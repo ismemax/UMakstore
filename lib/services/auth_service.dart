@@ -12,10 +12,10 @@ import 'package:path/path.dart' as path;
 
 class AuthService {
   // IMPORTANT: For Android Emulator, use 10.0.2.2.
-  // FOR PHYSICAL DEVICES (like your SM S908E), you must use your computer's 
+  // FOR PHYSICAL DEVICES (like your SM S908E), you must use your computer's
   // local IP address (e.g., 192.168.1.XX) instead of 10.0.2.2/localhost.
   static const String _apiBaseUrl = 'https://makstore-api.vercel.app/api';
-  
+
   static String? _simulatedCode; // Fallback for demo
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -54,11 +54,13 @@ class AuthService {
   Future<void> sendVerificationCode(String email) async {
     try {
       // 1. Attempt to call the API
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/send-otp'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      ).timeout(const Duration(seconds: 3));
+      final response = await http
+          .post(
+            Uri.parse('$_apiBaseUrl/send-otp'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': email}),
+          )
+          .timeout(const Duration(seconds: 3));
 
       if (response.statusCode == 200) {
         if (kDebugMode) print('OTP sent via API successfully');
@@ -66,8 +68,12 @@ class AuthService {
       }
 
       // 2. FALLBACK to Simulation if API fails (Local Dev)
-      debugPrint('API failed (${response.statusCode}), falling back to simulated code.');
-      _simulatedCode = (100000 + (DateTime.now().millisecondsSinceEpoch % 900000)).toString();
+      debugPrint(
+        'API failed (${response.statusCode}), falling back to simulated code.',
+      );
+      _simulatedCode =
+          (100000 + (DateTime.now().millisecondsSinceEpoch % 900000))
+              .toString();
       debugPrint('------------------------------------------');
       debugPrint('VERIFICATION CODE FOR $email: $_simulatedCode');
       debugPrint('------------------------------------------');
@@ -75,7 +81,9 @@ class AuthService {
     } catch (e) {
       // 3. FALLBACK to Simulation if API is unreachable
       debugPrint('API unreachable, falling back to simulated code: $e');
-      _simulatedCode = (100000 + (DateTime.now().millisecondsSinceEpoch % 900000)).toString();
+      _simulatedCode =
+          (100000 + (DateTime.now().millisecondsSinceEpoch % 900000))
+              .toString();
       debugPrint('------------------------------------------');
       debugPrint('VERIFICATION CODE FOR $email: $_simulatedCode');
       debugPrint('------------------------------------------');
@@ -84,7 +92,10 @@ class AuthService {
   }
 
   /// Confirms the simulated 6-digit code.
-  Future<void> confirmUser({required String email, required String confirmationCode}) async {
+  Future<void> confirmUser({
+    required String email,
+    required String confirmationCode,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('$_apiBaseUrl/verify-otp'),
@@ -134,7 +145,8 @@ class AuthService {
       if (googleUser == null) return null; // User canceled the sign-in
 
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       // Create a new credential
       final OAuthCredential credential = GoogleAuthProvider.credential(
@@ -143,20 +155,26 @@ class AuthService {
       );
 
       // Once signed in, return the UserCredential
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      
+      final UserCredential userCredential = await _auth.signInWithCredential(
+        credential,
+      );
+
       // Check if user exists in Firestore, if not create basic entry
-      final userDoc = await _db.collection('users').doc(userCredential.user?.uid).get();
+      final userDoc = await _db
+          .collection('users')
+          .doc(userCredential.user?.uid)
+          .get();
       if (!userDoc.exists && userCredential.user != null) {
         await _db.collection('users').doc(userCredential.user!.uid).set({
           'email': userCredential.user!.email,
           'firstName': googleUser.displayName?.split(' ').first ?? '',
           'lastName': googleUser.displayName?.split(' ').last ?? '',
-          'studentId': 'PENDING', // Google doesn't provide this, user will need to update
+          'studentId':
+              'PENDING', // Google doesn't provide this, user will need to update
           'createdAt': FieldValue.serverTimestamp(),
         });
       }
-      
+
       return userCredential;
     } catch (e) {
       if (kDebugMode) {
@@ -183,7 +201,8 @@ class AuthService {
   Future<bool> isEmailRegistered(String email) async {
     try {
       final sanitizedEmail = email.toLowerCase().trim();
-      final query = await _db.collection('users')
+      final query = await _db
+          .collection('users')
           .where('email', isEqualTo: sanitizedEmail)
           .limit(1)
           .get();
@@ -199,13 +218,14 @@ class AuthService {
   Future<void> resetPassword(String email) async {
     try {
       final sanitizedEmail = email.toLowerCase().trim();
-      
+
       // ActionCodeSettings enables "deep linking" where clicking the reset link
       // can open the app directly instead of a web page if configured.
       final actionCodeSettings = ActionCodeSettings(
-        url: 'https://makstore-826a4.firebaseapp.com/reset-password?email=$sanitizedEmail',
+        url:
+            'https://makstore-826a4.firebaseapp.com/reset-password?email=$sanitizedEmail',
         handleCodeInApp: true,
-        androidPackageName: 'com.example.umakstore', 
+        androidPackageName: 'com.example.umakstore',
         androidInstallApp: true,
         androidMinimumVersion: '1',
       );
@@ -226,7 +246,8 @@ class AuthService {
   Future<void> confirmResetPassword({
     required String email,
     required String newPassword,
-    required String confirmationCode, // Not strictly needed here as we verify it in the previous step
+    required String
+    confirmationCode, // Not strictly needed here as we verify it in the previous step
   }) async {
     try {
       final response = await http.post(
@@ -245,7 +266,8 @@ class AuthService {
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 200) {
-        final errorMsg = data['details'] ?? data['error'] ?? 'Failed to update password';
+        final errorMsg =
+            data['details'] ?? data['error'] ?? 'Failed to update password';
         throw errorMsg;
       }
     } catch (e) {
@@ -307,9 +329,9 @@ class AuthService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-        if (kDebugMode) {
-            print('Firestore Error: $e');
-        }
+      if (kDebugMode) {
+        print('Firestore Error: $e');
+      }
       rethrow;
     }
   }
@@ -330,7 +352,10 @@ class AuthService {
   }
 
   /// Updates the user password after re-authenticating.
-  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
     try {
       final user = _auth.currentUser;
       if (user == null || user.email == null) throw 'User not authenticated';
@@ -358,7 +383,7 @@ class AuthService {
       if (user == null) throw 'User not authenticated';
 
       final appDir = await getApplicationDocumentsDirectory();
-      
+
       // 1. Cleanup old profile photos for this user to save space
       final List<FileSystemEntity> files = appDir.listSync();
       for (var file in files) {
@@ -373,7 +398,8 @@ class AuthService {
 
       // 2. Generate a unique filename using a timestamp to force UI refresh
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final String fileName = 'profile_${user.uid}_$timestamp${path.extension(image.path)}';
+      final String fileName =
+          'profile_${user.uid}_$timestamp${path.extension(image.path)}';
       final File localImage = await image.copy('${appDir.path}/$fileName');
 
       // 3. Save path in SharedPreferences

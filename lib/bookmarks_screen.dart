@@ -28,10 +28,7 @@ class BookmarksScreen extends StatelessWidget {
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: const Color(0xfff3f4f6),
-            height: 1.0,
-          ),
+          child: Container(color: const Color(0xfff3f4f6), height: 1.0),
         ),
       ),
       body: ListView(
@@ -139,7 +136,9 @@ class BookmarksScreen extends StatelessWidget {
                     ),
                     Icon(
                       Icons.bookmark_rounded,
-                      color: const Color(0xff2094f3), // Primary blue for active bookmark
+                      color: const Color(
+                        0xff2094f3,
+                      ), // Primary blue for active bookmark
                       size: 24,
                     ),
                   ],
@@ -166,7 +165,11 @@ class BookmarksScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.star_rounded, color: Color(0xfffbbf24), size: 14),
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xfffbbf24),
+                      size: 14,
+                    ),
                     const SizedBox(width: 12),
                     Container(
                       width: 4,

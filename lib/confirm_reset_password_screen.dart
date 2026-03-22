@@ -7,16 +7,18 @@ class ConfirmResetPasswordScreen extends StatefulWidget {
   final String email;
   final String code; // Verified code or empty for manual entry
   const ConfirmResetPasswordScreen({
-    super.key, 
-    required this.email, 
+    super.key,
+    required this.email,
     this.code = '',
   });
 
   @override
-  State<ConfirmResetPasswordScreen> createState() => _ConfirmResetPasswordScreenState();
+  State<ConfirmResetPasswordScreen> createState() =>
+      _ConfirmResetPasswordScreenState();
 }
 
-class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen> {
+class _ConfirmResetPasswordScreenState
+    extends State<ConfirmResetPasswordScreen> {
   final _codeController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
@@ -43,8 +45,10 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
       _hasUppercase = p.contains(RegExp(r'[A-Z]'));
       _hasLowercase = p.contains(RegExp(r'[a-z]'));
       _hasNumber = p.contains(RegExp(r'[0-9]'));
-      _hasSpecialChar = p.contains(RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:" ,.?\\:{}|<>=]'));
-      
+      _hasSpecialChar = p.contains(
+        RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:" ,.?\\:{}|<>=]'),
+      );
+
       _strength = 0;
       if (_hasMin8Chars) _strength++;
       if (_hasUppercase && _hasLowercase) _strength++;
@@ -136,10 +140,26 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
                   Expanded(
                     child: Row(
                       children: [
-                        _buildStrengthSegment(_strength >= 1 ? const Color(0xffef4444) : const Color(0xffe2e8f0)),
-                        _buildStrengthSegment(_strength >= 2 ? const Color(0xfff59e0b) : const Color(0xffe2e8f0)),
-                        _buildStrengthSegment(_strength >= 3 ? const Color(0xff22c55e) : const Color(0xffe2e8f0)),
-                        _buildStrengthSegment(_strength >= 4 ? const Color(0xff15803d) : const Color(0xffe2e8f0)),
+                        _buildStrengthSegment(
+                          _strength >= 1
+                              ? const Color(0xffef4444)
+                              : const Color(0xffe2e8f0),
+                        ),
+                        _buildStrengthSegment(
+                          _strength >= 2
+                              ? const Color(0xfff59e0b)
+                              : const Color(0xffe2e8f0),
+                        ),
+                        _buildStrengthSegment(
+                          _strength >= 3
+                              ? const Color(0xff22c55e)
+                              : const Color(0xffe2e8f0),
+                        ),
+                        _buildStrengthSegment(
+                          _strength >= 4
+                              ? const Color(0xff15803d)
+                              : const Color(0xffe2e8f0),
+                        ),
                       ],
                     ),
                   ),
@@ -157,13 +177,22 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
                 ),
                 child: Column(
                   children: [
-                    _buildRequirementItem('At least 8 characters', _hasMin8Chars),
+                    _buildRequirementItem(
+                      'At least 8 characters',
+                      _hasMin8Chars,
+                    ),
                     const SizedBox(height: 10),
-                    _buildRequirementItem('Uppercase & Lowercase', _hasUppercase && _hasLowercase),
+                    _buildRequirementItem(
+                      'Uppercase & Lowercase',
+                      _hasUppercase && _hasLowercase,
+                    ),
                     const SizedBox(height: 10),
                     _buildRequirementItem('One number', _hasNumber),
                     const SizedBox(height: 10),
-                    _buildRequirementItem('Special character (!@#\$%=)', _hasSpecialChar),
+                    _buildRequirementItem(
+                      'Special character (!@#\$%=)',
+                      _hasSpecialChar,
+                    ),
                   ],
                 ),
               ),
@@ -178,14 +207,26 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xff0a2540),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 0,
                   ),
                   child: _isLoading
-                      ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
                       : Text(
                           'Update Password',
-                          style: GoogleFonts.lexend(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.lexend(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),
@@ -202,13 +243,22 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
     final code = widget.code.isNotEmpty ? widget.code : _codeController.text;
 
     if (code.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter the code from your email')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter the code from your email')),
+      );
       return;
     }
 
-    bool allConditionsMet = _hasMin8Chars && _hasUppercase && _hasLowercase && _hasNumber && _hasSpecialChar;
+    bool allConditionsMet =
+        _hasMin8Chars &&
+        _hasUppercase &&
+        _hasLowercase &&
+        _hasNumber &&
+        _hasSpecialChar;
     if (!allConditionsMet) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please meet all security requirements')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please meet all security requirements')),
+      );
       return;
     }
 
@@ -228,7 +278,9 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -240,37 +292,63 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Text(
         text,
-        style: GoogleFonts.lexend(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xff0a2540)),
+        style: GoogleFonts.lexend(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: const Color(0xff0a2540),
+        ),
       ),
     );
   }
 
-  Widget _buildTextField({required TextEditingController controller, required String hint, required IconData icon}) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+  }) {
     return TextField(
       controller: controller,
       style: GoogleFonts.lexend(fontSize: 16, color: const Color(0xff0a2540)),
       decoration: InputDecoration(
         hintText: hint,
         prefixIcon: Icon(icon, color: const Color(0xff64748b), size: 20),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 17,
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
 
-  Widget _buildPasswordField({required TextEditingController controller, required String hint, required bool obscureText, required VoidCallback onToggleVisibility}) {
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String hint,
+    required bool obscureText,
+    required VoidCallback onToggleVisibility,
+  }) {
     return TextField(
       controller: controller,
       obscureText: obscureText,
       style: GoogleFonts.lexend(fontSize: 16, color: const Color(0xff0a2540)),
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xff64748b), size: 20),
+        prefixIcon: const Icon(
+          Icons.lock_outline,
+          color: Color(0xff64748b),
+          size: 20,
+        ),
         suffixIcon: IconButton(
-          icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility, color: const Color(0xff0a2540)),
+          icon: Icon(
+            obscureText ? Icons.visibility_off : Icons.visibility,
+            color: const Color(0xff0a2540),
+          ),
           onPressed: onToggleVisibility,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 17,
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
@@ -281,7 +359,10 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
       child: Container(
         height: 6,
         margin: const EdgeInsets.symmetric(horizontal: 2),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(99)),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(99),
+        ),
       ),
     );
   }
@@ -289,9 +370,19 @@ class _ConfirmResetPasswordScreenState extends State<ConfirmResetPasswordScreen>
   Widget _buildRequirementItem(String text, bool met) {
     return Row(
       children: [
-        Icon(met ? Icons.check_circle : Icons.radio_button_unchecked, color: met ? Colors.green : Colors.grey, size: 20),
+        Icon(
+          met ? Icons.check_circle : Icons.radio_button_unchecked,
+          color: met ? Colors.green : Colors.grey,
+          size: 20,
+        ),
         const SizedBox(width: 12),
-        Text(text, style: GoogleFonts.lexend(fontSize: 14, color: met ? Colors.black : Colors.grey)),
+        Text(
+          text,
+          style: GoogleFonts.lexend(
+            fontSize: 14,
+            color: met ? Colors.black : Colors.grey,
+          ),
+        ),
       ],
     );
   }
