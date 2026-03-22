@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:disk_space_plus/disk_space_plus.dart';
+import 'package:flutter/services.dart';
 import 'updates_screen.dart';
 
 class ManageAppsScreen extends StatefulWidget {
@@ -11,6 +11,7 @@ class ManageAppsScreen extends StatefulWidget {
 }
 
 class _ManageAppsScreenState extends State<ManageAppsScreen> {
+  static const platform = MethodChannel('com.example.umakstore/storage');
   int _selectedTabIndex = 0;
   
   // Real Storage States
@@ -27,14 +28,16 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
 
   Future<void> _fetchStorageInfo() async {
     try {
-      final diskSpacePlus = DiskSpacePlus();
-      final double? totalMB = await diskSpacePlus.getTotalDiskSpace;
-      final double? freeMB = await diskSpacePlus.getFreeDiskSpace;
+      final dynamic storageInfo = await platform.invokeMethod('getStorageInfo');
       
-      if (totalMB != null && freeMB != null) {
+      if (storageInfo != null) {
+        final totalBytes = storageInfo['totalSpace'] as int? ?? 0;
+        final freeBytes = storageInfo['freeSpace'] as int? ?? 0;
+        
         setState(() {
-          _totalStorage = totalMB / 1024;
-          _freeStorage = freeMB / 1024;
+          // 1024^3 for GB (Gibibytes)
+          _totalStorage = totalBytes.toDouble() / (1024 * 1024 * 1024);
+          _freeStorage = freeBytes.toDouble() / (1024 * 1024 * 1024);
           _usedStorage = _totalStorage - _freeStorage;
           _isLoadingStorage = false;
         });

@@ -4,9 +4,78 @@ import 'screenshots_screen.dart';
 import 'about_app_screen.dart';
 import 'reviews_screen.dart';
 import 'write_review_screen.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:dio/dio.dart';
+import 'dart:async';
 
-class AppDetailsScreen extends StatelessWidget {
+class AppDetailsScreen extends StatefulWidget {
   const AppDetailsScreen({super.key});
+
+  @override
+  State<AppDetailsScreen> createState() => _AppDetailsScreenState();
+}
+
+class _AppDetailsScreenState extends State<AppDetailsScreen> {
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
+  bool _isInstalled = false;
+
+  // ⚠️ PASTE YOUR GITHUB RELEASE URL HERE!
+  final String _apkUrl = "https://github.com/ismemax/scamester_apk/releases/download/Test/ScamesterV.0.1.2.4a.apk"; 
+
+  Future<void> _downloadAndInstallApp() async {
+    if (_isDownloading || _isInstalled) return;
+
+    setState(() {
+      _isDownloading = true;
+      _downloadProgress = 0.0;
+    });
+
+    try {
+      final dio = Dio();
+      final tempDir = await getTemporaryDirectory();
+      final String savePath = "${tempDir.path}/umak_portal.apk";
+
+      await dio.download(
+        _apkUrl,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            setState(() {
+              _downloadProgress = received / total;
+            });
+          }
+        },
+      );
+
+      setState(() {
+        _isDownloading = false;
+        _isInstalled = true;
+      });
+
+      // Trigger native installation
+      final result = await OpenFilex.open(savePath);
+      
+      if (result.type != ResultType.done && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Installation failed: ${result.message}')),
+        );
+        setState(() => _isInstalled = false);
+      }
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error downloading app: $e')),
+        );
+      }
+      setState(() {
+        _isDownloading = false;
+        _downloadProgress = 0.0;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,17 +133,17 @@ class AppDetailsScreen extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xff0a192f),
+              color: const Color(0xffef4444),
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xff2094f3).withValues(alpha: 0.1),
+                  color: const Color(0xffef4444).withValues(alpha: 0.1),
                   blurRadius: 25,
                   offset: const Offset(0, 20),
                   spreadRadius: -5,
                 ),
                 BoxShadow(
-                  color: const Color(0xff2094f3).withValues(alpha: 0.1),
+                  color: const Color(0xffef4444).withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 8),
                   spreadRadius: -6,
@@ -85,10 +154,10 @@ class AppDetailsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.school_rounded, color: Colors.white, size: 48),
+                   const Icon(Icons.shield_rounded, color: Colors.white, size: 48),
                   const SizedBox(height: 4),
                   Text(
-                    'UNIVERSITY',
+                    'SECURITY',
                     style: GoogleFonts.lexend(
                       fontSize: 8,
                       fontWeight: FontWeight.bold,
@@ -103,7 +172,7 @@ class AppDetailsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'UMak Portal',
+          'Scamester',
           style: GoogleFonts.lexend(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -137,11 +206,11 @@ class AppDetailsScreen extends StatelessWidget {
         children: [
           _buildStatItem('4.8 ★', 'RATING'),
           _buildStatDivider(),
-          _buildStatItem('5k+', 'DOWNLOADS'),
+          _buildStatItem('12k+', 'REPORTS'),
           _buildStatDivider(),
-          _buildStatItem('45 MB', 'SIZE'),
+          _buildStatItem('12 MB', 'SIZE'),
           _buildStatDivider(),
-          _buildStatItem('Edu', 'CATEGORY'),
+          _buildStatItem('Sec', 'CATEGORY'),
         ],
       ),
     );
@@ -186,28 +255,48 @@ class AppDetailsScreen extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              height: 54,
-              decoration: BoxDecoration(
-                color: const Color(0xff2094f3),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xff2094f3).withValues(alpha: 0.25),
-                    blurRadius: 15,
-                    offset: const Offset(0, 10),
-                    spreadRadius: -3,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  'Install',
-                  style: GoogleFonts.lexend(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+            child: GestureDetector(
+              onTap: _isDownloading || _isInstalled ? null : _downloadAndInstallApp,
+              child: Container(
+                height: 54,
+                decoration: BoxDecoration(
+                  color: _isInstalled ? const Color(0xff4ade80) : const Color(0xff2094f3),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_isInstalled ? const Color(0xff4ade80) : const Color(0xff2094f3)).withValues(alpha: 0.25),
+                      blurRadius: 15,
+                      offset: const Offset(0, 10),
+                      spreadRadius: -3,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    if (_isDownloading)
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: LinearProgressIndicator(
+                            value: _downloadProgress,
+                            backgroundColor: Colors.transparent,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.3)),
+                          ),
+                        ),
+                      ),
+                    Center(
+                      child: Text(
+                        _isDownloading 
+                            ? '${(_downloadProgress * 100).toInt()}%' 
+                            : (_isInstalled ? 'Installed' : 'Install'),
+                        style: GoogleFonts.lexend(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -248,9 +337,9 @@ class AppDetailsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
+                     MaterialPageRoute(
                       builder: (context) => const ScreenshotsScreen(
-                        appName: 'UMak Portal',
+                        appName: 'Scamester',
                       ),
                     ),
                   );
@@ -363,7 +452,7 @@ class AppDetailsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'The official UMak Portal app brings your university life directly to your fingertips. Designed specifically for students, faculty, and staff, this app provides seamless access to essential university services and information.',
+            'Scamester is your all-in-one security shield for the UMak campus. Designed to identify, report, and prevent scams targeting students and faculty, it keeps our digital environment safe and secure.',
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.lexend(
@@ -709,7 +798,7 @@ class AppDetailsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'UMak CCIS Dept.',
+                        'UMak Security Dept.',
                         style: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,

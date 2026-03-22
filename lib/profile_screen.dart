@@ -45,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('users').doc(_user!.uid).snapshots(),
+      stream: FirebaseFirestore.instance.collection('users').doc(_user.uid).snapshots(),
       builder: (context, snapshot) {
         final userData = snapshot.data?.data();
         final firstName = userData?['firstName'] ?? '';
@@ -54,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final college = userData?['college'] ?? 'College of Computer Science';
         final course = userData?['course'] ?? 'BS Application Development';
         final name = (firstName.isEmpty && lastName.isEmpty) 
-          ? (_user!.displayName ?? 'User Name') 
+          ? (_user.displayName ?? 'User Name') 
           : '$firstName $lastName';
 
         return Scaffold(

@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'widgets/privacy_policy_sheet.dart';
 import 'widgets/terms_of_service_sheet.dart';
-import 'services/auth_service.dart';
 import 'account_setup_screen.dart';
 
 class LegalAndConsentScreen extends StatefulWidget {
@@ -34,7 +33,7 @@ class LegalAndConsentScreen extends StatefulWidget {
 class _LegalAndConsentScreenState extends State<LegalAndConsentScreen> {
   bool _termsAccepted = false;
   bool _marketingAccepted = false;
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {

@@ -301,7 +301,7 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
   }
 
   Widget _buildSection({required IconData icon, required String title, required String content}) {
-    List<TextSpan> _parseContent(String text) {
+    List<TextSpan> parseContent(String text) {
       final spans = <TextSpan>[];
       final regex = RegExp(r'\*\*([^*]+)\*\*'); // Match text between **
       int currentIndex = 0;
@@ -352,7 +352,7 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
                color: const Color(0xff374151),
                height: 1.625,
             ),
-            children: _parseContent(content),
+            children: parseContent(content),
           ),
         ),
       ],

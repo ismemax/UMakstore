@@ -220,8 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _buildTopRatedAppCard(
                   rank: 1,
-                  title: 'UMak Portal',
-                  publisher: 'Registrar Office',
+                  title: 'Scamester',
+                  publisher: 'Security Dept',
                   rating: '4.9',
                   reviews: '(12k)',
                   isButtonOutlined: false,
@@ -231,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Center(
-                      child: Icon(Icons.phone_iphone_rounded, size: 40, color: const Color(0xff38bdf8)),
+                      child: Icon(Icons.shield_rounded, size: 40, color: const Color(0xffef4444)),
                     ),
                   ),
                 ),
@@ -655,7 +655,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         child: const Center(
-                          child: Icon(Icons.widgets_rounded, color: Color(0xff2094f3), size: 32),
+                          child: Icon(Icons.shield_rounded, color: Color(0xffef4444), size: 32),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -664,7 +664,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'UMak Portal',
+                              'Scamester',
                               style: GoogleFonts.lexend(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -672,7 +672,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             Text(
-                              'Your grades, schedule & campus...',
+                              'Detect scams & stay secure on campus...',
                               style: GoogleFonts.lexend(
                                 fontSize: 14,
                                 color: const Color(0xff64748b),

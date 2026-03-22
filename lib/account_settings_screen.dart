@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'services/auth_service.dart';
 import 'change_password_screen.dart';
 import 'widgets/profile_photo_bottom_sheet.dart';

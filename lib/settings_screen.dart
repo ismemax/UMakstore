@@ -386,7 +386,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ),
-            if (trailingWidget != null) trailingWidget,
+            ?trailingWidget,
           ],
         ),
       ),
