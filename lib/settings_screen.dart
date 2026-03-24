@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/theme_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -9,21 +10,38 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _selectedTheme = 'Light';
+  final ThemeService _themeService = ThemeService();
   bool _downloadWifiOnly = false;
   bool _autoUpdate = true;
   bool _allowNotifications = true;
 
   @override
+  void initState() {
+    super.initState();
+    _themeService.addListener(_updateUI);
+  }
+
+  @override
+  void dispose() {
+    _themeService.removeListener(_updateUI);
+    super.dispose();
+  }
+
+  void _updateUI() => setState(() {});
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xff64748b)),
+          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface.withValues(alpha: 0.6)),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -39,18 +57,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xff0f172a),
+                  color: colorScheme.onSurface,
                   letterSpacing: -0.75,
                 ),
               ),
             ),
 
-            _buildSectionHeader('APPEARANCE'),
+            _buildSectionHeader('APPEARANCE', colorScheme),
             const SizedBox(height: 8),
-            _buildSettingsCard([_buildThemeSelectionRow()]),
+            _buildSettingsCard([_buildThemeSelectionRow(colorScheme)], colorScheme),
 
             const SizedBox(height: 24),
-            _buildSectionHeader('GENERAL'),
+            _buildSectionHeader('GENERAL', colorScheme),
             const SizedBox(height: 8),
             _buildSettingsCard([
               _buildNavigationItem(
@@ -60,11 +78,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Language',
                 trailingText: 'English',
                 onTap: () {},
+                colorScheme: colorScheme,
               ),
-            ]),
+            ], colorScheme),
 
             const SizedBox(height: 24),
-            _buildSectionHeader('DOWNLOADS'),
+            _buildSectionHeader('DOWNLOADS', colorScheme),
             const SizedBox(height: 8),
             _buildSettingsCard([
               _buildToggleItem(
@@ -74,8 +93,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Download over Wi-Fi only',
                 value: _downloadWifiOnly,
                 onChanged: (val) => setState(() => _downloadWifiOnly = val),
+                colorScheme: colorScheme,
               ),
-              _buildDivider(),
+              _buildDivider(colorScheme),
               _buildToggleItem(
                 icon: Icons.autorenew_rounded,
                 iconColor: const Color(0xffa855f7),
@@ -83,11 +103,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Auto-update apps',
                 value: _autoUpdate,
                 onChanged: (val) => setState(() => _autoUpdate = val),
+                colorScheme: colorScheme,
               ),
-            ]),
+            ], colorScheme),
 
             const SizedBox(height: 24),
-            _buildSectionHeader('NOTIFICATIONS'),
+            _buildSectionHeader('NOTIFICATIONS', colorScheme),
             const SizedBox(height: 8),
             _buildSettingsCard([
               _buildToggleItem(
@@ -97,11 +118,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Allow Notifications',
                 value: _allowNotifications,
                 onChanged: (val) => setState(() => _allowNotifications = val),
+                colorScheme: colorScheme,
               ),
-            ]),
+            ], colorScheme),
 
             const SizedBox(height: 24),
-            _buildSectionHeader('STORAGE'),
+            _buildSectionHeader('STORAGE', colorScheme),
             const SizedBox(height: 8),
             _buildSettingsCard([
               _buildStorageActionItem(
@@ -115,7 +137,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xfff1f5f9),
+                    color: colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -123,13 +145,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xff64748b),
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
                 onTap: () {},
+                colorScheme: colorScheme,
               ),
-              _buildDivider(),
+              _buildDivider(colorScheme),
               _buildStorageActionItem(
                 icon: Icons.delete_outline_rounded,
                 iconColor: const Color(0xffef4444),
@@ -137,8 +160,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Clear data',
                 titleColor: const Color(0xffef4444),
                 onTap: () {},
+                colorScheme: colorScheme,
               ),
-            ]),
+            ], colorScheme),
 
             const SizedBox(height: 48),
 
@@ -156,11 +180,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
+                      boxShadow: [
                         BoxShadow(
-                          color: Color(0x1A000000),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 15,
-                          offset: Offset(0, 10),
+                          offset: const Offset(0, 10),
                         ),
                       ],
                     ),
@@ -174,15 +198,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xff64748b),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Version 1.0.5 (Build 240)',
+                    'Version 1.1.0',
                     style: GoogleFonts.lexend(
                       fontSize: 12,
-                      color: const Color(0xff94a3b8),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                     ),
                   ),
                 ],
@@ -195,7 +219,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
       child: Text(
@@ -203,25 +227,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: GoogleFonts.lexend(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: const Color(0xff0f2e53),
+          color: colorScheme.primary,
           letterSpacing: 0.6,
         ),
       ),
     );
   }
 
-  Widget _buildSettingsCard(List<Widget> children) {
+  Widget _buildSettingsCard(List<Widget> children, ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(children: children),
     );
   }
 
-  Widget _buildThemeSelectionRow() {
+  Widget _buildThemeSelectionRow(ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -232,12 +256,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: const Color(0xfff1f5f9),
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.dark_mode_outlined,
-                  color: Color(0xff0f172a),
+                child: Icon(
+                  _themeService.themeMode == ThemeMode.dark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  color: colorScheme.onSurface,
                   size: 16,
                 ),
               ),
@@ -247,7 +271,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xff0f172a),
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
@@ -256,14 +280,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xfff1f5f9),
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                _buildThemeTag('System'),
-                _buildThemeTag('Light'),
-                _buildThemeTag('Dark'),
+                _buildThemeTag('Light', ThemeMode.light, colorScheme),
+                _buildThemeTag('Dark', ThemeMode.dark, colorScheme),
               ],
             ),
           ),
@@ -272,29 +295,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildThemeTag(String label) {
-    bool isSelected = _selectedTheme == label;
+  Widget _buildThemeTag(String label, ThemeMode mode, ColorScheme colorScheme) {
+    bool isSelected = _themeService.themeMode == mode;
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedTheme = label;
-          });
-        },
+        onTap: () => _themeService.setTheme(mode),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xff0a2342) : Colors.transparent,
+            color: isSelected ? colorScheme.primary : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
-            boxShadow: isSelected
-                ? const [
-                    BoxShadow(
-                      color: Color(0x0D000000),
-                      blurRadius: 2,
-                      offset: Offset(0, 1),
-                    ),
-                  ]
-                : [],
           ),
           child: Text(
             label,
@@ -302,7 +312,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: GoogleFonts.lexend(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : const Color(0xff64748b),
+              color: isSelected ? Colors.white : colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ),
@@ -317,6 +327,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required bool value,
     required ValueChanged<bool> onChanged,
+    required ColorScheme colorScheme,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -338,16 +349,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: GoogleFonts.lexend(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xff0f172a),
+                color: colorScheme.onSurface,
               ),
             ),
           ),
           Switch(
             value: value,
             onChanged: onChanged,
-            activeTrackColor: const Color(0xff2094f3),
+            activeTrackColor: colorScheme.primary,
             inactiveThumbColor: Colors.white,
-            inactiveTrackColor: const Color(0xffe2e8f0),
+            inactiveTrackColor: colorScheme.outlineVariant,
           ),
         ],
       ),
@@ -359,9 +370,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Color iconColor,
     required Color iconBgColor,
     required String title,
-    Color titleColor = const Color(0xff0f172a),
+    Color? titleColor,
     Widget? trailingWidget,
     required VoidCallback onTap,
+    required ColorScheme colorScheme,
   }) {
     return InkWell(
       onTap: onTap,
@@ -385,11 +397,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: titleColor,
+                  color: titleColor ?? colorScheme.onSurface,
                 ),
               ),
             ),
-            ?trailingWidget,
+            if (trailingWidget != null) trailingWidget,
           ],
         ),
       ),
@@ -403,6 +415,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     String? trailingText,
     required VoidCallback onTap,
+    required ColorScheme colorScheme,
   }) {
     return InkWell(
       onTap: onTap,
@@ -426,7 +439,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xff0f172a),
+                  color: colorScheme.onSurface,
                 ),
               ),
             ),
@@ -437,13 +450,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailingText,
                   style: GoogleFonts.lexend(
                     fontSize: 14,
-                    color: const Color(0xff94a3b8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
               ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: Color(0xff94a3b8),
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
               size: 16,
             ),
           ],
@@ -452,7 +465,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDivider() {
-    return Container(height: 1, color: const Color(0xfff1f5f9));
+  Widget _buildDivider(ColorScheme colorScheme) {
+    return Container(height: 1, color: colorScheme.outlineVariant);
   }
 }

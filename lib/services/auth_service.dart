@@ -43,6 +43,9 @@ class AuthService {
         print('Sign up initiated for $email. Verification email sent.');
       }
     } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw 'This email is already registered. Please sign in instead.';
+      }
       if (kDebugMode) {
         print('Firebase Auth error during sign-up: ${e.code} - ${e.message}');
       }
@@ -198,9 +201,19 @@ class AuthService {
   }
 
   /// Checks if an email is already associated with a profile in Firestore.
+  /// NOTE: This may fail with "Permission Denied" if the user is not signed in
+  /// and Firestore rules are restrictive. We catch this and return false to
+  /// allow the registration flow to proceed to FirebaseAuth, which handles
+  /// uniqueness check natively.
   Future<bool> isEmailRegistered(String email) async {
     try {
       final sanitizedEmail = email.toLowerCase().trim();
+      
+      // If no user is signed in, some Firestore rules might block this query.
+      if (_auth.currentUser == null) {
+        return false;
+      }
+
       final query = await _db
           .collection('users')
           .where('email', isEqualTo: sanitizedEmail)
@@ -208,7 +221,10 @@ class AuthService {
           .get();
       return query.docs.isNotEmpty;
     } catch (e) {
-      if (kDebugMode) print('Firestore query error: $e');
+      if (kDebugMode) {
+        print('Firestore query error (usually permission related): $e');
+      }
+      // Return false to let the Auth flow handle it. 
       return false;
     }
   }

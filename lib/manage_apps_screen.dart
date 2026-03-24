@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'updates_screen.dart';
+import 'services/installer_service.dart';
+import 'models/app_model.dart';
+import 'app_details_screen.dart';
 
 class ManageAppsScreen extends StatefulWidget {
   const ManageAppsScreen({super.key});
@@ -13,6 +16,8 @@ class ManageAppsScreen extends StatefulWidget {
 class _ManageAppsScreenState extends State<ManageAppsScreen> {
   static const platform = MethodChannel('com.example.umakstore/storage');
   int _selectedTabIndex = 0;
+  late InstallerService _installer;
+  bool _isScamesterSelected = false;
 
   // Real Storage States
   double _totalStorage = 0;
@@ -23,7 +28,19 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
   @override
   void initState() {
     super.initState();
+    _installer = InstallerService();
+    _installer.addListener(_onInstallerUpdate);
     _fetchStorageInfo();
+  }
+
+  void _onInstallerUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _installer.removeListener(_onInstallerUpdate);
+    super.dispose();
   }
 
   Future<void> _fetchStorageInfo() async {
@@ -50,16 +67,19 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xff1e293b),
+            color: colorScheme.onSurface,
             size: 20,
           ),
           onPressed: () => Navigator.of(context).pop(),
@@ -69,7 +89,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           style: GoogleFonts.lexend(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: const Color(0xff1e293b),
+            color: colorScheme.onSurface,
             letterSpacing: -0.45,
           ),
         ),
@@ -84,7 +104,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
               ),
               child: Column(
                 children: [
-                  _buildSegmentedControl(),
+                  _buildTabs(colorScheme),
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -116,104 +136,86 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
     );
   }
 
-  Widget _buildSegmentedControl() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          color: const Color(0xfff1f5f9),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: const EdgeInsets.all(4),
-        child: Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedTabIndex = 0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: _selectedTabIndex == 0
-                        ? const Color(0xff1e293b)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(4),
-                    boxShadow: _selectedTabIndex == 0
-                        ? [
-                            const BoxShadow(
-                              color: Color(0x0D000000),
-                              blurRadius: 2,
-                              offset: Offset(0, 1),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Overview',
-                      style: GoogleFonts.lexend(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: _selectedTabIndex == 0
-                            ? Colors.white
-                            : const Color(0xff64748b),
-                      ),
+  Widget _buildTabs(ColorScheme colorScheme) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedTabIndex = 0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: _selectedTabIndex == 0
+                      ? colorScheme.primary
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Center(
+                  child: Text(
+                    'Overview',
+                    style: GoogleFonts.lexend(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: _selectedTabIndex == 0
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
               ),
             ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedTabIndex = 1),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: _selectedTabIndex == 1
-                        ? const Color(0xff1e293b)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(4),
-                    boxShadow: _selectedTabIndex == 1
-                        ? [
-                            const BoxShadow(
-                              color: Color(0x0D000000),
-                              blurRadius: 2,
-                              offset: Offset(0, 1),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Manage',
-                      style: GoogleFonts.lexend(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: _selectedTabIndex == 1
-                            ? Colors.white
-                            : const Color(0xff64748b),
-                      ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedTabIndex = 1),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: _selectedTabIndex == 1
+                      ? colorScheme.primary
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Center(
+                  child: Text(
+                    'Manage',
+                    style: GoogleFonts.lexend(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: _selectedTabIndex == 1
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildUpdatesCard() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffe2e8f0)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -226,13 +228,13 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xff1e293b).withValues(alpha: 0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.system_update_alt_rounded,
-                    color: Color(0xff1e293b),
+                    color: colorScheme.primary,
                     size: 20,
                   ),
                 ),
@@ -246,7 +248,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xff1e293b),
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -254,7 +256,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                     '5 pending updates',
                     style: GoogleFonts.lexend(
                       fontSize: 14,
-                      color: const Color(0xff64748b),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -264,7 +266,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildMiniAppIcon(const Color(0xff0a192f)), // Placeholder colors
+              _buildMiniAppIcon(colorScheme.primary), // Use dynamic colors
               const SizedBox(width: 4),
               _buildMiniAppIcon(const Color(0xfff97316)),
               const SizedBox(width: 4),
@@ -274,9 +276,9 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: const Color(0xfff1f5f9),
+                  color: colorScheme.surfaceContainerHighest,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: colorScheme.surface, width: 2),
                 ),
                 child: Center(
                   child: Text(
@@ -284,7 +286,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xff1e293b),
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -346,11 +348,12 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
   }
 
   Widget _buildStorageCard() {
+    final colorScheme = Theme.of(context).colorScheme;
     if (_isLoadingStorage) {
       return Container(
         height: 150,
         alignment: Alignment.center,
-        child: const CircularProgressIndicator(strokeWidth: 2),
+        child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
       );
     }
 
@@ -361,14 +364,14 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffe2e8f0)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -377,9 +380,9 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.sd_storage_outlined,
-                color: Color(0xff1e293b),
+                color: colorScheme.onSurface,
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -388,7 +391,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xff1e293b),
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
@@ -407,7 +410,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xff1e293b),
+                      color: colorScheme.primary,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -415,7 +418,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                     'used',
                     style: GoogleFonts.lexend(
                       fontSize: 14,
-                      color: const Color(0xff64748b),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -425,7 +428,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xff64748b),
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -435,7 +438,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
             height: 10,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xfff1f5f9),
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(9999),
             ),
             child: FractionallySizedBox(
@@ -443,7 +446,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
               widthFactor: usedPercent,
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xff1e293b),
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(9999),
                 ),
               ),
@@ -454,7 +457,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
             '${_freeStorage.toStringAsFixed(1)}GB free for new apps and data',
             style: GoogleFonts.lexend(
               fontSize: 12,
-              color: const Color(0xff64748b),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -642,7 +645,11 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
   }
 
   Widget _buildManageTab() {
+    final installedApps = AppModel.sampleApps.where((app) => app.status == AppStatus.installed).toList();
+    final libraryApps = AppModel.sampleApps.where((app) => app.isInLibrary && app.status != AppStatus.installed).toList();
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -712,7 +719,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
               ],
             ),
             Text(
-              '12 apps',
+              '${AppModel.sampleApps.length} apps',
               style: GoogleFonts.lexend(
                 fontSize: 12,
                 color: const Color(0xff94a3b8),
@@ -720,92 +727,73 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        _buildManageAppCard(
-          title: 'UMak Portal',
-          version: 'Version 2.4.1',
-          size: '45 MB',
-          usage: 'Used today',
-          iconWidget: _buildPhotoIcon(
-            Icons.phone_iphone_rounded,
-            const Color(0xff10b981),
-          ),
-          isSelected: true,
-          isUsageGreen: true,
-        ),
-        const SizedBox(height: 12),
-        _buildManageAppCard(
-          title: 'Library Scan',
-          version: 'Version 1.0.5',
-          size: '18 MB',
-          usage: 'Used 2 days ago',
-          iconWidget: _buildPhotoIcon(
-            Icons.center_focus_weak_rounded,
-            const Color(0xff3b82f6),
-          ),
-          isSelected: false,
-        ),
-        const SizedBox(height: 12),
-        _buildManageAppCard(
-          title: 'Campus Map',
-          version: 'Version 3.1.0',
-          size: '82 MB',
-          usage: 'Used 1 week ago',
-          iconWidget: _buildPhotoIcon(
-            Icons.map_rounded,
-            const Color(0xff14b8a6),
-          ),
-          isSelected: false,
-        ),
-        const SizedBox(height: 12),
-        _buildManageAppCard(
-          title: 'Events UMak',
-          version: 'Version 1.2',
-          size: '12 MB',
-          usage: 'Used 3 weeks ago',
-          iconWidget: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xff6366f1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Text(
-                'E',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+        const SizedBox(height: 24),
+        
+        if (installedApps.isNotEmpty) ...[
+          _buildSectionLabel('Installed apps'),
+          const SizedBox(height: 12),
+          ...installedApps.map((app) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildManageAppCard(
+              title: app.title,
+              version: 'Version ${app.version}',
+              size: app.size,
+              usage: 'Used today',
+              iconWidget: _buildPhotoIcon(
+                app.iconData ?? Icons.widgets_rounded,
+                app.themeColor ?? const Color(0xff64748b),
               ),
+              isSelected: _isScamesterSelected, // Currently only 1 app, so we use this state
+              isUsageGreen: true,
+              onTap: () {
+                setState(() {
+                  _isScamesterSelected = !_isScamesterSelected;
+                });
+              },
             ),
-          ),
-          isSelected: false,
-        ),
-        const SizedBox(height: 12),
-        _buildManageAppCard(
-          title: 'Shuttle Track',
-          version: 'Version 0.9.4',
-          size: '28 MB',
-          usage: 'Used 1 month ago',
-          iconWidget: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xfffb923c),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Text(
-                'S',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+          )),
+        ],
+
+        if (libraryApps.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _buildSectionLabel('In Library (Uninstalled)'),
+          const SizedBox(height: 12),
+          ...libraryApps.map((app) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildManageAppCard(
+              title: app.title,
+              version: 'Version ${app.version}',
+              size: app.size,
+              usage: 'Ready to re-install',
+              iconWidget: _buildPhotoIcon(
+                app.iconData ?? Icons.widgets_rounded,
+                app.themeColor ?? const Color(0xff64748b),
               ),
+              isSelected: false,
+              isUsageGreen: false,
+              onRemove: () => _installer.removeFromLibrary(app),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AppDetailsScreen(app: app)),
+                );
+              },
             ),
-          ),
-          isSelected: false,
-        ),
+          )),
+        ],
       ],
+    );
+  }
+
+  Widget _buildSectionLabel(String label) {
+    return Text(
+      label.toUpperCase(),
+      style: GoogleFonts.lexend(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: const Color(0xff94a3b8),
+        letterSpacing: 0.5,
+      ),
     );
   }
 
@@ -816,108 +804,118 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
     required String usage,
     required Widget iconWidget,
     required bool isSelected,
+    required VoidCallback onTap,
+    VoidCallback? onRemove,
     bool isUsageGreen = false,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? const Color(0xff2094f3).withValues(alpha: 0.05)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected ? const Color(0xff2094f3) : const Color(0xffe2e8f0),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xff2094f3).withValues(alpha: 0.05)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xff2094f3) : const Color(0xffe2e8f0),
           ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(width: 48, height: 48, child: iconWidget),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.lexend(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xff0f172a),
-                      ),
-                    ),
-                    Text(
-                      size,
-                      style: GoogleFonts.lexend(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xff475569),
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  version,
-                  style: GoogleFonts.lexend(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xff0f172a).withValues(alpha: 0.8),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    if (isUsageGreen) ...[
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xff10b981),
-                          shape: BoxShape.circle,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D000000),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(width: 48, height: 48, child: iconWidget),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.lexend(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xff0f172a),
                         ),
                       ),
-                      const SizedBox(width: 6),
-                    ],
-                    Text(
-                      usage,
-                      style: GoogleFonts.lexend(
-                        fontSize: 10,
-                        color: const Color(0xff475569),
+                      Text(
+                        size,
+                        style: GoogleFonts.lexend(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xff475569),
+                        ),
                       ),
+                    ],
+                  ),
+                  Text(
+                    version,
+                    style: GoogleFonts.lexend(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xff0f172a).withValues(alpha: 0.8),
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              color: isSelected ? const Color(0xff2094f3) : Colors.white,
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xff2094f3)
-                    : const Color(0xffcbd5e1),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (isUsageGreen) ...[
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xff10b981),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        usage,
+                        style: GoogleFonts.lexend(
+                          fontSize: 10,
+                          color: const Color(0xff475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(4),
             ),
-            child: isSelected
-                ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
-                : null,
-          ),
-        ],
+            const SizedBox(width: 16),
+            onRemove != null 
+            ? GestureDetector(
+                onTap: onRemove,
+                child: const Icon(Icons.close_rounded, color: Color(0xff94a3b8), size: 20),
+              )
+            : Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xff2094f3) : Colors.white,
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xff2094f3)
+                        : const Color(0xffcbd5e1),
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                    : null,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -951,69 +949,221 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
   }
 
   Widget _buildUninstallButton() {
-    return Container(
-      decoration: const BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x332094f3),
-            blurRadius: 50,
-            offset: Offset(0, 25),
-          ),
-        ],
-      ),
+    int selectedCount = _isScamesterSelected ? 1 : 0;
+    
+    return GestureDetector(
+      onTap: () {
+        if (_isScamesterSelected && AppModel.sampleApps[0].status == AppStatus.installed) {
+          _showUninstallConfirmationDialog(context, AppModel.sampleApps[0]);
+        }
+      },
       child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: const Color(0xff2094f3),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
+        decoration: const BoxDecoration(
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0D000000),
-              blurRadius: 15,
-              offset: Offset(0, 10),
+              color: Color(0x332094f3),
+              blurRadius: 50,
+              offset: Offset(0, 25),
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.delete_outline_rounded,
-                  color: Colors.white,
-                  size: 18,
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xff2094f3),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0D000000),
+                blurRadius: 15,
+                offset: Offset(0, 10),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Uninstall selected',
+                    style: GoogleFonts.lexend(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  'Uninstall selected',
+                child: Text(
+                  '$selectedCount',
                   style: GoogleFonts.lexend(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(6),
               ),
-              child: Text(
-                '1',
-                style: GoogleFonts.lexend(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _showUninstallConfirmationDialog(BuildContext context, AppModel app) {
+    bool keepData = true;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(
+                'Uninstall ${app.title}?',
+                style: GoogleFonts.lexend(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: const Color(0xff0a192f),
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildChecklistItem(Icons.delete_sweep_outlined, 'Removes app files from your device', true),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () => setState(() => keepData = !keepData),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Icon(
+                            keepData ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                            color: const Color(0xff2094f3),
+                            size: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Keep ${app.size} of app data',
+                              style: GoogleFonts.lexend(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xff475569),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 32),
+                    child: Text(
+                      'Recommended if you reinstall later',
+                      style: GoogleFonts.lexend(
+                        fontSize: 11,
+                        color: const Color(0xff94a3b8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildChecklistItem(Icons.library_books_outlined, 'Keeps record in your library', true),
+                ],
+              ),
+              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'CANCEL',
+                    style: GoogleFonts.lexend(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xff64748b),
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    if (keepData) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Note: Tap "Keep data" in the system prompt below!'),
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                    final error = await _installer.uninstallApp(app);
+                    if (error != null && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xffef4444),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  child: Text(
+                    'UNINSTALL',
+                    style: GoogleFonts.lexend(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildChecklistItem(IconData icon, String text, bool checked) {
+    return Row(
+      children: [
+        Icon(
+          checked ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+          size: 20,
+          color: checked ? const Color(0xff10b981) : const Color(0xffcbd5e1),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.lexend(
+              fontSize: 14,
+              color: const Color(0xff475569),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

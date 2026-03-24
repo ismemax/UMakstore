@@ -29,8 +29,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: Stack(
         children: [
           // Background Effects
@@ -42,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 384,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xffeff6ff).withValues(alpha: 0.5),
+                color: colorScheme.primary.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -54,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 256,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xffeff6ff).withValues(alpha: 0.5),
+                color: colorScheme.primary.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -75,25 +77,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         width: 96,
                         height: 96,
-                        padding: const EdgeInsets.all(
-                          1,
-                        ), // for gradient border effect
+                        padding: const EdgeInsets.all(1),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Color(0x1a2094f3), // rgba(32,148,243,0.1)
-                              Color(0x002094f3),
+                              colorScheme.primary.withValues(alpha: 0.1),
+                              colorScheme.primary.withValues(alpha: 0.0),
                             ],
                           ),
                         ),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(
-                              0x0d2094f3,
-                            ), // rgba(32,148,243,0.05)
+                            color: colorScheme.primary.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(15),
                           ),
                           child: Center(
@@ -101,9 +99,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 44,
                               height: 36,
                               child: SvgPicture.asset(
-                                'assets/logo.svg', // Fallback to existing asset
+                                'assets/logo.svg',
                                 fit: BoxFit.contain,
-                                // fallback logic in case the asset color doesn't match perfectly, but we'll try to just render the logo
+                                colorFilter: ColorFilter.mode(colorScheme.primary, BlendMode.srcIn),
                               ),
                             ),
                           ),
@@ -117,8 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: GoogleFonts.lexend(
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
-                        height: 36 / 30,
-                        color: const Color(0xff0f172a),
+                        height: 1.2,
+                        color: colorScheme.onSurface,
                         letterSpacing: -0.75,
                       ),
                     ),
@@ -129,8 +127,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: GoogleFonts.lexend(
                         fontWeight: FontWeight.w300,
                         fontSize: 16,
-                        height: 24 / 16,
-                        color: const Color(0xff64748b),
+                        height: 1.5,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -141,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: GoogleFonts.lexend(
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
-                        color: const Color(0xff334155),
+                        color: colorScheme.onSurface.withValues(alpha: 0.8),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -151,34 +149,34 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: GoogleFonts.lexend(
                         fontWeight: FontWeight.w400,
                         fontSize: 16,
-                        color: const Color(0xff0f172a),
+                        color: colorScheme.onSurface,
                       ),
                       decoration: InputDecoration(
                         hintText: 'student@umak.edu.ph',
                         hintStyle: GoogleFonts.lexend(
                           fontWeight: FontWeight.w400,
                           fontSize: 16,
-                          color: const Color(0xff94a3b8),
+                          color: colorScheme.onSurface.withValues(alpha: 0.3),
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.mail_outline_rounded,
-                          color: Color(0xff475569),
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: colorScheme.surfaceContainerHighest,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 16,
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Color(0xffe2e8f0),
+                          borderSide: BorderSide(
+                            color: colorScheme.outlineVariant,
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Color(0xff2094f3),
+                          borderSide: BorderSide(
+                            color: colorScheme.primary,
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -191,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: GoogleFonts.lexend(
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
-                        color: const Color(0xff334155),
+                        color: colorScheme.onSurface.withValues(alpha: 0.8),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -201,25 +199,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: GoogleFonts.lexend(
                         fontWeight: FontWeight.w400,
                         fontSize: 16,
-                        color: const Color(0xff0f172a),
+                        color: colorScheme.onSurface,
                       ),
                       decoration: InputDecoration(
                         hintText: '••••••••',
                         hintStyle: GoogleFonts.lexend(
                           fontWeight: FontWeight.w400,
                           fontSize: 16,
-                          color: const Color(0xff94a3b8),
+                          color: colorScheme.onSurface.withValues(alpha: 0.3),
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.lock_outline,
-                          color: Color(0xff475569),
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            color: const Color(0xff94a3b8),
+                            color: colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                           onPressed: () {
                             setState(() {
@@ -228,20 +226,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: colorScheme.surfaceContainerHighest,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 16,
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Color(0xffe2e8f0),
+                          borderSide: BorderSide(
+                            color: colorScheme.outlineVariant,
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Color(0xff2094f3),
+                          borderSide: BorderSide(
+                            color: colorScheme.primary,
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -267,10 +265,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                side: const BorderSide(
-                                  color: Color(0xffcbd5e1),
+                                side: BorderSide(
+                                  color: colorScheme.outlineVariant,
                                 ),
-                                activeColor: const Color(0xff2094f3),
+                                activeColor: colorScheme.primary,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -279,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: GoogleFonts.lexend(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 14,
-                                color: const Color(0xff475569),
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                           ],
@@ -302,7 +300,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: GoogleFonts.lexend(
                               fontWeight: FontWeight.w500,
                               fontSize: 14,
-                              color: const Color(0xff2094f3),
+                              color: colorScheme.primary,
                             ),
                           ),
                         ),
@@ -338,22 +336,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                     password,
                                   );
                                   if (!mounted) return;
-                                  if (mounted) {
-                                    Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(
-                                        builder: (_) => const HomeScreen(),
-                                      ),
-                                    );
-                                  }
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (_) => const HomeScreen(),
+                                    ),
+                                  );
                                 } catch (e) {
                                   if (!mounted) return;
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Login failed: $e'),
-                                      ),
-                                    );
-                                  }
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Login failed: $e'),
+                                    ),
+                                  );
                                 } finally {
                                   if (mounted) {
                                     setState(() => _isLoading = false);
@@ -361,20 +355,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xff2094f3),
-                          foregroundColor: Colors.white,
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
                           elevation: 0,
-                          shadowColor: const Color(0x332094f3),
+                          shadowColor: colorScheme.primary.withValues(alpha: 0.2),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: colorScheme.onPrimary,
                                   strokeWidth: 2,
                                 ),
                               )
@@ -392,9 +386,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Divider
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Divider(
-                            color: Color(0xffe2e8f0),
+                            color: colorScheme.outlineVariant,
                             thickness: 1,
                           ),
                         ),
@@ -405,14 +399,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: GoogleFonts.lexend(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xff94a3b8),
+                              color: colorScheme.onSurface.withValues(alpha: 0.4),
                               letterSpacing: 0.7,
                             ),
                           ),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Divider(
-                            color: Color(0xffe2e8f0),
+                            color: colorScheme.outlineVariant,
                             thickness: 1,
                           ),
                         ),
@@ -457,11 +451,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                               },
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xffe2e8f0)),
+                          side: BorderSide(color: colorScheme.outlineVariant),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          foregroundColor: const Color(0xff334155),
+                          foregroundColor: colorScheme.onSurface,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -490,7 +484,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: GoogleFonts.lexend(
                             fontWeight: FontWeight.w400,
                             fontSize: 14,
-                            color: const Color(0xff64748b),
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         TextButton(
@@ -511,7 +505,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: GoogleFonts.lexend(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
-                              color: const Color(0xff2094f3),
+                              color: colorScheme.primary,
                             ),
                           ),
                         ),

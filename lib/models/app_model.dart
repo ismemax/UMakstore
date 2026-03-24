@@ -26,6 +26,7 @@ class AppModel {
   AppStatus status;
   double progress;
   String? errorMessage;
+  bool isInLibrary;
 
   AppModel({
     required this.id,
@@ -44,6 +45,7 @@ class AppModel {
     this.status = AppStatus.notInstalled,
     this.progress = 0.0,
     this.errorMessage,
+    this.isInLibrary = false,
   });
 
   // Helper for static data in the UI

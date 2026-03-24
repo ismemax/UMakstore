@@ -23,13 +23,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xff00205b)),
+          icon: Icon(Icons.arrow_back, color: colorScheme.primary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -51,9 +54,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xfff1f5f9)),
+                        border: Border.all(color: colorScheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.05),
@@ -64,8 +67,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       padding: const EdgeInsets.all(16),
                       child: Image.asset(
-                        'assets/logo.png', // Reusing the logo asset
+                        'assets/logo.png',
                         fit: BoxFit.contain,
+                        color: colorScheme.primary, // Apply primary color to logo if it supports it
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -76,7 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: GoogleFonts.lexend(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xff00205b),
+                        color: colorScheme.onSurface,
                         letterSpacing: -0.75,
                       ),
                     ),
@@ -89,7 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: GoogleFonts.lexend(
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
-                        color: const Color(0xff64748b),
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                         height: 1.5,
                       ),
                     ),
@@ -105,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: GoogleFonts.lexend(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xff334155),
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -115,48 +119,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
+                      style: TextStyle(color: colorScheme.onSurface),
                       decoration: InputDecoration(
                         hintText: 'student@umak.edu.ph',
                         hintStyle: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
-                          color: const Color(0xff94a3b8),
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.mail_outline_rounded,
-                          color: Color(0xff94a3b8),
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
                           size: 20,
                         ),
+                        filled: true,
+                        fillColor: colorScheme.surfaceContainerHighest,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 17,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xffe2e8f0),
+                          borderSide: BorderSide(
+                            color: colorScheme.outlineVariant,
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xffe2e8f0),
+                          borderSide: BorderSide(
+                            color: colorScheme.outlineVariant,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xff0056d2),
+                          borderSide: BorderSide(
+                            color: colorScheme.primary,
                             width: 2,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
                     const SizedBox(height: 24),
-
-                    // Removed Password Field
-                    const SizedBox(height: 32),
 
                     // Send Code Button
                     SizedBox(
@@ -224,8 +227,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 }
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xff0056d2),
-                          foregroundColor: Colors.white,
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -235,11 +238,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             _isLoading
-                                ? const SizedBox(
+                                ? SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: colorScheme.onPrimary,
                                       strokeWidth: 2,
                                     ),
                                   )
@@ -262,9 +265,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // Divider
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Divider(
-                            color: Color(0xffe2e8f0),
+                            color: colorScheme.outlineVariant,
                             thickness: 1,
                           ),
                         ),
@@ -275,14 +278,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: GoogleFonts.lexend(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xff94a3b8),
+                              color: colorScheme.onSurface.withValues(alpha: 0.4),
                               letterSpacing: 0.7,
                             ),
                           ),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Divider(
-                            color: Color(0xffe2e8f0),
+                            color: colorScheme.outlineVariant,
                             thickness: 1,
                           ),
                         ),
@@ -327,20 +330,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 }
                               },
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xffe2e8f0)),
+                          side: BorderSide(color: colorScheme.outlineVariant),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          foregroundColor: const Color(0xff334155),
+                          foregroundColor: colorScheme.onSurface,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Placeholder for Google Icon
-                            const Icon(
-                              Icons.g_mobiledata,
-                              size: 28,
-                            ), // Using a material icon as fallback
+                            const Icon(Icons.g_mobiledata, size: 28),
                             const SizedBox(width: 12),
                             Text(
                               'Continue with Google',
@@ -362,39 +361,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Text.rich(
                         TextSpan(
                           children: [
-                            const TextSpan(
+                            TextSpan(
                               text: 'By continuing, you agree to our ',
+                              style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
                             ),
                             TextSpan(
                               text: 'Terms of Service',
                               style: TextStyle(
-                                color: const Color(0xff0056d2),
+                                color: colorScheme.primary,
                                 decoration: TextDecoration.underline,
-                                decorationColor: const Color(0xff0056d2)
-                                    .withValues(
-                                      alpha: 0.3,
-                                    ), // 0.3 opacity blue as per figma
+                                decorationColor: colorScheme.primary.withValues(alpha: 0.3),
                               ),
                             ),
-                            const TextSpan(text: ' and '),
+                            TextSpan(
+                              text: ' and ',
+                              style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                            ),
                             TextSpan(
                               text: 'Privacy Policy',
                               style: TextStyle(
-                                color: const Color(0xff0056d2),
+                                color: colorScheme.primary,
                                 decoration: TextDecoration.underline,
-                                decorationColor: const Color(
-                                  0xff0056d2,
-                                ).withValues(alpha: 0.3),
+                                decorationColor: colorScheme.primary.withValues(alpha: 0.3),
                               ),
                             ),
-                            const TextSpan(text: '.'),
+                            TextSpan(
+                              text: '.',
+                              style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                            ),
                           ],
                         ),
                         textAlign: TextAlign.center,
                         style: GoogleFonts.lexend(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
-                          color: const Color(0xff94a3b8),
                           height: 1.6,
                         ),
                       ),

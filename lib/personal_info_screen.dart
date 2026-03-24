@@ -54,13 +54,16 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xff003366)),
+          icon: Icon(Icons.arrow_back, color: colorScheme.primary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -68,7 +71,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           style: GoogleFonts.lexend(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: const Color(0xff64748b),
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         centerTitle: true,
@@ -84,13 +87,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               ),
               child: Row(
                 children: [
-                  _buildProgressBar(true),
+                  _buildProgressBar(true, colorScheme),
                   const SizedBox(width: 8),
-                  _buildProgressBar(true),
+                  _buildProgressBar(true, colorScheme),
                   const SizedBox(width: 8),
-                  _buildProgressBar(true),
+                  _buildProgressBar(true, colorScheme),
                   const SizedBox(width: 8),
-                  _buildProgressBar(false),
+                  _buildProgressBar(false, colorScheme),
                 ],
               ),
             ),
@@ -110,7 +113,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         style: GoogleFonts.lexend(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xff0f172a),
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -120,33 +123,34 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         'Please provide your details exactly as they\nappear in your official school records.',
                         style: GoogleFonts.lexend(
                           fontSize: 16,
-                          color: const Color(0xff64748b),
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                           height: 1.5,
                         ),
                       ),
                       const SizedBox(height: 48),
 
                       // Student ID (Locked/Read-only)
-                      _buildLabel('Student ID'),
+                      _buildLabel('Student ID', colorScheme),
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xfff8fafc),
+                          color: colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xffe2e8f0)),
+                          border: Border.all(color: colorScheme.outlineVariant),
                         ),
                         child: TextField(
                           controller: _studentIdController,
                           readOnly: true,
+                          style: TextStyle(color: colorScheme.onSurface),
                           decoration: InputDecoration(
                             hintText: 'K12345678',
                             hintStyle: GoogleFonts.lexend(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xff64748b),
+                              color: colorScheme.onSurface.withValues(alpha: 0.4),
                             ),
-                            suffixIcon: const Icon(
+                            suffixIcon: Icon(
                               Icons.lock_outline_rounded,
-                              color: Color(0xff94a3b8),
+                              color: colorScheme.onSurface.withValues(alpha: 0.4),
                               size: 20,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
@@ -160,39 +164,41 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       const SizedBox(height: 20),
 
                       // Last Name
-                      _buildLabel('Last Name'),
-                      _buildTextField(_lastNameController, 'e.g. Dela Cruz'),
+                      _buildLabel('Last Name', colorScheme),
+                      _buildTextField(_lastNameController, 'e.g. Dela Cruz', colorScheme),
                       const SizedBox(height: 20),
 
                       // First Name
-                      _buildLabel('First Name'),
-                      _buildTextField(_firstNameController, 'e.g. Juan'),
+                      _buildLabel('First Name', colorScheme),
+                      _buildTextField(_firstNameController, 'e.g. Juan', colorScheme),
                       const SizedBox(height: 20),
 
                       // Middle Initial
-                      _buildLabel('Middle Initial'),
-                      _buildTextField(_middleInitialController, 'e.g. A'),
+                      _buildLabel('Middle Initial', colorScheme),
+                      _buildTextField(_middleInitialController, 'e.g. A', colorScheme),
                       const SizedBox(height: 20),
 
                       // College
-                      _buildLabel('College'),
+                      _buildLabel('College', colorScheme),
                       _buildDropdown(
                         hint: 'Select your college',
                         value: _selectedCollege,
                         items: _colleges,
                         onChanged: (val) =>
                             setState(() => _selectedCollege = val),
+                        colorScheme: colorScheme,
                       ),
                       const SizedBox(height: 20),
 
                       // Course
-                      _buildLabel('Course'),
+                      _buildLabel('Course', colorScheme),
                       _buildDropdown(
                         hint: 'Select your course',
                         value: _selectedCourse,
                         items: _courses,
                         onChanged: (val) =>
                             setState(() => _selectedCourse = val),
+                        colorScheme: colorScheme,
                       ),
                       const SizedBox(height: 48),
                     ],
@@ -205,8 +211,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             Container(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
-                border: const Border(top: BorderSide(color: Color(0xfff1f5f9))),
+                color: colorScheme.surface.withValues(alpha: 0.95),
+                border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
               ),
               child: SizedBox(
                 width: double.infinity,
@@ -214,8 +220,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Navigate with all collected profile data
-                      // Note: We'll pass these forward to avoid saving until registration completes
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => CreatePasswordScreen(
@@ -232,10 +236,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff003366),
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     elevation: 4,
-                    shadowColor: const Color(0x33003366),
+                    shadowColor: colorScheme.primary.withValues(alpha: 0.2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -256,19 +260,19 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  Widget _buildProgressBar(bool filled) {
+  Widget _buildProgressBar(bool filled, ColorScheme colorScheme) {
     return Expanded(
       child: Container(
         height: 6,
         decoration: BoxDecoration(
-          color: filled ? const Color(0xff003366) : const Color(0xffe2e8f0),
+          color: filled ? colorScheme.primary : colorScheme.outlineVariant,
           borderRadius: BorderRadius.circular(9999),
         ),
       ),
     );
   }
 
-  Widget _buildLabel(String text) {
+  Widget _buildLabel(String text, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6.0),
       child: Text(
@@ -276,15 +280,16 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         style: GoogleFonts.lexend(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: const Color(0xff003366),
+          color: colorScheme.primary,
         ),
       ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint) {
+  Widget _buildTextField(TextEditingController controller, String hint, ColorScheme colorScheme) {
     return TextFormField(
       controller: controller,
+      style: TextStyle(color: colorScheme.onSurface),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Field is required';
@@ -296,23 +301,25 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         hintStyle: GoogleFonts.lexend(
           fontSize: 16,
           fontWeight: FontWeight.w400,
-          color: const Color(0xff94a3b8),
+          color: colorScheme.onSurface.withValues(alpha: 0.4),
         ),
+        filled: true,
+        fillColor: colorScheme.surfaceContainerHighest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 17,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xffcbd5e1)),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xffcbd5e1)),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xff003366), width: 2),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
     );
@@ -323,38 +330,42 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    required ColorScheme colorScheme,
   }) {
     return DropdownButtonFormField<String>(
-      initialValue: value,
+      value: value,
       isExpanded: true,
+      dropdownColor: colorScheme.surfaceContainerHighest,
       hint: Text(
         hint,
         style: GoogleFonts.lexend(
           fontSize: 16,
           fontWeight: FontWeight.w400,
-          color: const Color(0xff0f172a),
+          color: colorScheme.onSurface.withValues(alpha: 0.4),
         ),
       ),
-      icon: const Icon(
+      icon: Icon(
         Icons.keyboard_arrow_down_rounded,
-        color: Color(0xff64748b),
+        color: colorScheme.onSurface.withValues(alpha: 0.6),
       ),
       decoration: InputDecoration(
+        filled: true,
+        fillColor: colorScheme.surfaceContainerHighest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 15,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xff003366)),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xff003366)),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xff003366), width: 2),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
       items: items.map((String item) {
@@ -362,7 +373,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           value: item,
           child: Text(
             item,
-            style: GoogleFonts.lexend(fontSize: 16),
+            style: GoogleFonts.lexend(fontSize: 16, color: colorScheme.onSurface),
             overflow: TextOverflow.ellipsis,
           ),
         );

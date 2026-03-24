@@ -47,21 +47,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('users')
-          .doc(_user.uid)
+          .doc(_user!.uid)
           .snapshots(),
       builder: (context, snapshot) {
-        final userData = snapshot.data?.data();
-        final firstName = userData?['firstName'] ?? '';
-        final lastName = userData?['lastName'] ?? '';
-        final studentId = userData?['studentId'] ?? 'ID: NOT SET';
-        final college = userData?['college'] ?? 'College of Computer Science';
-        final course = userData?['course'] ?? 'BS Application Development';
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            backgroundColor: colorScheme.surface,
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            backgroundColor: colorScheme.surface,
+            body: Center(child: Text('Error: ${snapshot.error}')),
+          );
+        }
+
+        final userData = snapshot.data?.data() ?? {};
+        final firstName = userData['firstName'] ?? '';
+        final lastName = userData['lastName'] ?? '';
+        final studentId = userData['studentId'] ?? 'ID: NOT SET';
+        final college = userData['college'] ?? 'College of Computer Science';
+        final course = userData['course'] ?? 'BS Application Development';
         final name = (firstName.isEmpty && lastName.isEmpty)
-            ? (_user.displayName ?? 'User Name')
+            ? (_user!.displayName ?? 'User Name')
             : '$firstName $lastName';
+        final fullName = userData['fullName'] ?? 'User Name'; // This line is from the snippet, but 'name' is used below. Keeping both for now as per instruction.
+        final email = userData['email'] ?? 'user@example.com'; // This line is from the snippet.
+        final photoUrl = userData['photoUrl']; // This line is from the snippet.
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: colorScheme.surface,
           body: SingleChildScrollView(
             child: Column(
               children: [
@@ -207,78 +227,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeader(
-    String name,
-    String studentId,
-    String college,
-    String course,
-    String? localPhotoPath,
-  ) {
+  Widget _buildHeader(String name, String studentId, String college, String course, String? localPhotoPath) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xffdbeafe), Colors.white],
-          stops: [0.0, 1.0],
-        ),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant, width: 1)),
       ),
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
       child: Column(
         children: [
-          const SizedBox(height: 64),
           Stack(
             children: [
               Container(
-                width: 96,
-                height: 96,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
-                  color: const Color(0xffe2e8f0),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 4),
-                  image:
-                      (localPhotoPath != null &&
-                          File(localPhotoPath).existsSync())
-                      ? DecorationImage(
-                          image: FileImage(File(localPhotoPath)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                  boxShadow: const [
+                  border: Border.all(color: colorScheme.primary, width: 3),
+                  boxShadow: [
                     BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
+                      color: colorScheme.primary.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
                     ),
                   ],
                 ),
-                child:
-                    (localPhotoPath == null ||
-                        !File(localPhotoPath).existsSync())
-                    ? const ClipOval(
-                        child: Icon(
-                          Icons.person,
-                          size: 60,
-                          color: Color(0xff94a3b8),
+                child: ClipOval(
+                  child: localPhotoPath != null && File(localPhotoPath).existsSync()
+                      ? Image.file(File(localPhotoPath), fit: BoxFit.cover)
+                      : Container(
+                          color: colorScheme.primary.withOpacity(0.1),
+                          child: Icon(Icons.person_rounded, size: 60, color: colorScheme.primary),
                         ),
-                      )
-                    : null,
+                ),
               ),
               Positioned(
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  width: 32,
-                  height: 32,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.primary,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: const [
+                    border: Border.all(color: colorScheme.surface, width: 3),
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x1A000000),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 4,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -286,7 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Icon(
                       Icons.camera_alt_outlined,
                       size: 18,
-                      color: Color(0xff2094f3),
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -299,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: GoogleFonts.lexend(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xff0f172a),
+              color: colorScheme.onSurface,
               letterSpacing: -0.6,
             ),
           ),
@@ -309,17 +308,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: GoogleFonts.lexend(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: const Color(0xff334155),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xff0f172a).withValues(alpha: 0.05),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(9999),
               border: Border.all(
-                color: const Color(0xff0f172a).withValues(alpha: 0.1),
+                color: colorScheme.primary.withValues(alpha: 0.2),
               ),
             ),
             child: Text(
@@ -327,7 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: GoogleFonts.lexend(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xff0f172a),
+                color: colorScheme.primary,
               ),
             ),
           ),
@@ -337,7 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: GoogleFonts.lexend(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: const Color(0xff334155),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 24),
@@ -347,6 +346,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
       child: Text(
@@ -354,7 +354,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         style: GoogleFonts.lexend(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: const Color(0xff0f172a),
+          color: colorScheme.onSurface.withValues(alpha: 0.5),
           letterSpacing: 0.7,
         ),
       ),
@@ -362,16 +362,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildListCard(List<Widget> children) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffe2e8f0)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -386,11 +387,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool hasRedDot = false,
     VoidCallback? onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
         border: hasBorder
-            ? const Border(
-                bottom: BorderSide(color: Color(0xfff1f5f9), width: 1),
+            ? Border(
+                bottom: BorderSide(color: colorScheme.outlineVariant, width: 1),
               )
             : null,
       ),
@@ -405,19 +407,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xfff1f5f9)),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0D000000),
-                      blurRadius: 2,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: Center(
-                  child: Icon(icon, color: const Color(0xff0f172a), size: 20),
+                  child: Icon(icon, color: colorScheme.onSurface, size: 20),
                 ),
               ),
               const SizedBox(width: 16),
@@ -427,7 +422,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: GoogleFonts.lexend(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xff0f172a),
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -441,9 +436,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     shape: BoxShape.circle,
                   ),
                 ),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
-                color: Color(0xff94a3b8),
+                color: colorScheme.onSurface.withValues(alpha: 0.3),
                 size: 20,
               ),
             ],
@@ -454,12 +449,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSignOutButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return InkWell(
       onTap: () {
         showDialog(
           context: context,
           barrierDismissible: true,
-          barrierColor: const Color(0xfff5f7f8).withValues(alpha: 0.9),
+          barrierColor: Colors.black.withValues(alpha: 0.5),
           builder: (context) => const SignOutDialog(),
         );
       },
@@ -468,15 +466,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         decoration: BoxDecoration(
-          color: const Color(0xfffee2e2),
+          color: isDark ? colorScheme.errorContainer.withValues(alpha: 0.2) : const Color(0xfffee2e2),
           borderRadius: BorderRadius.circular(12),
+          border: isDark ? Border.all(color: colorScheme.error.withValues(alpha: 0.3)) : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.logout_rounded,
-              color: Color(0xff991b1b),
+              color: isDark ? colorScheme.error : const Color(0xff991b1b),
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -485,7 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: GoogleFonts.lexend(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xff991b1b),
+                color: isDark ? colorScheme.error : const Color(0xff991b1b),
               ),
             ),
           ],

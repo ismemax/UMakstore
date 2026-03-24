@@ -109,18 +109,23 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xff1a3b5d)),
+          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -128,14 +133,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           style: GoogleFonts.lexend(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: const Color(0xff1a3b5d),
+            color: colorScheme.onSurface,
             letterSpacing: -0.45,
           ),
         ),
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: const Color(0xfff3f4f6), height: 1.0),
+          child: Container(color: colorScheme.outlineVariant.withValues(alpha: 0.5), height: 1.0),
         ),
       ),
       body: SingleChildScrollView(
@@ -182,9 +187,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                             width: 128,
                             height: 128,
                             decoration: BoxDecoration(
-                              color: const Color(0xfffad9c1),
+                              color: colorScheme.primary.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 4),
+                              border: Border.all(color: colorScheme.surface, width: 4),
                               image:
                                   (_localPhotoPath != null &&
                                       File(_localPhotoPath!).existsSync())
@@ -193,22 +198,22 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                                       fit: BoxFit.cover,
                                     )
                                   : null,
-                              boxShadow: const [
+                              boxShadow: [
                                 BoxShadow(
-                                  color: Color(0x1A000000),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 15,
-                                  offset: Offset(0, 8),
+                                  offset: const Offset(0, 8),
                                 ),
                               ],
                             ),
                             child:
                                 (_localPhotoPath == null ||
                                     !File(_localPhotoPath!).existsSync())
-                                ? const Center(
+                                ? Center(
                                     child: Icon(
                                       Icons.person,
                                       size: 80,
-                                      color: Colors.white,
+                                      color: colorScheme.onSurface.withValues(alpha: 0.3),
                                     ),
                                   )
                                 : null,
@@ -219,17 +224,17 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xff2094f3),
+                                color: colorScheme.primary,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white,
+                                  color: colorScheme.surface,
                                   width: 2,
                                 ),
-                                boxShadow: const [
+                                boxShadow: [
                                   BoxShadow(
-                                    color: Color(0x1A000000),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 10,
-                                    offset: Offset(0, 4),
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
@@ -248,7 +253,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         style: GoogleFonts.lexend(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xff2094f3),
+                          color: colorScheme.primary,
                         ),
                       ),
                     ],
@@ -264,23 +269,24 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   style: GoogleFonts.lexend(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xff1a3b5d).withValues(alpha: 0.7),
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
                     letterSpacing: 1.2,
                   ),
                 ),
               ),
 
-              _buildEditableField('First Name', _firstNameController),
+              _buildEditableField('First Name', _firstNameController, colorScheme),
               const SizedBox(height: 16),
-              _buildEditableField('Middle Initial', _middleNameController),
+              _buildEditableField('Middle Initial', _middleNameController, colorScheme),
               const SizedBox(height: 16),
-              _buildEditableField('Last Name', _lastNameController),
+              _buildEditableField('Last Name', _lastNameController, colorScheme),
               const SizedBox(height: 16),
               _buildDropdownField(
                 'College',
                 _selectedCollege,
                 _colleges,
                 (val) => setState(() => _selectedCollege = val),
+                colorScheme,
               ),
               const SizedBox(height: 16),
               _buildDropdownField(
@@ -288,6 +294,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 _selectedCourse,
                 _courses,
                 (val) => setState(() => _selectedCourse = val),
+                colorScheme,
               ),
 
               const SizedBox(height: 40),
@@ -300,16 +307,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   style: GoogleFonts.lexend(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xff1a3b5d).withValues(alpha: 0.7),
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
                     letterSpacing: 1.2,
                   ),
                 ),
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xfff8fafc),
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xffe5e7eb)),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -330,19 +337,19 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(8),
-                              boxShadow: const [
+                              boxShadow: [
                                 BoxShadow(
-                                  color: Color(0x0D000000),
+                                  color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 2,
-                                  offset: Offset(0, 1),
+                                  offset: const Offset(0, 1),
                                 ),
                               ],
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.restore_rounded,
-                              color: Color(0xff1a3b5d),
+                              color: colorScheme.primary,
                               size: 20,
                             ),
                           ),
@@ -353,13 +360,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                               style: GoogleFonts.lexend(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xff102a43),
+                                color: colorScheme.onSurface,
                               ),
                             ),
                           ),
-                          const Icon(
+                          Icon(
                             Icons.chevron_right_rounded,
-                            color: Color(0xff94a3b8),
+                            color: colorScheme.onSurface.withValues(alpha: 0.3),
                             size: 20,
                           ),
                         ],
@@ -379,13 +386,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xff2094f3),
+                    color: colorScheme.primary,
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x332094f3),
+                        color: colorScheme.primary.withValues(alpha: 0.2),
                         blurRadius: 15,
-                        offset: Offset(0, 5),
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -400,10 +407,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                             ),
                           ),
                         )
-                      : Text(
+                      : const Text(
                           'Save Changes',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.lexend(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -421,9 +428,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xffe5e7eb)),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Text(
                     'Cancel',
@@ -431,7 +438,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xff1a3b5d),
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -445,14 +452,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  Widget _buildEditableField(String label, TextEditingController controller) {
+  Widget _buildEditableField(String label, TextEditingController controller, ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 8, bottom: 8, left: 16, right: 16),
       decoration: BoxDecoration(
-        color: const Color(0xfff8fafc),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffe5e7eb)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,7 +469,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             style: GoogleFonts.lexend(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: const Color(0xff1a3b5d),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 2),
@@ -470,7 +477,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             controller: controller,
             style: GoogleFonts.lexend(
               fontSize: 16,
-              color: const Color(0xff102a43),
+              color: colorScheme.onSurface,
             ),
             decoration: const InputDecoration(
               isDense: true,
@@ -488,14 +495,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     String? value,
     List<String> items,
     ValueChanged<String?> onChanged,
+    ColorScheme colorScheme,
   ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 8, bottom: 0, left: 16, right: 16),
       decoration: BoxDecoration(
-        color: const Color(0xfff8fafc),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffe5e7eb)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -505,20 +513,21 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             style: GoogleFonts.lexend(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: const Color(0xff1a3b5d),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           DropdownButton<String>(
             value: value,
             isExpanded: true,
+            dropdownColor: colorScheme.surfaceContainerHighest,
             hint: Text(
               'Select $label',
               style: GoogleFonts.lexend(
                 fontSize: 16,
-                color: const Color(0xff94a3b8),
+                color: colorScheme.onSurface.withValues(alpha: 0.3),
               ),
             ),
-            icon: const Icon(Icons.arrow_drop_down, color: Color(0xff1a3b5d)),
+            icon: Icon(Icons.arrow_drop_down, color: colorScheme.onSurface),
             underline: const SizedBox(),
             items: items.map((String item) {
               return DropdownMenuItem<String>(
@@ -527,7 +536,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   item,
                   style: GoogleFonts.lexend(
                     fontSize: 16,
-                    color: const Color(0xff102a43),
+                    color: colorScheme.onSurface,
                   ),
                 ),
               );

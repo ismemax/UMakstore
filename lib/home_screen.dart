@@ -39,8 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: _selectedIndex == 0
             ? Column(
@@ -59,11 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   : const ProfileScreen()),
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Color(0xffe2e8f0), width: 1)),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: colorScheme.outlineVariant, width: 1)),
         ),
         child: BottomNavigationBar(
-          backgroundColor: Colors.white,
+          backgroundColor: colorScheme.surface,
           elevation: 0,
           currentIndex: _selectedIndex,
           onTap: (index) {
@@ -71,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _selectedIndex = index;
             });
           },
-          selectedItemColor: const Color(0xff2094f3),
+          selectedItemColor: colorScheme.primary,
           unselectedItemColor: const Color(0xff94a3b8),
           selectedLabelStyle: GoogleFonts.lexend(
             fontSize: 10,
@@ -110,9 +113,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      color: Colors.white,
+      color: colorScheme.surface,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -121,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.lexend(
               fontSize: 30,
               fontWeight: FontWeight.bold,
-              color: const Color(0xff0f172a),
+              color: colorScheme.onSurface,
               letterSpacing: -0.75,
             ),
           ),
@@ -129,13 +133,13 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xff2094f3).withValues(alpha: 0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Center(
+            child: Center(
               child: Icon(
                 Icons.person_outline_rounded,
-                color: Color(0xff2094f3),
+                color: colorScheme.primary,
                 size: 20,
               ),
             ),
@@ -146,73 +150,51 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTabs() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xffe2e8f0), width: 1)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant, width: 1)),
       ),
       child: Row(
         children: [
           const SizedBox(width: 16),
-          GestureDetector(
-            onTap: () => setState(() => _selectedTabIndex = 0),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
-                  child: Text(
-                    'For You',
-                    style: GoogleFonts.lexend(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: _selectedTabIndex == 0
-                          ? const Color(0xff2094f3)
-                          : const Color(0xff94a3b8),
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 4,
-                  width: 69,
-                  decoration: BoxDecoration(
-                    color: _selectedTabIndex == 0
-                        ? const Color(0xff2094f3)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(9999),
-                  ),
-                ),
-              ],
+          _buildTab('For You', 0),
+          const SizedBox(width: 24),
+          _buildTab('Top Rated', 1),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab(String label, int index) {
+    bool isSelected = _selectedTabIndex == index;
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTabIndex = index;
+        });
+      },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4.0),
+            child: Text(
+              label,
+              style: GoogleFonts.lexend(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
             ),
           ),
-          const SizedBox(width: 24),
-          GestureDetector(
-            onTap: () => setState(() => _selectedTabIndex = 1),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
-                  child: Text(
-                    'Top Rated',
-                    style: GoogleFonts.lexend(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: _selectedTabIndex == 1
-                          ? const Color(0xff2094f3)
-                          : const Color(0xff94a3b8),
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 4,
-                  width: 91,
-                  decoration: BoxDecoration(
-                    color: _selectedTabIndex == 1
-                        ? const Color(0xff2094f3)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(9999),
-                  ),
-                ),
-              ],
+          Container(
+            height: 4,
+            width: label == 'For You' ? 69 : 91,
+            decoration: BoxDecoration(
+              color: isSelected ? colorScheme.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(9999),
             ),
           ),
         ],
@@ -267,131 +249,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   isButtonOutlined: false,
                   iconWidget: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xfff1f5f9),
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Icon(
                         Icons.shield_rounded,
                         size: 40,
-                        color: const Color(0xffef4444),
-                      ),
-                    ),
-                  ),
-                ),
-                _buildTopRatedAppCard(
-                  rank: 2,
-                  title: 'Canvas',
-                  publisher: 'Instructure Inc.',
-                  rating: '4.8',
-                  reviews: '(8.5k)',
-                  isButtonOutlined: true,
-                  iconWidget: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xff6366f1), Color(0xff9333ea)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.school_rounded,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                _buildTopRatedAppCard(
-                  rank: 3,
-                  title: 'PyCompiler',
-                  publisher: 'CodeLabs',
-                  rating: '4.7',
-                  reviews: '(3.2k)',
-                  isButtonOutlined: false,
-                  iconWidget: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xff0f172a),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.code_rounded,
-                        size: 40,
-                        color: Color(0xff38bdf8),
-                      ),
-                    ),
-                  ),
-                ),
-                _buildTopRatedAppCard(
-                  rank: 4,
-                  title: 'Campus Nav',
-                  publisher: 'Facilities Dept',
-                  rating: '4.6',
-                  reviews: '(2.1k)',
-                  isButtonOutlined: false,
-                  iconWidget: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xff22c55e), Color(0xff059669)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.map_rounded,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                _buildTopRatedAppCard(
-                  rank: 5,
-                  title: 'Git Graph',
-                  publisher: 'Dev Tools',
-                  rating: '4.5',
-                  reviews: '(900)',
-                  isButtonOutlined: false,
-                  iconWidget: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xff1f2937),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.auto_graph_rounded,
-                        size: 40,
-                        color: Color(0xff10b981),
-                      ),
-                    ),
-                  ),
-                ),
-                _buildTopRatedAppCard(
-                  rank: 6,
-                  title: 'Shuttle Bus',
-                  publisher: 'Transport Office',
-                  rating: '4.3',
-                  reviews: '(1.5k)',
-                  isButtonOutlined: true,
-                  iconWidget: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xffec4899), Color(0xffe11d48)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.directions_bus_rounded,
-                        size: 40,
-                        color: Colors.white,
+                        color: Color(0xffef4444),
                       ),
                     ),
                   ),
@@ -407,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: GoogleFonts.lexend(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xff1e293b),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -464,6 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Widget iconWidget,
     required bool isButtonOutlined,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -477,14 +343,14 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffe2e8f0)),
-          boxShadow: const [
+          border: Border.all(color: colorScheme.outlineVariant),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0D000000),
-              blurRadius: 2,
-              offset: Offset(0, 1),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -498,9 +364,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: 10,
                   vertical: 4,
                 ),
-                decoration: const BoxDecoration(
-                  color: Color(0xff0a192f),
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(15),
                     bottomLeft: Radius.circular(12),
                   ),
@@ -510,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.lexend(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: colorScheme.onPrimary,
                   ),
                 ),
               ),
@@ -529,111 +395,55 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xff1e293b),
+                          color: colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         publisher,
                         style: GoogleFonts.lexend(
-                          fontSize: 11,
-                          color: const Color(0xff64748b),
+                          fontSize: 12,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        rating,
-                        style: GoogleFonts.lexend(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xff1e293b),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
+                      const SizedBox(height: 8),
                       Row(
-                        children: List.generate(
-                          5,
-                          (index) => const Icon(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
                             Icons.star_rounded,
                             color: Color(0xfffbbf24),
-                            size: 12,
+                            size: 16,
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        reviews,
-                        style: GoogleFonts.lexend(
-                          fontSize: 10,
-                          color: const Color(0xff94a3b8),
-                        ),
+                          const SizedBox(width: 4),
+                          Text(
+                            rating,
+                            style: GoogleFonts.lexend(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            reviews,
+                            style: GoogleFonts.lexend(
+                              fontSize: 12,
+                              color: colorScheme.onSurface.withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () {
-                      if (title == 'Scamester') {
-                        if (AppModel.sampleApps[0].status == AppStatus.notInstalled) {
-                          _installer.installApp(AppModel.sampleApps[0]);
-                        } else if (AppModel.sampleApps[0].status == AppStatus.installed) {
-                          _installer.launchApp(AppModel.sampleApps[0]);
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isButtonOutlined
-                            ? Colors.white
-                            : const Color(0xff2094f3),
-                        borderRadius: BorderRadius.circular(12),
-                        border: isButtonOutlined
-                            ? Border.all(
-                                color: const Color(
-                                  0xff2094f3,
-                                ).withValues(alpha: 0.2),
-                              )
-                            : null,
-                        boxShadow: isButtonOutlined
-                            ? []
-                            : const [
-                                BoxShadow(
-                                  color: Color(0x0D000000),
-                                  blurRadius: 2,
-                                  offset: Offset(0, 1),
-                                ),
-                              ],
-                      ),
-                      child: Text(
-                        (title == 'Scamester' && AppModel.sampleApps[0].status == AppStatus.downloading)
-                            ? '${(AppModel.sampleApps[0].progress * 100).toInt()}%'
-                            : (title == 'Scamester' && AppModel.sampleApps[0].status == AppStatus.installed)
-                                ? 'Open'
-                                : 'Install',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.lexend(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isButtonOutlined
-                              ? const Color(0xff2094f3)
-                              : Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 12),
+                  _buildTopRatedActionButton(title, isButtonOutlined, colorScheme),
                 ],
               ),
             ),
@@ -643,13 +453,55 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildTopRatedActionButton(String title, bool isButtonOutlined, ColorScheme colorScheme) {
+    // For demo purposes, we only track status for Scamester (AppModel.sampleApps[0])
+    final app = title == 'Scamester' ? AppModel.sampleApps[0] : null;
+    final status = app?.status ?? AppStatus.notInstalled;
+    final progress = app?.progress ?? 0.0;
+
+    return GestureDetector(
+      onTap: () {
+        if (app != null) {
+          if (status == AppStatus.notInstalled) {
+            _installer.installApp(app);
+          } else if (status == AppStatus.installed) {
+            _installer.launchApp(app);
+          }
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isButtonOutlined ? Colors.transparent : colorScheme.primary,
+          borderRadius: BorderRadius.circular(12),
+          border: isButtonOutlined
+              ? Border.all(color: colorScheme.primary, width: 2)
+              : null,
+        ),
+        child: Text(
+          status == AppStatus.downloading
+              ? '${(progress * 100).toInt()}%'
+              : (status == AppStatus.installed ? 'Open' : 'Install'),
+          textAlign: TextAlign.center,
+          style: GoogleFonts.lexend(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: isButtonOutlined ? colorScheme.primary : colorScheme.onPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCategoryChip(String label, IconData iconData, Color iconColor) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xfff8fafc),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(9999),
-        border: Border.all(color: const Color(0xffe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -661,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.lexend(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: const Color(0xff1e293b),
+              color: colorScheme.onSurface,
             ),
           ),
         ],
@@ -670,6 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFeaturedAppCard() {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -686,15 +539,14 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           height: 224,
           decoration: BoxDecoration(
-            color: Colors
-                .white, // In a real app, use DecorationImage for the background
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xfff1f5f9)),
-            boxShadow: const [
+            border: Border.all(color: colorScheme.outlineVariant),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x1A000000), // 0.1 opacity
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 15,
-                offset: Offset(0, 10),
+                offset: const Offset(0, 10),
                 spreadRadius: -3,
               ),
             ],
@@ -706,9 +558,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xffe2e8f0), Color(0xfff8fafc)],
+                        colors: [
+                          colorScheme.surfaceContainerHighest,
+                          colorScheme.surface,
+                        ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -716,7 +571,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // White gradient overlay at the bottom
+              // Gradient overlay at the bottom
               Positioned.fill(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
@@ -726,9 +581,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.white.withValues(alpha: 0.95),
-                          Colors.white.withValues(alpha: 0.8),
-                          Colors.white.withValues(alpha: 0.0),
+                          colorScheme.surface.withValues(alpha: 0.95),
+                          colorScheme.surface.withValues(alpha: 0.8),
+                          colorScheme.surface.withValues(alpha: 0.0),
                         ],
                         stops: const [0.0, 0.5, 1.0],
                       ),
@@ -773,14 +628,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 64,
                           height: 64,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xffe2e8f0)),
-                            boxShadow: const [
+                            border: Border.all(color: colorScheme.outlineVariant),
+                            boxShadow: [
                               BoxShadow(
-                                color: Color(0x1A000000),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 6,
-                                offset: Offset(0, 4),
+                                offset: const Offset(0, 4),
                                 spreadRadius: -1,
                               ),
                             ],
@@ -803,14 +658,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: GoogleFonts.lexend(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xff0f172a),
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                               Text(
                                 AppModel.sampleApps[0].description,
                                 style: GoogleFonts.lexend(
                                   fontSize: 14,
-                                  color: const Color(0xff64748b),
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -879,14 +734,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 44,
                           width: 44,
                           decoration: BoxDecoration(
-                            color: const Color(0xfff1f5f9),
+                            color: colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: colorScheme.outlineVariant),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
-                              Icons.bookmark_border_rounded,
-                              color: Color(0xff0f172a),
-                              size: 22,
+                              Icons.bookmark_outline_rounded,
+                              color: colorScheme.primary,
+                              size: 20,
                             ),
                           ),
                         ),
@@ -906,6 +762,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String title1,
     required String title2,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -920,14 +777,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.lexend(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xff0f172a),
+                    color: colorScheme.onSurface,
                     height: 1.375,
                   ),
                   children: [
                     TextSpan(text: title1),
                     TextSpan(
                       text: title2,
-                      style: const TextStyle(color: Color(0xff2094f3)),
+                      style: TextStyle(color: colorScheme.primary),
                     ),
                   ],
                 ),
@@ -937,7 +794,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xff2094f3),
+                  color: colorScheme.primary,
                 ),
               ),
             ],
@@ -951,27 +808,11 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
               _buildAppCardSmall(
-                title: 'PyCompiler Pro',
-                category: 'Education',
+                title: 'Scamester',
+                category: 'Security',
                 rating: '4.9',
-                iconData: Icons.code_rounded,
-                iconColor: const Color(0xff2094f3),
-              ),
-              const SizedBox(width: 16),
-              _buildAppCardSmall(
-                title: 'LogicSim',
-                category: 'Tools',
-                rating: '4.5',
-                iconData: Icons.memory_rounded,
-                iconColor: const Color(0xff8b5cf6),
-              ),
-              const SizedBox(width: 16),
-              _buildAppCardSmall(
-                title: 'Git Tracker',
-                category: 'Dev',
-                rating: '4.7',
-                iconData: Icons.alt_route_rounded,
-                iconColor: const Color(0xfff97316),
+                iconData: Icons.shield_rounded,
+                iconColor: const Color(0xffef4444),
               ),
             ],
           ),
@@ -987,6 +828,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData iconData,
     required Color iconColor,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -1006,9 +848,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               height: 144,
               decoration: BoxDecoration(
-                color: const Color(0xfff1f5f9),
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xffe2e8f0)),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Stack(
                 children: [
@@ -1016,9 +858,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Color(0xff94a3b8), Color(0xffe2e8f0)],
+                            colors: [
+                              colorScheme.surfaceContainerHighest,
+                              colorScheme.surface,
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -1035,8 +880,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.white.withValues(alpha: 0.9),
-                              Colors.white.withValues(alpha: 0.0),
+                              colorScheme.surface.withValues(alpha: 0.9),
+                              colorScheme.surface.withValues(alpha: 0.0),
                             ],
                           ),
                         ),
@@ -1050,14 +895,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xfff1f5f9)),
-                        boxShadow: const [
+                        border: Border.all(color: colorScheme.outlineVariant),
+                        boxShadow: [
                           BoxShadow(
-                            color: Color(0x0D000000), // 0.05 opacity
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 2,
-                            offset: Offset(0, 1),
+                            offset: const Offset(0, 1),
                           ),
                         ],
                       ),
@@ -1075,7 +920,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: GoogleFonts.lexend(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xff0f172a),
+                color: colorScheme.onSurface,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1087,15 +932,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   category,
                   style: GoogleFonts.lexend(
                     fontSize: 12,
-                    color: const Color(0xff64748b),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(width: 4),
                 Container(
                   width: 2,
                   height: 2,
-                  decoration: const BoxDecoration(
-                    color: Color(0xffcbd5e1),
+                  decoration: BoxDecoration(
+                    color: colorScheme.outlineVariant,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -1105,7 +950,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.lexend(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xff475569),
+                    color: colorScheme.onSurface.withValues(alpha: 0.8),
                   ),
                 ),
                 const Icon(
@@ -1120,7 +965,7 @@ class _HomeScreenState extends State<HomeScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xfff1f5f9),
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(9999),
               ),
               child: Text(
@@ -1129,7 +974,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xff2094f3),
+                  color: colorScheme.primary,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -1141,6 +986,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentlyUpdatedSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1154,7 +1000,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xff0f172a),
+                  color: colorScheme.onSurface,
                 ),
               ),
               Text(
@@ -1162,7 +1008,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xff2094f3),
+                  color: colorScheme.primary,
                 ),
               ),
             ],
@@ -1174,36 +1020,14 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               _buildListAppCard(
-                title: 'Campus Naviga...',
-                subtitle: 'New building layouts a...',
-                version: 'v3.2',
-                timeAgo: '2d ago',
-                iconColor: const Color(0xff1e3a8a), // Navy
-                iconData: Icons.map_rounded,
-                actionText: 'Update',
-                isUpdate: true,
-              ),
-              const SizedBox(height: 16),
-              _buildListAppCard(
-                title: 'UMak Shuttle',
-                subtitle: 'Real-time GPS tracking fi...',
-                version: 'v1.5',
-                timeAgo: '5d ago',
-                iconColor: const Color(0xffe11d48), // Pink/Red
-                iconData: Icons.directions_bus_rounded,
-                actionText: 'Open',
+                title: 'Scamester',
+                subtitle: 'Security Dept',
+                version: 'v1.2',
+                timeAgo: '1d ago',
+                iconColor: const Color(0xffef4444), // Red
+                iconData: Icons.shield_rounded,
+                actionText: AppModel.sampleApps[0].status == AppStatus.installed ? 'Open' : 'Get',
                 isUpdate: false,
-              ),
-              const SizedBox(height: 16),
-              _buildListAppCard(
-                title: 'LibAccess',
-                subtitle: 'Dark mode support ad...',
-                version: 'v4.0',
-                timeAgo: '1w ago',
-                iconColor: const Color(0xffa16207), // Brownish
-                iconData: Icons.menu_book_rounded,
-                actionText: 'Update',
-                isUpdate: true,
               ),
             ],
           ),
@@ -1222,6 +1046,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String actionText,
     required bool isUpdate,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -1236,14 +1061,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xfff1f5f9)),
-          boxShadow: const [
+          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0D000000),
-              blurRadius: 2,
-              offset: Offset(0, 1),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -1270,7 +1095,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xff0f172a),
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -1278,7 +1103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle,
                     style: GoogleFonts.lexend(
                       fontSize: 12,
-                      color: const Color(0xff64748b),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1292,16 +1117,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xffdcfce7),
+                          color: const Color(0xff22c55e).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: const Color(0xffbbf7d0)),
+                          border: Border.all(color: const Color(0xff22c55e).withValues(alpha: 0.2)),
                         ),
                         child: Text(
                           version,
                           style: GoogleFonts.lexend(
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xff15803d),
+                            color: const Color(0xff22c55e),
                           ),
                         ),
                       ),
@@ -1310,7 +1135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         timeAgo,
                         style: GoogleFonts.lexend(
                           fontSize: 10,
-                          color: const Color(0xff94a3b8),
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                       ),
                     ],
@@ -1318,36 +1143,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              decoration: BoxDecoration(
-                color: isUpdate
-                    ? const Color(0xff2094f3).withValues(alpha: 0.1)
-                    : const Color(0xfff1f5f9),
-                borderRadius: BorderRadius.circular(9999),
-                border: isUpdate
-                    ? null
-                    : Border.all(color: const Color(0xffe2e8f0)),
-              ),
-              child: Text(
-                actionText,
-                style: GoogleFonts.lexend(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isUpdate
-                      ? const Color(0xff2094f3)
-                      : const Color(0xff94a3b8),
-                ),
-              ),
-            ),
+            _buildActionButton(actionText, isUpdate, colorScheme),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildActionButton(String text, bool isUpdate, ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      decoration: BoxDecoration(
+        color: isUpdate ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+        border: isUpdate ? null : Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.lexend(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: isUpdate ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCategoriesSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1358,7 +1181,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.lexend(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: const Color(0xff0f172a),
+              color: colorScheme.onSurface,
             ),
           ),
         ),
@@ -1373,10 +1196,10 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisSpacing: 16,
             childAspectRatio: 2.5, // roughly 160 width / 60 height
             children: [
-              _buildCategoryCard('Academic', Icons.school_rounded),
-              _buildCategoryCard('Student Life', Icons.sports_esports_rounded),
-              _buildCategoryCard('Dining', Icons.restaurant_rounded),
-              _buildCategoryCard('Events', Icons.event_rounded),
+              _buildCategoryCard('Academic', Icons.school_rounded, colorScheme),
+              _buildCategoryCard('Student Life', Icons.sports_esports_rounded, colorScheme),
+              _buildCategoryCard('Dining', Icons.restaurant_rounded, colorScheme),
+              _buildCategoryCard('Events', Icons.event_rounded, colorScheme),
             ],
           ),
         ),
@@ -1384,18 +1207,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryCard(String title, IconData icon) {
+  Widget _buildCategoryCard(String title, IconData icon, ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xfff1f5f9),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: const Color(0xff0f172a), size: 20),
+          Icon(icon, color: colorScheme.primary, size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1403,7 +1226,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: GoogleFonts.lexend(
                 fontSize: 14, // Adjusted slightly to fit better horizontally
                 fontWeight: FontWeight.w500,
-                color: const Color(0xff0f172a),
+                color: colorScheme.onSurface,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

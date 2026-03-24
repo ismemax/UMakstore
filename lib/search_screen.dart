@@ -44,186 +44,83 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeader(),
-        _buildFilters(),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.only(
-              top: 16,
-              bottom: 96,
-              left: 16,
-              right: 16,
-            ),
-            children: [
-              _buildAppListItem(
-                context,
-                title: 'UMak Portal',
-                subtitle: 'IT Department',
-                chipLabel: 'OFFICIAL',
-                chipColor: const Color(0xff2563eb),
-                chipBgColor: const Color(0xffeff6ff),
-                chipBorderColor: const Color(0xffdbeafe),
-                rating: '4.8',
-                actionWidget: _buildActionButton(
-                  AppModel.sampleApps[0].status == AppStatus.installed ? 'OPEN' : 'GET',
-                  onTap: () {
-                    if (AppModel.sampleApps[0].status == AppStatus.installed) {
-                      _installer.launchApp(AppModel.sampleApps[0]);
-                    } else {
-                       _installer.installApp(AppModel.sampleApps[0]);
-                    }
-                  },
-                ),
-                iconWidget: _buildAppIcon(
-                  const Color(0xff0a192f),
-                  Icons.grid_view_rounded,
-                  Colors.white,
-                ),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Container(
+      color: colorScheme.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(colorScheme),
+          _buildFilters(colorScheme),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(
+                top: 16,
+                bottom: 96,
+                left: 16,
+                right: 16,
               ),
-              _buildDivider(),
-              _buildAppListItem(
-                context,
-                title: 'Heron Library',
-                subtitle: 'Library Services',
-                chipLabel: 'ACADEMIC',
-                chipColor: const Color(0xff4b5563),
-                chipBgColor: const Color(0xfff2f4f6),
-                chipBorderColor: const Color(0xffe5e7eb),
-                rating: '4.5',
-                actionWidget: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildAppListItem(
+                  context,
+                  title: 'Scamester',
+                  subtitle: 'Security Dept',
+                  chipLabel: 'OFFICIAL',
+                  chipColor: const Color(0xff2563eb),
+                  chipBgColor: const Color(0xffeff6ff),
+                  chipBorderColor: const Color(0xffdbeafe),
+                  rating: '4.9',
+                  actionWidget: _buildActionButton(
+                    AppModel.sampleApps[0].status == AppStatus.installed ? 'OPEN' : 'GET',
+                    onTap: () {
+                      if (AppModel.sampleApps[0].status == AppStatus.installed) {
+                        _installer.launchApp(AppModel.sampleApps[0]);
+                      } else {
+                        _installer.installApp(AppModel.sampleApps[0]);
+                      }
+                    },
+                  ),
+                  iconWidget: _buildAppIcon(
+                    const Color(0xfff1f5f9),
+                    Icons.shield_rounded,
+                    const Color(0xffef4444),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Column(
                   children: [
-                    _buildActionButton('GET'),
-                    const SizedBox(height: 4),
                     Text(
-                      'In-App Purchases',
+                      'Not finding what you\'re looking for?',
                       style: GoogleFonts.lexend(
-                        fontSize: 9,
-                        color: const Color(0xff9ca3af),
+                        fontSize: 14,
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Request an App',
+                      style: GoogleFonts.lexend(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.primary,
                       ),
                     ),
                   ],
                 ),
-                iconWidget: _buildAppIcon(
-                  const Color(0xfff97316),
-                  Icons.menu_book_rounded,
-                  Colors.white,
-                ),
-              ),
-              _buildDivider(),
-              _buildAppListItem(
-                context,
-                title: 'ComSci Calc',
-                subtitle: 'Student Project',
-                chipLabel: 'CCIS',
-                chipColor: const Color(0xff6366f1),
-                chipBgColor: const Color(0xffeef2ff),
-                chipBorderColor: const Color(0xffe0e7ff),
-                rating: '4.2',
-                actionWidget: _buildActionButton('GET'),
-                iconWidget: _buildAppIcon(
-                  const Color(0xff1e293b),
-                  Icons.calculate_rounded,
-                  const Color(0xff38bdf8),
-                ),
-              ),
-              _buildDivider(),
-              _buildAppListItem(
-                context,
-                title: 'Campus Nav',
-                subtitle: 'Admin Office',
-                chipLabel: 'UTILITY',
-                chipColor: const Color(0xff4b5563),
-                chipBgColor: const Color(0xfff2f4f6),
-                chipBorderColor: const Color(0xffe5e7eb),
-                rating: '3.9',
-                actionWidget: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xff2094f3).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(9999),
-                  ),
-                  child: const Icon(
-                    Icons.cloud_download_outlined,
-                    color: Color(0xff2094f3),
-                    size: 16,
-                  ),
-                ),
-                iconWidget: _buildAppIcon(
-                  const Color(0xff22c55e),
-                  Icons.map_rounded,
-                  Colors.white,
-                ),
-              ),
-              _buildDivider(),
-              Opacity(
-                opacity: 0.6,
-                child: _buildAppListItem(
-                  context,
-                  title: 'Old Enroll System',
-                  subtitle: 'Registrar',
-                  chipLabel: 'DEPRECATED',
-                  chipColor: const Color(0xffef4444),
-                  chipBgColor: const Color(0xfffef2f2),
-                  chipBorderColor: const Color(0xfffee2e2),
-                  rating: null,
-                  actionWidget: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'Unavailable',
-                      style: GoogleFonts.lexend(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xff9ca3af),
-                      ),
-                    ),
-                  ),
-                  iconWidget: _buildAppIcon(
-                    const Color(0xfff3f4f6),
-                    Icons.edit_rounded,
-                    const Color(0xff9ca3af),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Column(
-                children: [
-                  Text(
-                    'Not finding what you\'re looking for?',
-                    style: GoogleFonts.lexend(
-                      fontSize: 14,
-                      color: const Color(0xff9ca3af),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Request an App',
-                    style: GoogleFonts.lexend(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xff2094f3),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.only(top: 24, left: 16, right: 16, bottom: 12),
-      decoration: const BoxDecoration(color: Colors.white),
+      decoration: BoxDecoration(color: colorScheme.surface),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -232,7 +129,7 @@ class _SearchScreenState extends State<SearchScreen> {
             style: GoogleFonts.lexend(
               fontSize: 30,
               fontWeight: FontWeight.bold,
-              color: const Color(0xff0a1929),
+              color: colorScheme.onSurface,
               letterSpacing: -0.75,
             ),
           ),
@@ -244,15 +141,15 @@ class _SearchScreenState extends State<SearchScreen> {
                   height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xfff2f4f6),
+                    color: colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xffe5e7eb)),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.search_rounded,
-                        color: Color(0xff9ca3af),
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -260,15 +157,13 @@ class _SearchScreenState extends State<SearchScreen> {
                         child: TextField(
                           style: GoogleFonts.lexend(
                             fontSize: 14,
-                            color: const Color(0xff1e3a5f),
+                            color: colorScheme.onSurface,
                           ),
                           decoration: InputDecoration(
                             hintText: 'Apps, professors, events...',
                             hintStyle: GoogleFonts.lexend(
                               fontSize: 14,
-                              color: const Color(
-                                0xff1e3a5f,
-                              ).withValues(alpha: 0.7),
+                              color: colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
                             border: InputBorder.none,
                             isDense: true,
@@ -284,14 +179,14 @@ class _SearchScreenState extends State<SearchScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xfff2f4f6),
+                  color: colorScheme.surfaceContainerHighest,
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xffe5e7eb)),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.tune_rounded,
-                    color: Color(0xff0a1929),
+                    color: colorScheme.primary,
                     size: 20,
                   ),
                 ),
@@ -303,57 +198,39 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildFilters() {
-    return Container(
-      height: 46,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xfff3f4f6), width: 1)),
-      ),
-      child: ListView.separated(
+  Widget _buildFilters(ColorScheme colorScheme) {
+    return SizedBox(
+      height: 48,
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: _filters.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final isSelected = _selectedFilterIndex == index;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedFilterIndex = index;
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xff2094f3)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(9999),
-                border: Border.all(
-                  color: isSelected
-                      ? const Color(0xff2094f3)
-                      : const Color(0xff0a1929).withValues(alpha: 0.3),
-                ),
-                boxShadow: isSelected
-                    ? [
-                        const BoxShadow(
-                          color: Color(0x0D000000),
-                          blurRadius: 2,
-                          offset: Offset(0, 1),
-                        ),
-                      ]
-                    : null,
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: FilterChip(
+              label: Text(_filters[index]),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedFilterIndex = index;
+                });
+              },
+              backgroundColor: colorScheme.surface,
+              selectedColor: colorScheme.primary.withValues(alpha: 0.1),
+              labelStyle: GoogleFonts.lexend(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.6),
               ),
-              child: Text(
-                _filters[index],
-                style: GoogleFonts.lexend(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? Colors.white : const Color(0xff0a1929),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(99),
+                side: BorderSide(
+                  color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
                 ),
               ),
+              showCheckmark: false,
             ),
           );
         },
@@ -373,6 +250,7 @@ class _SearchScreenState extends State<SearchScreen> {
     required Widget actionWidget,
     required Widget iconWidget,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -384,10 +262,10 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         );
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Container(
+        color: Colors.transparent, // For hit testing
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             iconWidget,
             const SizedBox(width: 16),
@@ -400,15 +278,15 @@ class _SearchScreenState extends State<SearchScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xff0a1929),
+                      color: colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
                     subtitle,
                     style: GoogleFonts.lexend(
                       fontSize: 12,
-                      color: const Color(0xff6b7280),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -439,7 +317,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           rating,
                           style: GoogleFonts.lexend(
                             fontSize: 10,
-                            color: const Color(0xff9ca3af),
+                            color: colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                         ),
                         const SizedBox(width: 2),
@@ -463,12 +341,13 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildActionButton(String text, {VoidCallback? onTap}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xfff2f4f6),
+          color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(9999),
         ),
         child: Text(
@@ -476,7 +355,7 @@ class _SearchScreenState extends State<SearchScreen> {
           style: GoogleFonts.lexend(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: const Color(0xff2094f3),
+            color: colorScheme.primary,
             letterSpacing: 0.6,
           ),
         ),
@@ -485,25 +364,27 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildDivider() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
-      child: Divider(color: Color(0xfff3f4f6), height: 1, thickness: 1),
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Divider(color: colorScheme.outlineVariant, height: 1, thickness: 1),
     );
   }
 
   Widget _buildAppIcon(Color bgColor, IconData iconData, Color iconColor) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 64,
       height: 64,
       decoration: BoxDecoration(
-        color: bgColor,
+        color: bgColor == const Color(0xfff1f5f9) ? colorScheme.surfaceContainerHighest : bgColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xfff3f4f6)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),

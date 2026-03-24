@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
@@ -18,6 +19,7 @@ class InstallerService with ChangeNotifier {
   final Dio _dio = Dio();
   final Map<String, AppModel> _apps = {};
   final Map<String, Timer?> _installationCheckers = {};
+  static const _channel = MethodChannel('com.example.umakstore/storage');
 
   AppModel? getApp(String id) => _apps[id];
 
@@ -114,6 +116,40 @@ class InstallerService with ChangeNotifier {
     });
   }
 
+  void _startUninstallationCheck(AppModel app) {
+    if (_installationCheckers[app.id]?.isActive ?? false) return;
+    
+    int checks = 0;
+    _installationCheckers[app.id] = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      checks++;
+      debugPrint('Polling for uninstallation of ${app.packageName} (Check $checks)...');
+      await updateAppStatus(app);
+      
+      // Stop checking if NOT installed (uninstalled successful) or after 5 mins
+      if (app.status == AppStatus.notInstalled || checks > 100) {
+        timer.cancel();
+        _installationCheckers[app.id] = null;
+      }
+    });
+  }
+
+  Future<String?> uninstallApp(AppModel app) async {
+    if (app.packageName == null) return "Package name is missing.";
+
+    if (Platform.isAndroid) {
+      try {
+        await _channel.invokeMethod('uninstallApp', {'packageName': app.packageName});
+        // Start checking for uninstallation status
+        _startUninstallationCheck(app);
+        return null;
+      } on PlatformException catch (e) {
+        debugPrint("Failed to uninstall app: '${e.message}'.");
+        return e.message;
+      }
+    }
+    return "Unsupported platform";
+  }
+
   Future<void> launchApp(AppModel app) async {
     if (app.packageName != null) {
       await LaunchApp.openApp(
@@ -127,6 +163,9 @@ class InstallerService with ChangeNotifier {
   Future<void> persistAppStatus(String id, bool installed) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('installed_$id', installed);
+    if (installed) {
+      await persistLibraryStatus(id, true);
+    }
   }
 
   Future<bool> getPersistedStatus(String id) async {
@@ -134,10 +173,24 @@ class InstallerService with ChangeNotifier {
     return prefs.getBool('installed_$id') ?? false;
   }
 
+  Future<void> persistLibraryStatus(String id, bool inLibrary) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('library_$id', inLibrary);
+  }
+
+  Future<bool> getPersistedLibraryStatus(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('library_$id') ?? false;
+  }
+
   // A method to sync an app's status with reality (e.g. on app start)
   Future<void> updateAppStatus(AppModel app) async {
     // 1. Check persistent memory first for a quick answer
     final persisted = await getPersistedStatus(app.id);
+    final inLibrary = await getPersistedLibraryStatus(app.id);
+    
+    app.isInLibrary = inLibrary;
+
     if (persisted) {
       app.status = AppStatus.installed;
       notifyListeners();
@@ -155,8 +208,10 @@ class InstallerService with ChangeNotifier {
       
       if (isInstalled) {
         app.status = AppStatus.installed;
+        app.isInLibrary = true;
         // Also update persistence if it was different
         if (!persisted) await persistAppStatus(app.id, true);
+        if (!inLibrary) await persistLibraryStatus(app.id, true);
       } else {
         // Only mark as not installed if we were NOT just installing it
         if (app.status != AppStatus.downloading && app.status != AppStatus.installing) {
@@ -174,5 +229,11 @@ class InstallerService with ChangeNotifier {
     for (var app in AppModel.sampleApps) {
       await updateAppStatus(app);
     }
+  }
+
+  Future<void> removeFromLibrary(AppModel app) async {
+    app.isInLibrary = false;
+    await persistLibraryStatus(app.id, false);
+    notifyListeners();
   }
 }

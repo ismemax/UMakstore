@@ -55,25 +55,28 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white.withValues(alpha: 0.95),
+        backgroundColor: colorScheme.surface.withValues(alpha: 0.95),
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_left_rounded,
-            color: Color(0xff2094f3),
+            color: colorScheme.primary,
             size: 32,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.share_outlined,
-              color: Color(0xff2094f3),
+              color: colorScheme.primary,
               size: 24,
             ),
             onPressed: () {},
@@ -88,6 +91,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             _buildHeader(),
             _buildStats(),
             _buildActionButtons(),
+            _buildDataRetentionInfo(),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Divider(color: Color(0xfff1f5f9), height: 1),
@@ -164,7 +168,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           style: GoogleFonts.lexend(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: const Color(0xff0a192f),
+            color: Theme.of(context).colorScheme.onSurface,
             letterSpacing: -0.6,
           ),
         ),
@@ -176,7 +180,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.lexend(
               fontSize: 14,
-              color: const Color(0xff64748b),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               height: 1.5,
             ),
           ),
@@ -205,6 +209,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildStatItem(String value, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Text(
@@ -212,7 +217,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           style: GoogleFonts.lexend(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: const Color(0xff0a192f),
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 4),
@@ -221,7 +226,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           style: GoogleFonts.lexend(
             fontSize: 10,
             fontWeight: FontWeight.w500,
-            color: const Color(0xff94a3b8),
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
             letterSpacing: 0.5,
           ),
         ),
@@ -230,7 +235,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildStatDivider() {
-    return Container(height: 24, width: 1, color: const Color(0xfff1f5f9));
+    return Container(height: 24, width: 1, color: Theme.of(context).colorScheme.outlineVariant);
   }
 
   Widget _buildActionButtons() {
@@ -290,7 +295,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                                 ? 'Installing...'
                                 : (widget.app.status == AppStatus.installed
                                     ? 'Open'
-                                    : 'Install')),
+                                    : (widget.app.isInLibrary ? 'Reinstall' : 'Install'))),
                         style: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -307,12 +312,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           GestureDetector(
             onTap: () {
               if (widget.app.status == AppStatus.installed) {
-                setState(() {
-                  widget.app.status = AppStatus.notInstalled;
-                });
-                _installer.persistAppStatus(widget.app.id, false);
-              } else {
-                // Keep bookmark logic if needed, or just follow Figma
+                _showUninstallConfirmationDialog(context);
               }
             },
             child: Container(
@@ -333,6 +333,37 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDataRetentionInfo() {
+    if (widget.app.status != AppStatus.installed) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xfff1f5f9),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline_rounded,
+                size: 16, color: Color(0xff64748b)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'You can choose to keep your app data when uninstalling to preserve your settings.',
+                style: GoogleFonts.lexend(
+                  fontSize: 11,
+                  color: const Color(0xff64748b),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -649,7 +680,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             'K1123456',
             'Oct 20, 2023',
             'Super helpful!',
-            'Finally, an app that works smoothly. Checking grades and schedules is so much easier now compared to the old website.',
+            'Finally, an app that keeps our accounts safe. Reporting a suspicious phishing email was super easy with the reporting feature.',
             5,
           ),
           const SizedBox(height: 16),
@@ -657,7 +688,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             'K1198765',
             'Oct 18, 2023',
             'Great UI, needs minor fixes',
-            'The interface is clean and modern. Notifications sometimes come in a bit late, but overall a solid experience for students.',
+            'The interface is clean and modern. The real-time scam alerts are very informative, though notifications sometimes arrive a bit late.',
             4,
           ),
         ],
@@ -904,6 +935,149 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         'Version 2.4.1 • Updated Oct 24, 2023',
         style: GoogleFonts.lexend(fontSize: 12, color: const Color(0xff94a3b8)),
       ),
+    );
+  }
+
+  void _showUninstallConfirmationDialog(BuildContext context) {
+    bool keepData = true;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(
+                'Uninstall ${widget.app.title}?',
+                style: GoogleFonts.lexend(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: const Color(0xff0a192f),
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildChecklistItem(Icons.delete_sweep_outlined, 'Removes app files from your device', true),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () => setState(() => keepData = !keepData),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Icon(
+                            keepData ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                            color: const Color(0xff2094f3),
+                            size: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Keep ${widget.app.size} of app data',
+                              style: GoogleFonts.lexend(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xff475569),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 32),
+                    child: Text(
+                      'Recommended if you reinstall later',
+                      style: GoogleFonts.lexend(
+                        fontSize: 11,
+                        color: const Color(0xff94a3b8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildChecklistItem(Icons.library_books_outlined, 'Keeps record in your library', true),
+                ],
+              ),
+              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'CANCEL',
+                    style: GoogleFonts.lexend(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xff64748b),
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    if (keepData) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Note: Tap "Keep data" in the system prompt below!'),
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                    final error = await _installer.uninstallApp(widget.app);
+                    if (error != null && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xffef4444),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  child: Text(
+                    'UNINSTALL',
+                    style: GoogleFonts.lexend(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildChecklistItem(IconData icon, String text, bool checked) {
+    return Row(
+      children: [
+        Icon(
+          checked ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+          size: 20,
+          color: checked ? const Color(0xff10b981) : const Color(0xffcbd5e1),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.lexend(
+              fontSize: 14,
+              color: const Color(0xff475569),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
