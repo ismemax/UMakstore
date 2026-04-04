@@ -10,10 +10,12 @@ import 'settings_screen.dart';
 import 'help_and_feedback_screen.dart';
 import 'widgets/sign_out_dialog.dart';
 import 'services/auth_service.dart';
+import 'developer_dashboard_screen.dart';
 import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final Function(int)? onTabSelected;
+  const ProfileScreen({super.key, this.onTabSelected});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -61,9 +63,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
 
         if (snapshot.hasError) {
+          final isPermissionDenied = snapshot.error.toString().contains('PERMISSION_DENIED');
           return Scaffold(
             backgroundColor: colorScheme.surface,
-            body: Center(child: Text('Error: ${snapshot.error}')),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isPermissionDenied ? Icons.lock_person_rounded : Icons.error_outline_rounded,
+                      size: 64,
+                      color: colorScheme.error,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      isPermissionDenied ? 'Access Denied' : 'Something went wrong',
+                      style: GoogleFonts.lexend(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      isPermissionDenied 
+                          ? "Missing Firestore permissions. Check your security rules in the Firebase Console."
+                          : 'Error: ${snapshot.error}',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lexend(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                    ),
+                    const SizedBox(height: 16),
+                    // DIAGNOSTIC INFO
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SelectableText(
+                        'Debug ID: ${_user!.uid}\nPath: users/${_user!.uid}',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.firaCode(fontSize: 10, color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () => AuthService().signOutUser(),
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Sign Out & Reconnect'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        // If the document does not exist, we should provide a way to create it or show a placeholder.
+        // This is common for initial Google Sign-In if doc creation was interrupted.
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+           return Scaffold(
+            backgroundColor: colorScheme.surface,
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.person_add_rounded,
+                      size: 64,
+                      color: colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Profile Not Found',
+                      style: GoogleFonts.lexend(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "We couldn't find your profile in our database. You might need to re-authenticate or complete your setup.",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lexend(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => AuthService().signOutUser(),
+                      child: const Text('Sign Out & Try Again'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           );
         }
 
@@ -118,22 +207,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const ManageAppsScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildListItem(
-                          Icons.notifications_none_rounded,
-                          'Notifications',
-                          hasBorder: true,
-                          hasRedDot: true,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const NotificationsScreen(),
+                                builder: (context) => ManageAppsScreen(
+                                  onTabSelected: widget.onTabSelected,
+                                ),
                               ),
                             );
                           },
@@ -165,7 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildListItem(
                           Icons.settings_outlined,
                           'Settings',
-                          hasBorder: false,
+                          hasBorder: userData['role'] == 'developer',
                           onTap: () {
                             Navigator.push(
                               context,
@@ -175,6 +251,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
+                        if (userData['role'] == 'developer')
+                          _buildListItem(
+                            Icons.dashboard_customize_rounded,
+                            'Developer Portal',
+                            hasBorder: false,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const DeveloperDashboardScreen(),
+                                ),
+                              );
+                            },
+                          ),
                       ]),
 
                       const SizedBox(height: 24),

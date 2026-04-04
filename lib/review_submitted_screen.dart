@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ReviewSubmittedScreen extends StatelessWidget {
-  const ReviewSubmittedScreen({super.key});
+  final String? appName;
+  final String? iconUrl;
+  const ReviewSubmittedScreen({super.key, this.appName, this.iconUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -132,14 +134,14 @@ class ReviewSubmittedScreen extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: const Color(0xff0a1f35),
+                        color: const Color(0xff0a1f35).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        image: const DecorationImage(
-                          image: AssetImage(
-                            'assets/images/umak_logo.png',
-                          ), // Fallback or placeholder
-                          fit: BoxFit.cover,
-                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: iconUrl != null && iconUrl!.startsWith('http')
+                          ? Image.network(iconUrl!, fit: BoxFit.cover)
+                          : const Icon(Icons.apps_rounded, color: Color(0xff0a1f35)),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -148,7 +150,7 @@ class ReviewSubmittedScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'UMak Portal',
+                            appName ?? 'Application',
                             style: GoogleFonts.lexend(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,

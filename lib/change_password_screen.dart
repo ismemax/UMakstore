@@ -54,6 +54,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
+    if (newPass == current) {
+      _showError('New password cannot be the same as current password');
+      return;
+    }
+
     if (newPass != confirm) {
       _showError('Passwords do not match');
       return;

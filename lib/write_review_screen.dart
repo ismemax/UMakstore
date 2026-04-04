@@ -1,10 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'review_submitted_screen.dart';
+import 'services/developer_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class WriteReviewScreen extends StatefulWidget {
-  const WriteReviewScreen({super.key});
+  final String appId;
+  final String appName;
+  final String? iconUrl;
+  const WriteReviewScreen({super.key, required this.appId, required this.appName, this.iconUrl});
 
   @override
   State<WriteReviewScreen> createState() => _WriteReviewScreenState();
@@ -15,6 +19,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
   bool _isAnonymous = false;
   final TextEditingController _reviewController = TextEditingController();
   int _charCount = 0;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -333,27 +338,58 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () {
-                          // Submit review action
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const ReviewSubmittedScreen(),
-                            ),
-                          );
+                        onTap: _isSubmitting ? null : () async {
+                          if (_reviewController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please write a review.')),
+                            );
+                            return;
+                          }
+
+                          setState(() => _isSubmitting = true);
+                          try {
+                            // Using our new DeveloperService
+                            final developerService = DeveloperService();
+                            await developerService.submitReview(
+                              appId: widget.appId,
+                              rating: _rating.toDouble(),
+                              comment: _reviewController.text.trim(),
+                              isAnonymous: _isAnonymous,
+                            );
+
+                            if (mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReviewSubmittedScreen(
+                                    appName: widget.appName,
+                                    iconUrl: widget.iconUrl,
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              setState(() => _isSubmitting = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                              );
+                            }
+                          }
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Center(
-                          child: Text(
-                            'Submit Review',
-                            style: GoogleFonts.lexend(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.4,
-                            ),
-                          ),
+                          child: _isSubmitting 
+                            ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                            : Text(
+                                'Submit Review',
+                                style: GoogleFonts.lexend(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
                         ),
                       ),
                     ),

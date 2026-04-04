@@ -4,6 +4,7 @@ enum AppStatus {
   notInstalled,
   downloading,
   installing,
+  uninstalling,
   installed,
   updateAvailable,
 }
@@ -14,6 +15,7 @@ class AppModel {
   final String publisher;
   final String description;
   final String iconAsset;
+  final String category;
   final String downloadUrl;
   final String? packageName; // e.g. com.example.app
   final String version;
@@ -34,6 +36,7 @@ class AppModel {
     required this.publisher,
     required this.description,
     required this.iconAsset,
+    required this.category,
     required this.downloadUrl,
     this.packageName,
     required this.version,
@@ -48,22 +51,6 @@ class AppModel {
     this.isInLibrary = false,
   });
 
-  // Helper for static data in the UI
-  static final List<AppModel> sampleApps = [
-    AppModel(
-      id: 'scamester',
-      title: 'Scamester',
-      publisher: 'Security Dept',
-      description: 'Detect scams & stay secure on campus...',
-      iconAsset: 'assets/logo.svg',
-      downloadUrl: "https://github.com/ismemax/scamester_apk/releases/download/Test/ScamesterV.0.1.2.4a.apk",
-      packageName: 'com.karterion.scamester',
-      version: '1.2.4',
-      size: '37 MB',
-      rating: '4.9',
-      reviews: '12k',
-      themeColor: const Color(0xffef4444),
-      iconData: Icons.shield_rounded,
-    ),
-  ];
+  // Empty list for dynamic data from Firestore
+  static final List<AppModel> sampleApps = [];
 }

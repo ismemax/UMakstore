@@ -1,10 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
 import 'app_details_screen.dart';
+import 'notifications_screen.dart';
+import 'favorites_screen.dart';
 import 'models/app_model.dart';
 import 'services/installer_service.dart';
+import 'services/developer_service.dart';
+import 'splash_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,18 +23,31 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   int _selectedTabIndex = 0;
   late InstallerService _installer;
+  late Stream<List<AppModel>> _appsStream;
+  List<AppModel>? _lastApps;
+  bool _isPrecached = false;
+  bool _isCompletingPrecache = false;
+
+  StreamSubscription? _appsSubscription;
 
   @override
   void initState() {
     super.initState();
     _installer = InstallerService();
     _installer.addListener(_updateState);
-    // Refresh the status on startup for all sample apps
-    _installer.updateAllStatuses();
+    _appsStream = DeveloperService().getStoreApps();
+    
+    // Subscribe to the stream to update statuses whenever new apps arrive
+    _appsSubscription = _appsStream.listen((apps) {
+      if (mounted) {
+         _installer.updateAllStatuses(apps);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _appsSubscription?.cancel();
     _installer.removeListener(_updateState);
     super.dispose();
   }
@@ -46,20 +65,118 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: _selectedIndex == 0
-            ? Column(
-                children: [
-                  _buildHeader(),
-                  _buildTabs(),
-                  Expanded(
-                    child: _selectedTabIndex == 0
-                        ? _buildForYouTab()
-                        : _buildTopRatedTab(),
-                  ),
-                ],
-              )
+            ? StreamBuilder<List<AppModel>>(
+                  stream: _appsStream,
+                  builder: (context, snapshot) {
+                    final liveApps = snapshot.data ?? (_lastApps ?? []);
+                    
+                    // Logic to handle pre-caching only when data actually changes
+                    if (snapshot.hasData) {
+                      bool isNewData = _lastApps == null || _lastApps!.length != snapshot.data!.length;
+                      if (!isNewData) {
+                        for (int i = 0; i < liveApps.length; i++) {
+                          if (liveApps[i].id != _lastApps![i].id) {
+                            isNewData = true;
+                            break;
+                          }
+                        }
+                      }
+
+                      if (isNewData && !_isCompletingPrecache) {
+                        _lastApps = snapshot.data;
+                        _isPrecached = false;
+                        _isCompletingPrecache = true;
+                        _precacheApps(liveApps);
+                      }
+                    }
+
+                    // Only show skeleton if we have literally nothing yet
+                    if ((snapshot.connectionState == ConnectionState.waiting && _lastApps == null) || 
+                        (!_isPrecached && _lastApps == null)) {
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                           // Trigger new fetch
+                           setState(() {});
+                           await Future.delayed(const Duration(seconds: 1));
+                        },
+                        child: _buildSkeletonLoading(),
+                      );
+                    }
+  
+                    if (liveApps.isEmpty) {
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                           // Allow manual forced update
+                           _installer.updateAllStatuses(liveApps);
+                           await Future.delayed(const Duration(seconds: 1));
+                           if (mounted) setState(() {});
+                        },
+                        child: ListView( // Use ListView so it can pull-to-refresh
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            _buildHeader(),
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.7,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.apps_outage_rounded, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.1)),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No apps available yet',
+                                      style: GoogleFonts.lexend(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: colorScheme.onSurface.withValues(alpha: 0.4),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Pull down to refresh or visit Developer Portal.',
+                                      style: GoogleFonts.lexend(
+                                        fontSize: 14,
+                                        color: colorScheme.onSurface.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+  
+                    return Column(
+                      children: [
+                        _buildHeader(),
+                        _buildTabs(),
+                        Expanded(
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              await _installer.updateAllStatuses(liveApps);
+                              await Future.delayed(const Duration(seconds: 1));
+                              if (mounted) setState(() {});
+                            },
+                            child: _selectedTabIndex == 0
+                                ? _buildForYouTab(liveApps)
+                                : _buildTopRatedTab(liveApps),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                )
             : (_selectedIndex == 1
-                  ? const SearchScreen()
-                  : const ProfileScreen()),
+                ? const SearchScreen()
+                : (_selectedIndex == 2 
+                    ? const FavoritesScreen()
+                    : ProfileScreen(
+                        onTabSelected: (index) {
+                          setState(() => _selectedIndex = index);
+                        },
+                      ))),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -102,6 +219,13 @@ class _HomeScreenState extends State<HomeScreen> {
             BottomNavigationBarItem(
               icon: Padding(
                 padding: EdgeInsets.only(bottom: 4.0),
+                child: Icon(Icons.bookmark_rounded, size: 22),
+              ),
+              label: 'Favorites',
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(bottom: 4.0),
                 child: Icon(Icons.person_outline_rounded, size: 22),
               ),
               label: 'Profile',
@@ -129,20 +253,67 @@ class _HomeScreenState extends State<HomeScreen> {
               letterSpacing: -0.75,
             ),
           ),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Icon(
-                Icons.person_outline_rounded,
-                color: colorScheme.primary,
-                size: 20,
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colorScheme.outlineVariant),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.notifications_none_rounded,
+                        color: colorScheme.onSurface,
+                        size: 20,
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xffef4444),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.person_outline_rounded,
+                    color: colorScheme.primary,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -202,20 +373,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildForYouTab() {
+  Widget _buildForYouTab(List<AppModel> apps) {
+    if (apps.isEmpty) return const SizedBox.shrink();
+    final featuredApp = apps[0];
+
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 32),
       child: Column(
         children: [
           const SizedBox(height: 24),
-          _buildFeaturedAppCard(),
+          _buildFeaturedAppCard(featuredApp),
           const SizedBox(height: 32),
           _buildHorizontalListSection(
             title1: 'For College of\n',
             title2: 'Computer Studies',
+            apps: apps,
           ),
           const SizedBox(height: 32),
-          _buildRecentlyUpdatedSection(),
+          _buildRecentlyUpdatedSection(apps),
           const SizedBox(height: 32),
           _buildCategoriesSection(),
         ],
@@ -223,8 +399,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTopRatedTab() {
+  Widget _buildTopRatedTab(List<AppModel> apps) {
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,36 +409,24 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: GridView.count(
-              crossAxisCount: 2,
+            child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 0.62,
-              children: [
-                _buildTopRatedAppCard(
-                  rank: 1,
-                  title: 'Scamester',
-                  publisher: 'Security Dept',
-                  rating: '4.9',
-                  reviews: '(12k)',
-                  isButtonOutlined: false,
-                  iconWidget: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.shield_rounded,
-                        size: 40,
-                        color: Color(0xffef4444),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 0.62,
+              ),
+              itemCount: apps.length,
+              itemBuilder: (context, index) {
+                final app = apps[index];
+                return _buildTopRatedAppCard(
+                  rank: index + 1,
+                  app: app,
+                  isButtonOutlined: index > 0,
+                );
+              },
             ),
           ),
           const SizedBox(height: 32),
@@ -322,11 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildTopRatedAppCard({
     required int rank,
-    required String title,
-    required String publisher,
-    required String rating,
-    required String reviews,
-    required Widget iconWidget,
+    required AppModel app,
     required bool isButtonOutlined,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -336,7 +497,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => AppDetailsScreen(
-              app: AppModel.sampleApps[0],
+              app: app,
             ),
           ),
         );
@@ -386,12 +547,20 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox(width: 80, height: 80, child: iconWidget),
+                  SizedBox(
+                    width: 80, 
+                    height: 80, 
+                    child: app.iconData != null 
+                        ? Icon(app.iconData, size: 40, color: app.themeColor ?? colorScheme.primary)
+                        : (app.iconAsset.startsWith('http') 
+                            ? Image.network(app.iconAsset, fit: BoxFit.contain)
+                            : Icon(Icons.apps_rounded, size: 40, color: colorScheme.primary)),
+                  ),
                   Column(
                     children: [
                       const SizedBox(height: 8),
                       Text(
-                        title,
+                        app.title,
                         style: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -403,7 +572,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        publisher,
+                        app.publisher,
                         style: GoogleFonts.lexend(
                           fontSize: 12,
                           color: colorScheme.onSurface.withValues(alpha: 0.6),
@@ -423,7 +592,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            rating,
+                            app.rating,
                             style: GoogleFonts.lexend(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -432,7 +601,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            reviews,
+                            '(${app.reviews})',
                             style: GoogleFonts.lexend(
                               fontSize: 12,
                               color: colorScheme.onSurface.withValues(alpha: 0.4),
@@ -443,7 +612,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _buildTopRatedActionButton(title, isButtonOutlined, colorScheme),
+                  _buildTopRatedActionButton(app, isButtonOutlined, colorScheme),
                 ],
               ),
             ),
@@ -453,20 +622,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTopRatedActionButton(String title, bool isButtonOutlined, ColorScheme colorScheme) {
-    // For demo purposes, we only track status for Scamester (AppModel.sampleApps[0])
-    final app = title == 'Scamester' ? AppModel.sampleApps[0] : null;
-    final status = app?.status ?? AppStatus.notInstalled;
-    final progress = app?.progress ?? 0.0;
+  Widget _buildTopRatedActionButton(AppModel app, bool isButtonOutlined, ColorScheme colorScheme) {
+    final status = app.status;
+    final progress = app.progress;
 
     return GestureDetector(
       onTap: () {
-        if (app != null) {
-          if (status == AppStatus.notInstalled) {
-            _installer.installApp(app);
-          } else if (status == AppStatus.installed) {
-            _installer.launchApp(app);
-          }
+        if (status == AppStatus.notInstalled) {
+          _installer.installApp(app);
+        } else if (status == AppStatus.installed) {
+          _installer.launchApp(app);
         }
       },
       child: Container(
@@ -521,7 +686,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFeaturedAppCard() {
+  Widget _buildFeaturedAppCard(AppModel app) {
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
@@ -529,7 +694,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => AppDetailsScreen(
-              app: AppModel.sampleApps[0],
+              app: app,
             ),
           ),
         );
@@ -553,7 +718,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Stack(
             children: [
-              // Placeholder for background image
+              // Placeholder for background image (can be randomized or based on app theme)
               Positioned.fill(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
@@ -561,7 +726,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          colorScheme.surfaceContainerHighest,
+                          (app.themeColor ?? colorScheme.primary).withValues(alpha: 0.1),
                           colorScheme.surface,
                         ],
                         begin: Alignment.topCenter,
@@ -604,10 +769,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xff2094f3).withValues(alpha: 0.1),
+                        color: (app.themeColor ?? const Color(0xff2094f3)).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                          color: const Color(0xff2094f3).withValues(alpha: 0.2),
+                          color: (app.themeColor ?? const Color(0xff2094f3)).withValues(alpha: 0.2),
                         ),
                       ),
                       child: Text(
@@ -615,7 +780,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: GoogleFonts.lexend(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xff2094f3),
+                          color: app.themeColor ?? const Color(0xff2094f3),
                           letterSpacing: 0.6,
                         ),
                       ),
@@ -626,26 +791,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Container(
                           width: 64,
-                          height: 64,
+                           height: 64,
                           decoration: BoxDecoration(
-                            color: colorScheme.surface,
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: colorScheme.outlineVariant),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 6,
-                                offset: const Offset(0, 4),
-                                spreadRadius: -1,
-                              ),
-                            ],
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.shield_rounded,
-                              color: Color(0xffef4444),
-                              size: 32,
-                            ),
+                          child: Center(
+                            child: app.iconData != null 
+                              ? Icon(app.iconData, color: app.themeColor ?? const Color(0xffef4444), size: 32)
+                              : (app.iconAsset.startsWith('http')
+                                ? Image.network(app.iconAsset, width: 32, height: 32)
+                                : Icon(Icons.apps_rounded, color: colorScheme.primary, size: 32)),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -654,7 +810,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                AppModel.sampleApps[0].title,
+                                app.title,
                                 style: GoogleFonts.lexend(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -662,7 +818,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                AppModel.sampleApps[0].description,
+                                app.description,
                                 style: GoogleFonts.lexend(
                                   fontSize: 14,
                                   color: colorScheme.onSurface.withValues(alpha: 0.6),
@@ -681,22 +837,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              if (AppModel.sampleApps[0].status == AppStatus.notInstalled) {
-                                _installer.installApp(AppModel.sampleApps[0]);
-                              } else if (AppModel.sampleApps[0].status == AppStatus.installed) {
-                                _installer.launchApp(AppModel.sampleApps[0]);
+                              if (app.status == AppStatus.notInstalled) {
+                                _installer.installApp(app);
+                              } else if (app.status == AppStatus.installed) {
+                                _installer.launchApp(app);
                               }
                             },
                             child: Container(
                               height: 44,
                               decoration: BoxDecoration(
-                                color: const Color(0xff2094f3),
+                                color: app.themeColor ?? const Color(0xff2094f3),
                                 borderRadius: BorderRadius.circular(12),
-                                boxShadow: const [
+                                boxShadow: [
                                   BoxShadow(
-                                    color: Color(0x332094f3),
+                                    color: (app.themeColor ?? const Color(0xff2094f3)).withValues(alpha: 0.2),
                                     blurRadius: 15,
-                                    offset: Offset(0, 10),
+                                    offset: const Offset(0, 10),
                                     spreadRadius: -3,
                                   ),
                                 ],
@@ -705,7 +861,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    AppModel.sampleApps[0].status == AppStatus.installed
+                                    app.status == AppStatus.installed
                                         ? Icons.open_in_new_rounded
                                         : Icons.download_rounded,
                                     color: Colors.white,
@@ -713,9 +869,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    AppModel.sampleApps[0].status == AppStatus.downloading
-                                        ? '${(AppModel.sampleApps[0].progress * 100).toInt()}%'
-                                        : (AppModel.sampleApps[0].status == AppStatus.installed
+                                    app.status == AppStatus.downloading
+                                        ? '${(app.progress * 100).toInt()}%'
+                                        : (app.status == AppStatus.installed
                                             ? 'Open'
                                             : 'Install'),
                                     style: GoogleFonts.lexend(
@@ -741,7 +897,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Center(
                             child: Icon(
                               Icons.bookmark_outline_rounded,
-                              color: colorScheme.primary,
+                              color: app.themeColor ?? colorScheme.primary,
                               size: 20,
                             ),
                           ),
@@ -761,6 +917,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHorizontalListSection({
     required String title1,
     required String title2,
+    required List<AppModel> apps,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
@@ -806,15 +963,12 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            children: [
-              _buildAppCardSmall(
-                title: 'Scamester',
-                category: 'Security',
-                rating: '4.9',
-                iconData: Icons.shield_rounded,
-                iconColor: const Color(0xffef4444),
-              ),
-            ],
+            children: apps.map((app) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: _buildAppCardSmall(app: app),
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -822,12 +976,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAppCardSmall({
-    required String title,
-    required String category,
-    required String rating,
-    required IconData iconData,
-    required Color iconColor,
+    required AppModel app,
   }) {
+    final title = app.title;
+    final rating = app.rating;
+    final iconData = app.iconData ?? Icons.apps_rounded;
+    final iconColor = app.themeColor ?? const Color(0xff3b82f6);
+    final category = 'Academic'; // For demo
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
@@ -835,7 +990,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => AppDetailsScreen(
-              app: AppModel.sampleApps[0],
+              app: app,
             ),
           ),
         );
@@ -907,7 +1062,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       child: Center(
-                        child: Icon(iconData, color: iconColor, size: 16),
+                        child: app.iconAsset.startsWith('http')
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Image.network(app.iconAsset, width: 20, height: 20, fit: BoxFit.cover),
+                            )
+                          : Icon(iconData, color: iconColor, size: 16),
                       ),
                     ),
                   ),
@@ -985,7 +1145,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildRecentlyUpdatedSection() {
+  Widget _buildRecentlyUpdatedSection(List<AppModel> apps) {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1018,18 +1178,12 @@ class _HomeScreenState extends State<HomeScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
-            children: [
-              _buildListAppCard(
-                title: 'Scamester',
-                subtitle: 'Security Dept',
-                version: 'v1.2',
-                timeAgo: '1d ago',
-                iconColor: const Color(0xffef4444), // Red
-                iconData: Icons.shield_rounded,
-                actionText: AppModel.sampleApps[0].status == AppStatus.installed ? 'Open' : 'Get',
-                isUpdate: false,
-              ),
-            ],
+            children: apps.map((app) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: _buildListAppCard(app: app),
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -1037,15 +1191,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildListAppCard({
-    required String title,
-    required String subtitle,
-    required String version,
-    required String timeAgo,
-    required Color iconColor,
-    required IconData iconData,
-    required String actionText,
-    required bool isUpdate,
+    required AppModel app,
   }) {
+    final title = app.title;
+    final subtitle = app.publisher;
+    final version = 'v${app.version}';
+    final timeAgo = 'Just now';
+    final iconColor = app.themeColor ?? const Color(0xff3b82f6);
+    final iconData = app.iconData ?? Icons.apps_rounded;
+    final actionText = app.status == AppStatus.installed ? 'Open' : 'Get';
+    final isUpdate = false;
+    
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
@@ -1053,7 +1209,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => AppDetailsScreen(
-              app: AppModel.sampleApps[0],
+              app: app,
             ),
           ),
         );
@@ -1082,7 +1238,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
-                child: Icon(iconData, color: Colors.white, size: 28),
+                child: app.iconAsset.startsWith('http')
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(app.iconAsset, width: 44, height: 44, fit: BoxFit.cover),
+                    )
+                  : Icon(iconData, color: Colors.white, size: 28),
               ),
             ),
             const SizedBox(width: 16),
@@ -1234,6 +1395,108 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _precacheApps(List<AppModel> apps) async {
+    if (!mounted) return;
+    
+    try {
+      final List<Future<void>> futures = [];
+      for (var app in apps) {
+        if (app.iconAsset.startsWith('http')) {
+          futures.add(precacheImage(NetworkImage(app.iconAsset), context));
+        }
+      }
+      
+      if (futures.isNotEmpty) {
+        await Future.wait(futures);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isPrecached = true;
+          _isCompletingPrecache = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error precaching images: $e');
+      if (mounted) {
+        setState(() {
+          _isPrecached = true;
+          _isCompletingPrecache = false;
+        });
+      }
+    }
+  }
+
+  Widget _buildSkeletonLoading() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Column(
+      children: [
+        _buildHeader(),
+        _buildTabs(),
+        Expanded(
+          child: Shimmer.fromColors(
+            baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+            highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Container(height: 24, width: 150, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 160,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 3,
+                      itemBuilder: (_, __) => Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Container(width: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12))),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Container(height: 24, width: 200, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+                  const SizedBox(height: 16),
+                  ...List.generate(3, (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      children: [
+                        Container(width: 64, height: 64, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12))),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(height: 16, width: double.infinity, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+                              const SizedBox(height: 8),
+                              Container(height: 12, width: 100, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

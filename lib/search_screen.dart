@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app_details_screen.dart';
 import 'models/app_model.dart';
 import 'services/installer_service.dart';
+import 'services/developer_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -24,16 +26,27 @@ class _SearchScreenState extends State<SearchScreen> {
   ];
   late InstallerService _installer;
 
+  StreamSubscription? _appsSubscription;
+  late Stream<List<AppModel>> _appsStream;
+
   @override
   void initState() {
     super.initState();
     _installer = InstallerService();
     _installer.addListener(_updateState);
-    _installer.updateAllStatuses();
+    _appsStream = DeveloperService().getStoreApps();
+    
+    // Subscribe to update statuses whenever new apps arrive
+    _appsSubscription = _appsStream.listen((apps) {
+      if (mounted) {
+        _installer.updateAllStatuses(apps);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _appsSubscription?.cancel();
     _installer.removeListener(_updateState);
     super.dispose();
   }
@@ -55,61 +68,61 @@ class _SearchScreenState extends State<SearchScreen> {
           _buildHeader(colorScheme),
           _buildFilters(colorScheme),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(
-                top: 16,
-                bottom: 96,
-                left: 16,
-                right: 16,
-              ),
-              children: [
-                _buildAppListItem(
-                  context,
-                  title: 'Scamester',
-                  subtitle: 'Security Dept',
-                  chipLabel: 'OFFICIAL',
-                  chipColor: const Color(0xff2563eb),
-                  chipBgColor: const Color(0xffeff6ff),
-                  chipBorderColor: const Color(0xffdbeafe),
-                  rating: '4.9',
-                  actionWidget: _buildActionButton(
-                    AppModel.sampleApps[0].status == AppStatus.installed ? 'OPEN' : 'GET',
-                    onTap: () {
-                      if (AppModel.sampleApps[0].status == AppStatus.installed) {
-                        _installer.launchApp(AppModel.sampleApps[0]);
-                      } else {
-                        _installer.installApp(AppModel.sampleApps[0]);
-                      }
-                    },
-                  ),
-                  iconWidget: _buildAppIcon(
-                    const Color(0xfff1f5f9),
-                    Icons.shield_rounded,
-                    const Color(0xffef4444),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Column(
-                  children: [
-                    Text(
-                      'Not finding what you\'re looking for?',
-                      style: GoogleFonts.lexend(
-                        fontSize: 14,
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
+            child: StreamBuilder<List<AppModel>>(
+              stream: _appsStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final apps = snapshot.data ?? [];
+                
+                // For now, filtering is simulated or can be implemented here
+                final filteredApps = apps.where((app) {
+                  if (_selectedFilterIndex == 0) return true;
+                  return app.publisher.contains(_filters[_selectedFilterIndex]); // Simple simulation
+                }).toList();
+
+                if (filteredApps.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off_rounded, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.2)),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No apps found',
+                          style: GoogleFonts.lexend(
+                            fontSize: 16,
+                            color: colorScheme.onSurface.withValues(alpha: 0.4),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Request an App',
-                      style: GoogleFonts.lexend(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.only(top: 16, bottom: 96, left: 16, right: 16),
+                  itemCount: filteredApps.length,
+                  itemBuilder: (context, index) {
+                    final app = filteredApps[index];
+                    return Column(
+                      children: [
+                        _buildAppListItem(
+                          context,
+                          app: app,
+                          chipLabel: 'OFFICIAL', // Could be dynamic based on a flag
+                          chipColor: const Color(0xff2563eb),
+                          chipBgColor: const Color(0xffeff6ff),
+                          chipBorderColor: const Color(0xffdbeafe),
+                        ),
+                        if (index < filteredApps.length - 1) const SizedBox(height: 16),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
@@ -240,24 +253,21 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildAppListItem(
     BuildContext context, {
-    required String title,
-    required String subtitle,
+    required AppModel app,
     required String chipLabel,
     required Color chipColor,
     required Color chipBgColor,
     required Color chipBorderColor,
-    required String? rating,
-    required Widget actionWidget,
-    required Widget iconWidget,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final status = app.status;
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => AppDetailsScreen(
-              app: AppModel.sampleApps[0],
+              app: app,
             ),
           ),
         );
@@ -267,14 +277,18 @@ class _SearchScreenState extends State<SearchScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            iconWidget,
+            _buildAppIcon(
+              app.iconData ?? Icons.apps_rounded,
+              app.themeColor ?? colorScheme.primary,
+              iconUrl: app.iconAsset.startsWith('http') ? app.iconAsset : null,
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    app.title,
                     style: GoogleFonts.lexend(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -283,7 +297,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   const SizedBox(height: 1),
                   Text(
-                    subtitle,
+                    app.publisher,
                     style: GoogleFonts.lexend(
                       fontSize: 12,
                       color: colorScheme.onSurface.withValues(alpha: 0.6),
@@ -311,29 +325,36 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                       ),
-                      if (rating != null) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          rating,
-                          style: GoogleFonts.lexend(
-                            fontSize: 10,
-                            color: colorScheme.onSurface.withValues(alpha: 0.4),
-                          ),
+                      const SizedBox(width: 8),
+                      Text(
+                        app.rating,
+                        style: GoogleFonts.lexend(
+                          fontSize: 10,
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
-                        const SizedBox(width: 2),
-                        const Icon(
-                          Icons.star_rounded,
-                          color: Color(0xfffbbf24),
-                          size: 10,
-                        ),
-                      ],
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xfffbbf24),
+                        size: 10,
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            actionWidget,
+            _buildActionButton(
+              status == AppStatus.installed ? 'OPEN' : 'GET',
+              onTap: () {
+                if (status == AppStatus.installed) {
+                  _installer.launchApp(app);
+                } else {
+                  _installer.installApp(app);
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -371,13 +392,13 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildAppIcon(Color bgColor, IconData iconData, Color iconColor) {
+  Widget _buildAppIcon(IconData iconData, Color iconColor, {String? iconUrl}) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 64,
       height: 64,
       decoration: BoxDecoration(
-        color: bgColor == const Color(0xfff1f5f9) ? colorScheme.surfaceContainerHighest : bgColor,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
@@ -388,7 +409,14 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
-      child: Center(child: Icon(iconData, color: iconColor, size: 32)),
+      child: Center(
+        child: iconUrl != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.network(iconUrl, width: 64, height: 64, fit: BoxFit.cover),
+              )
+            : Icon(iconData, color: iconColor, size: 32),
+      ),
     );
   }
 }
