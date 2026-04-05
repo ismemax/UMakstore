@@ -2,22 +2,33 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'services/developer_service.dart';
+import 'models/app_model.dart';
+import 'services/language_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ReviewsScreen extends StatefulWidget {
-  const ReviewsScreen({super.key});
+  final AppModel app;
+  const ReviewsScreen({super.key, required this.app});
 
   @override
   State<ReviewsScreen> createState() => _ReviewsScreenState();
 }
 
 class _ReviewsScreenState extends State<ReviewsScreen> {
+  final LanguageService _languageService = LanguageService();
   String _selectedFilter = 'All';
 
   final List<String> _filters = ['All', '5 ★', '4 ★', '3 ★', '2 ★', '1 ★'];
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56),
@@ -25,52 +36,61 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: AppBar(
-              backgroundColor: Colors.white.withValues(alpha: 0.8),
+              backgroundColor: colorScheme.surface.withValues(alpha: 0.8),
               elevation: 0,
               scrolledUnderElevation: 0,
               centerTitle: true,
               leading: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.chevron_left_rounded,
-                  color: Color(0xff1e3a8a),
+                  color: colorScheme.primary,
                   size: 32,
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
-                'Reviews',
+                _languageService.translate('ratings_reviews'),
                 style: GoogleFonts.lexend(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xff1e293b),
+                  color: colorScheme.onSurface,
                 ),
               ),
-              shape: const Border(
-                bottom: BorderSide(color: Color(0xfff1f5f9), width: 1),
+              shape: Border(
+                bottom: BorderSide(color: colorScheme.outlineVariant, width: 1),
               ),
             ),
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 56 + 24),
-            _buildRatingSummary(),
-            _buildFilterTabs(),
-            _buildReviewList(),
-            const SizedBox(height: 40),
-          ],
-        ),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: DeveloperService().getAppReviews(widget.app.id),
+        builder: (context, snapshot) {
+          final allReviews = snapshot.data ?? [];
+          final filteredReviews = _filterReviews(allReviews);
+          final distribution = _calculateDistribution(allReviews);
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 56 + 24),
+                _buildRatingSummary(distribution, allReviews.length, colorScheme),
+                _buildFilterTabs(colorScheme),
+                _buildReviewList(filteredReviews, colorScheme),
+                const SizedBox(height: 40),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildRatingSummary() {
+  Widget _buildRatingSummary(Map<int, double> distribution, int totalCount, ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xfff1f5f9))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,22 +98,22 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           Column(
             children: [
               Text(
-                '4.8',
+                widget.app.rating,
                 style: GoogleFonts.lexend(
                   fontSize: 60,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xff1e3a8a),
+                  color: colorScheme.onSurface,
                   letterSpacing: -3,
                   height: 1,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                'out of 5',
+                _languageService.translate('out_of_5'),
                 style: GoogleFonts.lexend(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xff64748b),
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -102,24 +122,24 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           Expanded(
             child: Column(
               children: [
-                _buildRatingBar(5, 0.85),
+                _buildRatingBar(5, distribution[5] ?? 0.0, colorScheme),
                 const SizedBox(height: 6),
-                _buildRatingBar(4, 0.1),
+                _buildRatingBar(4, distribution[4] ?? 0.0, colorScheme),
                 const SizedBox(height: 6),
-                _buildRatingBar(3, 0.03),
+                _buildRatingBar(3, distribution[3] ?? 0.0, colorScheme),
                 const SizedBox(height: 6),
-                _buildRatingBar(2, 0.01),
+                _buildRatingBar(2, distribution[2] ?? 0.0, colorScheme),
                 const SizedBox(height: 6),
-                _buildRatingBar(1, 0.01),
+                _buildRatingBar(1, distribution[1] ?? 0.0, colorScheme),
                 const SizedBox(height: 4),
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    '1,248 Ratings',
+                    '$totalCount Ratings',
                     style: GoogleFonts.lexend(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xff64748b),
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -131,7 +151,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     );
   }
 
-  Widget _buildRatingBar(int stars, double progress) {
+  Widget _buildRatingBar(int stars, double progress, ColorScheme colorScheme) {
     return Row(
       children: [
         SizedBox(
@@ -143,8 +163,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 Icons.star_rounded,
                 size: 8,
                 color: index < stars
-                    ? const Color(0xff1e3a8a)
-                    : const Color(0xfff1f5f9),
+                    ? colorScheme.primary
+                    : colorScheme.surfaceContainerHighest,
               );
             }),
           ),
@@ -154,7 +174,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           child: Container(
             height: 6,
             decoration: BoxDecoration(
-              color: const Color(0xfff1f5f9),
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(3),
             ),
             child: FractionallySizedBox(
@@ -162,7 +182,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               widthFactor: progress,
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xff1e3a8a),
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -173,12 +193,12 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     );
   }
 
-  Widget _buildFilterTabs() {
+  Widget _buildFilterTabs(ColorScheme colorScheme) {
     return Container(
       height: 72,
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
+        color: colorScheme.surface.withValues(alpha: 0.95),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -200,20 +220,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xff1e3a8a) : Colors.white,
+                color: isSelected ? colorScheme.primary : colorScheme.surface,
                 borderRadius: BorderRadius.circular(9999),
                 border: isSelected
                     ? null
-                    : Border.all(color: const Color(0xff1e3a8a)),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 2,
-                          offset: const Offset(0, 1),
-                        ),
-                      ]
-                    : null,
+                    : Border.all(color: colorScheme.primary),
               ),
               child: Center(
                 child: Text(
@@ -221,7 +232,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   style: GoogleFonts.lexend(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.white : const Color(0xff1e3a8a),
+                    color: isSelected ? colorScheme.onPrimary : colorScheme.primary,
                   ),
                 ),
               ),
@@ -232,93 +243,76 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     );
   }
 
-  Widget _buildReviewList() {
+  Widget _buildReviewList(List<Map<String, dynamic>> reviews, ColorScheme colorScheme) {
+    if (reviews.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(Icons.rate_review_outlined, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.1)),
+              const SizedBox(height: 16),
+              Text(
+                _languageService.translate('no_reviews'),
+                style: GoogleFonts.lexend(
+                  fontSize: 14,
+                  color: colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
-        children: [
-          _buildReviewCard(
-            initials: 'K1',
-            username: 'K1123456',
-            date: 'Oct 20, 2023',
-            rating: 5,
-            title: 'Super helpful!',
-            content:
-                'Finally, an app that works smoothly. Checking grades and schedules is so much easier now compared to the old website. The notification feature for class cancellations is a lifesaver!',
-            helpfulCount: 12,
-            bgColor: const Color(0xffdbeafe),
-            textColor: const Color(0xff1e3a8a),
-            borderColor: const Color(0xffbfdbfe),
-          ),
-          const SizedBox(height: 16),
-          _buildReviewCard(
-            initials: 'K2',
-            username: 'K1198765',
-            date: 'Oct 18, 2023',
-            rating: 4,
-            title: 'Great UI, needs minor fixes',
-            content:
-                'The interface is clean and modern. Notifications sometimes come in a bit late, but overall a solid experience for students. Would love to see a dark mode toggle inside the app settings directly.',
-            helpfulCount: 5,
-            bgColor: const Color(0xfff3e8ff),
-            textColor: const Color(0xff7e22ce),
-            borderColor: const Color(0xffe9d5ff),
-            developerResponse: {
-              'date': 'Oct 19, 2023',
-              'content':
-                  "Hi K1198765, thanks for the feedback! We've noted the issue with notifications and will include a fix in the next patch. Dark mode toggle is coming in v2.5!",
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildReviewCard(
-            initials: 'A2',
-            username: 'A2200102',
-            date: 'Sep 05, 2023',
-            rating: 5,
-            title: 'Essential for Freshmen',
-            content:
-                'As a freshman, I was getting lost finding rooms. The schedule with room numbers is perfect. Highly recommend downloading this immediately.',
-            helpfulCount: 28,
-            bgColor: const Color(0xffd1fae5),
-            textColor: const Color(0xff047857),
-            borderColor: const Color(0xffa7f3d0),
-          ),
-          const SizedBox(height: 16),
-          _buildReviewCard(
-            initials: 'K1',
-            username: 'K1144221',
-            date: 'Aug 21, 2023',
-            rating: 3,
-            title: 'Crashing on login',
-            content:
-                "The app crashes whenever I try to log in with my student ID. I've reinstalled it twice. Please fix this ASAP as enrollment is starting.",
-            helpfulCount: 3,
-            bgColor: const Color(0xffffedd5),
-            textColor: const Color(0xffc2410c),
-            borderColor: const Color(0xfffed7aa),
-            developerResponse: {
-              'date': 'Aug 22, 2023',
-              'content':
-                  'We apologize for the inconvenience. This was a server-side issue that has now been resolved. Please try logging in again.',
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildReviewCard(
-            initials: 'K3',
-            username: 'K3309112',
-            date: 'Aug 10, 2023',
-            rating: 5,
-            title: 'Simple and Effective',
-            content:
-                'Does exactly what it says. No clutter. Just grades and sched. Perfect.',
-            helpfulCount: 8,
-            bgColor: const Color(0xfffce7f3),
-            textColor: const Color(0xffbe185d),
-            borderColor: const Color(0xfffbcfe8),
-          ),
-        ],
+        children: reviews.map((review) {
+          final timestamp = review['createdAt'] as Timestamp?;
+          final dateStr = timestamp != null
+              ? '${timestamp.toDate().day}/${timestamp.toDate().month}/${timestamp.toDate().year}'
+              : 'Just now';
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildReviewCard(
+              initials: review['userName']?.substring(0, 1).toUpperCase() ?? 'U',
+              username: review['userName'] ?? 'User',
+              date: dateStr,
+              rating: (review['rating'] as num?)?.toInt() ?? 5,
+              title: '',
+              content: review['comment'] ?? '',
+              helpfulCount: 0,
+              bgColor: colorScheme.primary.withValues(alpha: 0.1),
+              textColor: colorScheme.primary,
+              borderColor: colorScheme.primary.withValues(alpha: 0.2),
+              colorScheme: colorScheme,
+            ),
+          );
+        }).toList(),
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _filterReviews(List<Map<String, dynamic>> reviews) {
+    if (_selectedFilter == 'All') return reviews;
+    int targetStars = int.parse(_selectedFilter.substring(0, 1));
+    return reviews.where((r) => (r['rating'] as num?)?.toInt() == targetStars).toList();
+  }
+
+  Map<int, double> _calculateDistribution(List<Map<String, dynamic>> reviews) {
+    if (reviews.isEmpty) return {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+    
+    Map<int, int> counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+    for (var review in reviews) {
+      int rating = (review['rating'] as num?)?.toInt() ?? 0;
+      if (rating >= 1 && rating <= 5) {
+        counts[rating] = (counts[rating] ?? 0) + 1;
+      }
+    }
+    
+    return counts.map((key, value) => MapEntry(key, value / reviews.length));
   }
 
   Widget _buildReviewCard({
@@ -332,14 +326,15 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     required Color bgColor,
     required Color textColor,
     required Color borderColor,
+    required ColorScheme colorScheme,
     Map<String, String>? developerResponse,
   }) {
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xfff1f5f9)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -388,7 +383,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                         style: GoogleFonts.lexend(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xff1e3a8a),
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -400,8 +395,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                               Icons.star_rounded,
                               size: 11,
                               color: index < rating
-                                  ? const Color(0xff1e3a8a)
-                                  : const Color(0xfff1f5f9),
+                                  ? colorScheme.primary
+                                  : colorScheme.surfaceContainerHighest,
                             ),
                           );
                         }),
@@ -415,7 +410,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xff64748b),
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -426,7 +421,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             style: GoogleFonts.lexend(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: const Color(0xff0f172a),
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 6),
@@ -435,11 +430,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             style: GoogleFonts.lexend(
               fontSize: 14,
               height: 1.6,
-              color: const Color(0xff1e293b).withValues(alpha: 0.8),
+              color: colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 13),
-          const Divider(color: Color(0xfff8fafc), height: 1),
+          const Divider(height: 1),
           const SizedBox(height: 13),
           Row(
             children: [
@@ -456,7 +451,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xff64748b),
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -467,7 +462,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xff3b82f6),
+                  color: colorScheme.primary,
                 ),
               ),
             ],
@@ -477,10 +472,10 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             Container(
               padding: const EdgeInsets.fromLTRB(14, 4, 12, 12),
               decoration: BoxDecoration(
-                color: const Color(0xfff8fafc),
+                color: colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(8),
-                border: const Border(
-                  left: BorderSide(color: Color(0xff1e3a8a), width: 2),
+                border: Border(
+                  left: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
               child: Column(
@@ -494,14 +489,14 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                         style: GoogleFonts.lexend(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xff1e3a8a),
+                          color: colorScheme.primary,
                         ),
                       ),
                       Text(
                         developerResponse['date']!,
                         style: GoogleFonts.lexend(
                           fontSize: 10,
-                          color: const Color(0xff64748b),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                     ],
@@ -512,7 +507,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                     style: GoogleFonts.lexend(
                       fontSize: 12,
                       height: 1.6,
-                      color: const Color(0xff1e293b).withValues(alpha: 0.8),
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
                     ),
                   ),
                 ],

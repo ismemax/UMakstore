@@ -1,19 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/bookmark_service.dart';
+import 'services/developer_service.dart';
+import 'models/app_model.dart';
+import 'app_details_screen.dart';
 
-class BookmarksScreen extends StatelessWidget {
+class BookmarksScreen extends StatefulWidget {
   const BookmarksScreen({super.key});
 
   @override
+  State<BookmarksScreen> createState() => _BookmarksScreenState();
+}
+
+class _BookmarksScreenState extends State<BookmarksScreen> {
+  final BookmarkService _bookmarkService = BookmarkService();
+  final DeveloperService _developerService = DeveloperService();
+
+  @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xff1a3b5d)),
+          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -21,178 +35,237 @@ class BookmarksScreen extends StatelessWidget {
           style: GoogleFonts.lexend(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: const Color(0xff1a3b5d),
+            color: colorScheme.onSurface,
             letterSpacing: -0.45,
           ),
         ),
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: const Color(0xfff3f4f6), height: 1.0),
+          child: Container(color: colorScheme.outlineVariant, height: 1.0),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+      body: StreamBuilder<List<AppModel>>(
+        stream: _developerService.getStoreApps(),
+        builder: (context, appsSnapshot) {
+          return StreamBuilder<List<String>>(
+            stream: _bookmarkService.getBookmarkedAppIds(),
+            builder: (context, bookmarksSnapshot) {
+              if (appsSnapshot.connectionState == ConnectionState.waiting ||
+                  bookmarksSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (appsSnapshot.hasError || bookmarksSnapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error loading bookmarks',
+                    style: GoogleFonts.lexend(color: colorScheme.error),
+                  ),
+                );
+              }
+
+              final allApps = appsSnapshot.data ?? [];
+              final bookmarkedIds = bookmarksSnapshot.data ?? [];
+              final bookmarkedApps = allApps
+                  .where((app) => bookmarkedIds.contains(app.id))
+                  .toList();
+
+              if (bookmarkedApps.isEmpty) {
+                return _buildEmptyState(context);
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+                itemCount: bookmarkedApps.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        'SAVED APPS',
+                        style: GoogleFonts.lexend(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    );
+                  }
+                  final app = bookmarkedApps[index - 1];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: _buildBookmarkItem(context, app),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'SAVED APPS',
-            style: GoogleFonts.lexend(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xff94a3b8),
-              letterSpacing: 1.2,
-            ),
+          Icon(
+            Icons.bookmark_outline_rounded,
+            size: 64,
+            color: colorScheme.onSurface.withValues(alpha: 0.1),
           ),
           const SizedBox(height: 16),
-          _buildBookmarkItem(
-            appName: 'Canvas Student',
-            developer: 'Instructure',
-            rating: '4.8',
-            category: 'Education',
-            iconColor: const Color(0xffef4444), // Example fallback color
-            iconBgColor: const Color(0xfffee2e2),
+          Text(
+            'No bookmarks yet',
+            style: GoogleFonts.lexend(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
           ),
-          const SizedBox(height: 12),
-          _buildBookmarkItem(
-            appName: 'UMak Portal Mobile',
-            developer: 'UMak CCIS',
-            rating: '4.9',
-            category: 'Productivity',
-            iconColor: const Color(0xff2094f3),
-            iconBgColor: const Color(0xffdbeafe),
-          ),
-          const SizedBox(height: 12),
-          _buildBookmarkItem(
-            appName: 'Google Classroom',
-            developer: 'Google LLC',
-            rating: '4.7',
-            category: 'Education',
-            iconColor: const Color(0xff10b981),
-            iconBgColor: const Color(0xffd1fae5),
+          const SizedBox(height: 8),
+          Text(
+            'Apps you bookmark will appear here.',
+            style: GoogleFonts.lexend(
+              fontSize: 14,
+              color: colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBookmarkItem({
-    required String appName,
-    required String developer,
-    required String rating,
-    required String category,
-    required Color iconColor,
-    required Color iconBgColor,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffe2e8f0)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x05000000),
-            blurRadius: 5,
-            offset: Offset(0, 2),
+  Widget _buildBookmarkItem(BuildContext context, AppModel app) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AppDetailsScreen(app: app),
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // App Icon Placeholder
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: iconBgColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xfff1f5f9)),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colorScheme.outlineVariant),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
             ),
-            child: Center(
-              child: Icon(Icons.widgets_rounded, color: iconColor, size: 32),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: colorScheme.outlineVariant),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: app.iconAsset.startsWith('http')
+                    ? Image.network(app.iconAsset, fit: BoxFit.cover)
+                    : Icon(Icons.widgets_rounded, 
+                        color: colorScheme.primary, size: 32),
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          // App Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        appName,
-                        style: GoogleFonts.lexend(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xff1a3b5d),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          app.title,
+                          style: GoogleFonts.lexend(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Icon(
-                      Icons.bookmark_rounded,
-                      color: const Color(
-                        0xff2094f3,
-                      ), // Primary blue for active bookmark
-                      size: 24,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  developer,
-                  style: GoogleFonts.lexend(
-                    fontSize: 13,
-                    color: const Color(0xff64748b),
+                      IconButton(
+                        icon: Icon(Icons.bookmark_rounded, 
+                          color: colorScheme.primary, size: 24),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () async {
+                          await _bookmarkService.toggleBookmark(app.id);
+                        },
+                      ),
+                    ],
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      rating,
-                      style: GoogleFonts.lexend(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xff64748b),
+                  const SizedBox(height: 4),
+                  Text(
+                    app.publisher,
+                    style: GoogleFonts.lexend(
+                      fontSize: 13,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        app.rating,
+                        style: GoogleFonts.lexend(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.star_rounded,
-                      color: Color(0xfffbbf24),
-                      size: 14,
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: const BoxDecoration(
-                        color: Color(0xffcbd5e1),
-                        shape: BoxShape.circle,
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xfffbbf24),
+                        size: 14,
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      category,
-                      style: GoogleFonts.lexend(
-                        fontSize: 12,
-                        color: const Color(0xff64748b),
+                      const SizedBox(width: 12),
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: colorScheme.onSurface.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 12),
+                      Text(
+                        app.category,
+                        style: GoogleFonts.lexend(
+                          fontSize: 12,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,15 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'splash_screen.dart';
 import 'home_screen.dart';
 import 'services/theme_service.dart';
+import 'services/language_service.dart';
+import 'services/notification_service.dart';
 import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrint('--- App Boot: Starting Initializations ---');
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  debugPrint('Firebase App Initialized');
   await ThemeService().init();
+  debugPrint('ThemeService Initialized');
+  await LanguageService().init();
+  debugPrint('LanguageService Initialized');
+  NotificationService().init();
+  debugPrint('NotificationService initialization started (fire-and-forget)');
   runApp(const MyApp());
 }
 
@@ -22,62 +35,42 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final ThemeService _themeService = ThemeService();
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  final LanguageService _languageService = LanguageService();
 
   @override
   void initState() {
     super.initState();
-    _themeService.addListener(_onThemeChanged);
+    _themeService.addListener(_onStateChanged);
+    _languageService.addListener(_onStateChanged);
   }
 
-  void _onThemeChanged() {
+  void _onStateChanged() {
     if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _themeService.removeListener(_onThemeChanged);
+    _themeService.removeListener(_onStateChanged);
+    _languageService.removeListener(_onStateChanged);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initialization,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return MaterialApp(
-            themeMode: _themeService.themeMode,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            home: Scaffold(
-              body: Center(
-                child: Text('Error initializing Firebase: ${snapshot.error}'),
-              ),
-            ),
-          );
-        }
-
-        if (snapshot.connectionState == ConnectionState.done) {
-          return MaterialApp(
-            title: 'UMak App Store',
-            debugShowCheckedModeBanner: false,
-            themeMode: _themeService.themeMode,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            home: const AuthGate(),
-          );
-        }
-
-        return MaterialApp(
-          themeMode: _themeService.themeMode,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          home: const Scaffold(body: Center(child: CircularProgressIndicator())),
-        );
-      },
+    return MaterialApp(
+      title: 'UMak App Store',
+      debugShowCheckedModeBanner: false,
+      locale: _languageService.locale,
+      supportedLocales: const [Locale('en'), Locale('tl')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      themeMode: _themeService.themeMode,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      home: const AuthGate(),
     );
   }
 }

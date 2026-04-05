@@ -9,6 +9,9 @@ import 'package:external_app_launcher/external_app_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'language_service.dart';
+import 'notification_service.dart';
 
 class InstallerService with ChangeNotifier {
   // Singleton pattern
@@ -20,7 +23,7 @@ class InstallerService with ChangeNotifier {
   final Map<String, AppModel> _apps = {};
   final Map<String, Timer?> _installationCheckers = {};
   final Set<String> _uninstallingIds = {}; // Tracks currently removing apps
-  static const _channel = MethodChannel('com.example.umakstore/storage');
+  static const _channel = MethodChannel('com.tbl.makstore/storage');
 
   AppModel? getApp(String id) => _apps[id];
 
@@ -32,9 +35,22 @@ class InstallerService with ChangeNotifier {
     _apps[app.id] = app;
     app.status = AppStatus.downloading;
     app.progress = 0.0;
+    app.errorMessage = null;
     notifyListeners();
 
     try {
+      // 0. Check WiFi Setting
+      final prefs = await SharedPreferences.getInstance();
+      final wifiOnly = prefs.getBool('download_wifi_only') ?? false;
+      if (wifiOnly) {
+        final connectivityResult = await (Connectivity().checkConnectivity());
+        if (!connectivityResult.contains(ConnectivityResult.wifi)) {
+          app.status = AppStatus.notInstalled;
+          app.errorMessage = LanguageService().translate('wifi_only_error');
+          notifyListeners();
+          return;
+        }
+      }
       // 1. Check Permissions (Android Specific)
       if (Platform.isAndroid) {
         final status = await Permission.requestInstallPackages.request();
@@ -77,9 +93,15 @@ class InstallerService with ChangeNotifier {
         },
       );
 
-      // 4. Installing
+      // 4. Installing && Notification
       app.status = AppStatus.installing;
       notifyListeners();
+
+      // Show notification if allowed
+      final allowNotifications = prefs.getBool('allow_notifications') ?? true;
+      if (allowNotifications) {
+        NotificationService().showDownloadNotification(app.title);
+      }
 
       // 5. Trigger Native Installation
       final result = await OpenFilex.open(savePath);
@@ -107,12 +129,24 @@ class InstallerService with ChangeNotifier {
     int checks = 0;
     _installationCheckers[app.id] = Timer.periodic(const Duration(seconds: 3), (timer) async {
       checks++;
+      final prevStatus = app.status;
       await updateAppStatus(app);
+      notifyListeners(); // Force update UI during polling
       
+      // If status JUST changed to installed, show notification
+      if (prevStatus != AppStatus.installed && app.status == AppStatus.installed) {
+        final prefs = await SharedPreferences.getInstance();
+        final allowNotifications = prefs.getBool('allow_notifications') ?? true;
+        if (allowNotifications) {
+          NotificationService().showInstallNotification(app.title);
+        }
+      }
+
       // Stop checking if installed or after 5 mins
       if (app.status == AppStatus.installed || checks > 100) {
         timer.cancel();
         _installationCheckers[app.id] = null;
+        notifyListeners(); // Final update
       }
     });
   }
@@ -125,6 +159,7 @@ class InstallerService with ChangeNotifier {
       checks++;
       debugPrint('Polling for uninstallation of ${app.packageName} (Check $checks)...');
       await updateAppStatus(app);
+      notifyListeners(); // Force update UI during polling
       
       // Stop checking if NOT installed (uninstalled successful) or after 5 mins
       if (app.status == AppStatus.notInstalled || checks > 100) {

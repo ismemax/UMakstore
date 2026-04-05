@@ -6,6 +6,7 @@ import 'app_details_screen.dart';
 import 'models/app_model.dart';
 import 'services/installer_service.dart';
 import 'services/developer_service.dart';
+import 'services/language_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -15,6 +16,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  final LanguageService _languageService = LanguageService();
   int _selectedFilterIndex = 0;
 
   final List<String> _filters = [
@@ -34,6 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
     super.initState();
     _installer = InstallerService();
     _installer.addListener(_updateState);
+    _languageService.addListener(_updateState);
     _appsStream = DeveloperService().getStoreApps();
     
     // Subscribe to update statuses whenever new apps arrive
@@ -48,6 +51,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void dispose() {
     _appsSubscription?.cancel();
     _installer.removeListener(_updateState);
+    _languageService.removeListener(_updateState);
     super.dispose();
   }
 
@@ -138,7 +142,7 @@ class _SearchScreenState extends State<SearchScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Search',
+            _languageService.translate('search'),
             style: GoogleFonts.lexend(
               fontSize: 30,
               fontWeight: FontWeight.bold,
@@ -173,7 +177,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             color: colorScheme.onSurface,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Apps, professors, events...',
+                            hintText: _languageService.translate('search_placeholder'),
                             hintStyle: GoogleFonts.lexend(
                               fontSize: 14,
                               color: colorScheme.onSurface.withValues(alpha: 0.5),
@@ -346,7 +350,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(width: 8),
             _buildActionButton(
-              status == AppStatus.installed ? 'OPEN' : 'GET',
+              status == AppStatus.installed ? _languageService.translate('open') : 'GET',
               onTap: () {
                 if (status == AppStatus.installed) {
                   _installer.launchApp(app);

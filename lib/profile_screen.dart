@@ -10,6 +10,7 @@ import 'settings_screen.dart';
 import 'help_and_feedback_screen.dart';
 import 'widgets/sign_out_dialog.dart';
 import 'services/auth_service.dart';
+import 'services/language_service.dart';
 import 'developer_dashboard_screen.dart';
 import 'dart:io';
 
@@ -22,13 +23,19 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final LanguageService _languageService = LanguageService();
   final User? _user = FirebaseAuth.instance.currentUser;
   String? _localPhotoPath;
 
   @override
   void initState() {
     super.initState();
+    _languageService.addListener(_updateUI);
     _loadLocalPhoto();
+  }
+
+  void _updateUI() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadLocalPhoto() async {
@@ -38,6 +45,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _localPhotoPath = path;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _languageService.removeListener(_updateUI);
+    super.dispose();
   }
 
   @override
@@ -79,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      isPermissionDenied ? 'Access Denied' : 'Something went wrong',
+                      isPermissionDenied ? _languageService.translate('access_denied') : _languageService.translate('something_wrong'),
                       style: GoogleFonts.lexend(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
@@ -108,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ElevatedButton.icon(
                       onPressed: () => AuthService().signOutUser(),
                       icon: const Icon(Icons.logout),
-                      label: const Text('Sign Out & Reconnect'),
+                      label: Text(_languageService.translate('sign_out_reconnect')),
                     ),
                   ],
                 ),
@@ -135,19 +148,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Profile Not Found',
+                      _languageService.translate('profile_not_found'),
                       style: GoogleFonts.lexend(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "We couldn't find your profile in our database. You might need to re-authenticate or complete your setup.",
+                      _languageService.translate('profile_not_found_desc'),
                       textAlign: TextAlign.center,
                       style: GoogleFonts.lexend(color: colorScheme.onSurface.withValues(alpha: 0.6)),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => AuthService().signOutUser(),
-                      child: const Text('Sign Out & Try Again'),
+                      child: Text(_languageService.translate('sign_out_try_again')),
                     ),
                   ],
                 ),
@@ -181,12 +194,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 24),
-                      _buildSectionTitle('ACCOUNT'),
+                      _buildSectionTitle(_languageService.translate('account')),
                       const SizedBox(height: 8),
                       _buildListCard([
                         _buildListItem(
                           Icons.manage_accounts_outlined,
-                          'Account Settings',
+                          _languageService.translate('account_settings'),
                           hasBorder: true,
                           onTap: () async {
                             await Navigator.push(
@@ -201,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         _buildListItem(
                           Icons.apps_rounded,
-                          'Manage Apps & Device',
+                          _languageService.translate('manage_apps'),
                           hasBorder: true,
                           onTap: () {
                             Navigator.push(
@@ -216,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         _buildListItem(
                           Icons.bookmark_border_rounded,
-                          'Bookmarks',
+                          _languageService.translate('bookmarks'),
                           hasBorder: true,
                           onTap: () {
                             Navigator.push(
@@ -229,18 +242,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         _buildListItem(
                           Icons.payments_outlined,
-                          'Payments',
+                          _languageService.translate('payments'),
                           hasBorder: false,
                         ),
                       ]),
 
                       const SizedBox(height: 24),
-                      _buildSectionTitle('PREFERENCES'),
+                      _buildSectionTitle(_languageService.translate('preferences')),
                       const SizedBox(height: 8),
                       _buildListCard([
                         _buildListItem(
                           Icons.settings_outlined,
-                          'Settings',
+                          _languageService.translate('settings'),
+                          key: const Key('tile_settings'),
                           hasBorder: userData['role'] == 'developer',
                           onTap: () {
                             Navigator.push(
@@ -254,7 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (userData['role'] == 'developer')
                           _buildListItem(
                             Icons.dashboard_customize_rounded,
-                            'Developer Portal',
+                            _languageService.translate('dev_portal'),
                             hasBorder: false,
                             onTap: () {
                               Navigator.push(
@@ -268,12 +282,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ]),
 
                       const SizedBox(height: 24),
-                      _buildSectionTitle('SUPPORT'),
+                      _buildSectionTitle(_languageService.translate('support')),
                       const SizedBox(height: 8),
                       _buildListCard([
                         _buildListItem(
                           Icons.help_outline_rounded,
-                          'Help & Feedback',
+                          _languageService.translate('help_feedback'),
                           hasBorder: true,
                           onTap: () {
                             Navigator.push(
@@ -287,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         _buildListItem(
                           Icons.info_outline_rounded,
-                          'About',
+                          _languageService.translate('about'),
                           hasBorder: false,
                         ),
                       ]),
@@ -473,6 +487,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildListItem(
     IconData icon,
     String title, {
+    Key? key,
     bool hasBorder = false,
     bool hasRedDot = false,
     VoidCallback? onTap,
@@ -487,6 +502,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             : null,
       ),
       child: InkWell(
+        key: key,
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
@@ -570,7 +586,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Sign Out',
+              _languageService.translate('sign_out'),
               style: GoogleFonts.lexend(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

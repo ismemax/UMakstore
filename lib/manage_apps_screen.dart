@@ -103,7 +103,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
   double _freeSpace = 16.0;
 
   Future<void> _fetchStorageInfo() async {
-    const channel = MethodChannel('com.example.umakstore/storage');
+    const channel = MethodChannel('com.tbl.makstore/storage');
     try {
       final Map<dynamic, dynamic>? result = await channel.invokeMethod('getStorageInfo');
       if (result != null && mounted) {

@@ -20,6 +20,8 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
   final TextEditingController _reviewController = TextEditingController();
   int _charCount = 0;
   bool _isSubmitting = false;
+  bool _isLoading = true;
+  bool _isEditing = false;
 
   @override
   void initState() {
@@ -29,6 +31,28 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
         _charCount = _reviewController.text.length;
       });
     });
+    _checkExistingReview();
+  }
+
+  Future<void> _checkExistingReview() async {
+    try {
+      final review = await DeveloperService().getUserReview(widget.appId);
+      if (review != null && mounted) {
+        setState(() {
+          _rating = (review['rating'] as num).toInt();
+          _reviewController.text = review['comment'] ?? '';
+          _isAnonymous = review['isAnonymous'] ?? false;
+          _isEditing = true;
+          _charCount = _reviewController.text.length;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error checking existing review: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -93,7 +117,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                 ),
               ),
               title: Text(
-                'Write a Review',
+                _isEditing ? 'Edit Your Review' : 'Write a Review',
                 style: GoogleFonts.lexend(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -382,7 +406,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                           child: _isSubmitting 
                             ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                             : Text(
-                                'Submit Review',
+                                _isEditing ? 'Update Review' : 'Submit Review',
                                 style: GoogleFonts.lexend(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -398,6 +422,15 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               ),
             ),
           ),
+          if (_isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.white,
+                child: const Center(
+                  child: CircularProgressIndicator(color: Color(0xff2094f3)),
+                ),
+              ),
+            ),
         ],
       ),
     );

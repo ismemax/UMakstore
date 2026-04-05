@@ -107,7 +107,7 @@ class DeveloperService {
     }
   }
 
-  /// Submits a review for an app
+  /// Submits or updates a review for an app
   Future<void> submitReview({
     required String appId,
     required double rating,
@@ -115,39 +115,76 @@ class DeveloperService {
     required bool isAnonymous,
   }) async {
     final user = _auth.currentUser;
+    if (user == null) throw 'Authentication required to submit review';
 
     final reviewData = {
       'rating': rating,
       'comment': comment,
       'isAnonymous': isAnonymous,
-      'userId': isAnonymous ? 'Anonymous' : user?.uid,
-      'userName': isAnonymous ? 'UMak User' : (user?.displayName ?? 'UMak Student'),
+      'userId': user.uid,
+      'userName': isAnonymous ? 'UMak User' : (user.displayName ?? 'UMak Student'),
       'createdAt': FieldValue.serverTimestamp(),
     };
 
     final appRef = _db.collection('submitted_apps').doc(appId);
+    final reviewRef = appRef.collection('reviews').doc(user.uid);
     
-    // Use a transaction to update the app's stats and add the review
     await _db.runTransaction((transaction) async {
-      // 1. READ FIRST: Get the app's summary stats
-      DocumentSnapshot snapshot = await transaction.get(appRef);
-      if (!snapshot.exists) return;
+      // 1. Get app and check if review exists
+      DocumentSnapshot appSnapshot = await transaction.get(appRef);
+      if (!appSnapshot.exists) throw 'App not found';
 
-      // 2. WRITE SECOND: Add the review to the sub-collection
-      final newReviewRef = appRef.collection('reviews').doc();
-      transaction.set(newReviewRef, reviewData);
+      DocumentSnapshot reviewSnapshot = await transaction.get(reviewRef);
+      bool isUpdate = reviewSnapshot.exists;
 
-      // 3. WRITE THIRD: Update the app's summary stats
-      int currentReviews = int.tryParse(snapshot['reviews']?.toString() ?? '0') ?? 0;
-      double currentRating = double.tryParse(snapshot['rating']?.toString() ?? '0.0') ?? 0.0;
+      // 2. Set/Update the review
+      transaction.set(reviewRef, reviewData, SetOptions(merge: true));
 
-      double newRating = ((currentRating * currentReviews) + rating) / (currentReviews + 1);
-      
-      transaction.update(appRef, {
-        'reviews': (currentReviews + 1).toString(),
-        'rating': newRating.toStringAsFixed(1),
-      });
+      // 3. Update app stats
+      int currentReviews = int.tryParse(appSnapshot['reviews']?.toString() ?? '0') ?? 0;
+      double currentRating = double.tryParse(appSnapshot['rating']?.toString() ?? '0.0') ?? 0.0;
+
+      if (isUpdate) {
+        // UPDATE CASE: Recalculate without increasing count
+        double oldRating = (reviewSnapshot.data() as Map<String, dynamic>)['rating']?.toDouble() ?? 0.0;
+        
+        // Safety check for divide by zero, though reviews should be > 0 if update
+        if (currentReviews > 0) {
+          double newRating = ((currentRating * currentReviews) - oldRating + rating) / currentReviews;
+          transaction.update(appRef, {
+            'rating': newRating.toStringAsFixed(1),
+          });
+        }
+      } else {
+        // NEW CASE: Regular average calculation
+        double newRating = ((currentRating * currentReviews) + rating) / (currentReviews + 1);
+        
+        transaction.update(appRef, {
+          'reviews': (currentReviews + 1).toString(),
+          'rating': newRating.toStringAsFixed(1),
+        });
+      }
     });
+  }
+
+  /// Checks if the current user has already reviewed the app and returns the review if so
+  Future<Map<String, dynamic>?> getUserReview(String appId) async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+
+    final doc = await _db
+        .collection('submitted_apps')
+        .doc(appId)
+        .collection('reviews')
+        .doc(user.uid)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      data['id'] = doc.id;
+      return data;
+    }
+    return null;
   }
 
   /// Fetches reviews for a specific app

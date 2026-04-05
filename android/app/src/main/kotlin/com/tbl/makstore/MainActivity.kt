@@ -1,4 +1,4 @@
-package com.example.umakstore
+package com.tbl.makstore
 
 import android.os.Environment
 import android.os.StatFs
@@ -11,7 +11,7 @@ import android.net.Uri
 import android.widget.Toast
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.example.umakstore/storage"
+    private val CHANNEL = "com.tbl.makstore/storage"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

@@ -7,6 +7,7 @@ import 'models/app_model.dart';
 import 'app_details_screen.dart';
 import 'services/auth_service.dart';
 import 'services/installer_service.dart';
+import 'services/language_service.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -16,6 +17,7 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
+  final LanguageService _languageService = LanguageService();
   late InstallerService _installer;
   StreamSubscription? _appsSubscription;
   late Stream<List<AppModel>> _appsStream;
@@ -25,6 +27,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     super.initState();
     _installer = InstallerService();
     _installer.addListener(_updateState);
+    _languageService.addListener(_updateState);
     _appsStream = DeveloperService().getStoreApps();
 
     // Subscribe to update statuses whenever new apps arrive
@@ -39,6 +42,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   void dispose() {
     _appsSubscription?.cancel();
     _installer.removeListener(_updateState);
+    _languageService.removeListener(_updateState);
     super.dispose();
   }
 
@@ -80,7 +84,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              isPermissionDenied ? 'Access Denied' : 'Error',
+                              isPermissionDenied ? _languageService.translate('access_denied') : 'Error',
                               style: GoogleFonts.lexend(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
@@ -128,7 +132,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'No favorites yet',
+                            _languageService.translate('no_favorites'),
                             style: GoogleFonts.lexend(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -173,7 +177,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: Row(
         children: [
           Text(
-            'Favorites',
+            _languageService.translate('favorites'),
             style: GoogleFonts.lexend(
               fontSize: 30,
               fontWeight: FontWeight.bold,

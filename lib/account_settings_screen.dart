@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'services/auth_service.dart';
 import 'change_password_screen.dart';
 import 'widgets/profile_photo_bottom_sheet.dart';
+import 'services/language_service.dart';
 import 'dart:io';
 
 class AccountSettingsScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class AccountSettingsScreen extends StatefulWidget {
 }
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
+  final LanguageService _languageService = LanguageService();
   final _firstNameController = TextEditingController();
   final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -41,7 +43,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _languageService.addListener(_updateUI);
     _loadUserData();
+  }
+
+  void _updateUI() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadUserData() async {
@@ -104,6 +111,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     _firstNameController.dispose();
     _middleNameController.dispose();
     _lastNameController.dispose();
+    _languageService.removeListener(_updateUI);
     super.dispose();
   }
 
@@ -129,7 +137,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Account Settings',
+          _languageService.translate('account_settings'),
           style: GoogleFonts.lexend(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -249,7 +257,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Change Profile Photo',
+                        _languageService.translate('change_photo'),
                         style: GoogleFonts.lexend(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -265,7 +273,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 4.0, bottom: 16.0),
                 child: Text(
-                  'PERSONAL INFORMATION',
+                  _languageService.translate('personal_info'),
                   style: GoogleFonts.lexend(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -275,14 +283,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 ),
               ),
 
-              _buildEditableField('First Name', _firstNameController, colorScheme),
+              _buildEditableField(_languageService.translate('first_name'), _firstNameController, colorScheme),
               const SizedBox(height: 16),
-              _buildEditableField('Middle Initial', _middleNameController, colorScheme),
+              _buildEditableField(_languageService.translate('middle_initial'), _middleNameController, colorScheme),
               const SizedBox(height: 16),
-              _buildEditableField('Last Name', _lastNameController, colorScheme),
+              _buildEditableField(_languageService.translate('last_name'), _lastNameController, colorScheme),
               const SizedBox(height: 16),
               _buildDropdownField(
-                'College',
+                _languageService.translate('college_label'),
                 _selectedCollege,
                 _colleges,
                 (val) => setState(() => _selectedCollege = val),
@@ -290,7 +298,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               ),
               const SizedBox(height: 16),
               _buildDropdownField(
-                'Course',
+                _languageService.translate('course_label'),
                 _selectedCourse,
                 _courses,
                 (val) => setState(() => _selectedCourse = val),
@@ -303,7 +311,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 4.0, bottom: 16.0),
                 child: Text(
-                  'SECURITY',
+                  _languageService.translate('security'),
                   style: GoogleFonts.lexend(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -356,7 +364,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: Text(
-                              'Change Password',
+                              _languageService.translate('change_password'),
                               style: GoogleFonts.lexend(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -407,8 +415,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                             ),
                           ),
                         )
-                      : const Text(
-                          'Save Changes',
+                      : Text(
+                          _languageService.translate('save_changes'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -433,7 +441,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Text(
-                    'Cancel',
+                    _languageService.translate('cancel'),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.lexend(
                       fontSize: 16,

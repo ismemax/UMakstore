@@ -10,6 +10,7 @@ import 'favorites_screen.dart';
 import 'models/app_model.dart';
 import 'services/installer_service.dart';
 import 'services/developer_service.dart';
+import 'services/language_service.dart';
 import 'splash_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final LanguageService _languageService = LanguageService();
   int _selectedIndex = 0;
   int _selectedTabIndex = 0;
   late InstallerService _installer;
@@ -35,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _installer = InstallerService();
     _installer.addListener(_updateState);
+    _languageService.addListener(_updateState);
     _appsStream = DeveloperService().getStoreApps();
     
     // Subscribe to the stream to update statuses whenever new apps arrive
@@ -49,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _appsSubscription?.cancel();
     _installer.removeListener(_updateState);
+    _languageService.removeListener(_updateState);
     super.dispose();
   }
 
@@ -124,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Icon(Icons.apps_outage_rounded, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.1)),
                                     const SizedBox(height: 16),
                                     Text(
-                                      'No apps available yet',
+                                      _languageService.translate('no_apps'),
                                       style: GoogleFonts.lexend(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
@@ -201,34 +205,34 @@ class _HomeScreenState extends State<HomeScreen> {
             fontSize: 10,
             fontWeight: FontWeight.w500,
           ),
-          items: const [
+          items: [
             BottomNavigationBarItem(
               icon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(Icons.grid_view_rounded, size: 22),
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Icon(Icons.grid_view_rounded, size: 22, key: const Key('nav_home')),
               ),
-              label: 'Home',
+              label: _languageService.translate('home'),
             ),
             BottomNavigationBarItem(
               icon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(Icons.search_rounded, size: 22),
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Icon(Icons.search_rounded, size: 22, key: const Key('nav_search')),
               ),
-              label: 'Search',
+              label: _languageService.translate('search'),
             ),
             BottomNavigationBarItem(
               icon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(Icons.bookmark_rounded, size: 22),
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Icon(Icons.bookmark_rounded, size: 22, key: const Key('nav_favorites')),
               ),
-              label: 'Favorites',
+              label: _languageService.translate('favorites'),
             ),
             BottomNavigationBarItem(
               icon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(Icons.person_outline_rounded, size: 22),
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Icon(Icons.person_outline_rounded, size: 22, key: const Key('nav_profile')),
               ),
-              label: 'Profile',
+              label: _languageService.translate('profile'),
             ),
           ],
         ),
@@ -245,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Apps',
+            _languageService.translate('apps'),
             style: GoogleFonts.lexend(
               fontSize: 30,
               fontWeight: FontWeight.bold,
@@ -330,9 +334,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           const SizedBox(width: 16),
-          _buildTab('For You', 0),
+          _buildTab(_languageService.translate('for_you'), 0),
           const SizedBox(width: 24),
-          _buildTab('Top Rated', 1),
+          _buildTab(_languageService.translate('top_rated'), 1),
         ],
       ),
     );
@@ -433,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
-              'Browse by Category',
+              _languageService.translate('browse_category'),
               style: GoogleFonts.lexend(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -449,31 +453,31 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               children: [
                 _buildCategoryChip(
-                  'Academic',
+                  _languageService.translate('academic'),
                   Icons.school_rounded,
                   const Color(0xff3b82f6),
                 ),
                 const SizedBox(width: 8),
                 _buildCategoryChip(
-                  'Library',
+                  _languageService.translate('library'),
                   Icons.menu_book_rounded,
                   const Color(0xff22c55e),
                 ),
                 const SizedBox(width: 8),
                 _buildCategoryChip(
-                  'Campus Services',
+                  _languageService.translate('campus_services'),
                   Icons.business_rounded,
                   const Color(0xffa855f7),
                 ),
                 const SizedBox(width: 8),
                 _buildCategoryChip(
-                  'Student Life',
+                  _languageService.translate('student_life'),
                   Icons.sports_esports_rounded,
                   const Color(0xfff97316),
                 ),
                 const SizedBox(width: 8),
                 _buildCategoryChip(
-                  'Dining',
+                  _languageService.translate('dining'),
                   Icons.restaurant_rounded,
                   const Color(0xffeab308),
                 ),
@@ -647,7 +651,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Text(
           status == AppStatus.downloading
               ? '${(progress * 100).toInt()}%'
-              : (status == AppStatus.installed ? 'Open' : 'Install'),
+              : (status == AppStatus.installed ? _languageService.translate('open') : _languageService.translate('install')),
           textAlign: TextAlign.center,
           style: GoogleFonts.lexend(
             fontSize: 14,

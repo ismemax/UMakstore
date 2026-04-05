@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'notification_service.dart';
 
 class AuthService {
   // IMPORTANT: For Android Emulator, use 10.0.2.2.
@@ -22,12 +23,20 @@ class AuthService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
+  /// Helper to check if email belongs to allowed domain.
+  bool _isAllowedDomain(String email) {
+    return email.toLowerCase().trim().endsWith('@umak.edu.ph');
+  }
+
   /// Sign up user with email and password.
   Future<void> signUpUser({
     required String email,
     required String password,
   }) async {
     final sanitizedEmail = email.toLowerCase().trim();
+    if (!_isAllowedDomain(sanitizedEmail)) {
+      throw 'Only @umak.edu.ph email addresses are allowed to register.';
+    }
     // Check if email already exists in Firestore users collection
     if (await isEmailRegistered(sanitizedEmail)) {
       throw 'This email is already registered with an account.';
@@ -128,6 +137,9 @@ class AuthService {
   Future<void> signInUser(String email, String password) async {
     try {
       final sanitizedEmail = email.toLowerCase().trim();
+      if (!_isAllowedDomain(sanitizedEmail)) {
+        throw 'Access denied. Please use your @umak.edu.ph email.';
+      }
       await _auth.signInWithEmailAndPassword(
         email: sanitizedEmail,
         password: password,
@@ -146,6 +158,12 @@ class AuthService {
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null; // User canceled the sign-in
+
+      // Domain restriction check
+      if (!_isAllowedDomain(googleUser.email)) {
+        await _googleSignIn.signOut();
+        throw 'Only @umak.edu.ph accounts are allowed to sign in.';
+      }
 
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth =
@@ -176,6 +194,8 @@ class AuthService {
               'PENDING', // Google doesn't provide this, user will need to update
           'createdAt': FieldValue.serverTimestamp(),
         });
+        // Send a welcome notification for first-time Google sign-ins
+        await NotificationService().sendWelcomeNotification();
       }
 
       return userCredential;
@@ -234,6 +254,9 @@ class AuthService {
   Future<void> resetPassword(String email) async {
     try {
       final sanitizedEmail = email.toLowerCase().trim();
+      if (!_isAllowedDomain(sanitizedEmail)) {
+        throw 'Access denied. Please use your @umak.edu.ph email address.';
+      }
 
       // ActionCodeSettings enables "deep linking" where clicking the reset link
       // can open the app directly instead of a web page if configured.
@@ -241,7 +264,7 @@ class AuthService {
         url:
             'https://makstore-826a4.firebaseapp.com/reset-password?email=$sanitizedEmail',
         handleCodeInApp: true,
-        androidPackageName: 'com.example.umakstore',
+        androidPackageName: 'com.tbl.makstore',
         androidInstallApp: true,
         androidMinimumVersion: '1',
       );
@@ -344,6 +367,8 @@ class AuthService {
         'course': course,
         'createdAt': FieldValue.serverTimestamp(),
       });
+      // Send a welcome notification after saving profile (successful signup)
+      await NotificationService().sendWelcomeNotification();
     } catch (e) {
       if (kDebugMode) {
         print('Firestore Error: $e');

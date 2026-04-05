@@ -8,6 +8,7 @@ import 'models/app_model.dart';
 import 'services/installer_service.dart';
 import 'services/developer_service.dart';
 import 'services/bookmark_service.dart';
+import 'services/language_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AppDetailsScreen extends StatefulWidget {
@@ -19,20 +20,31 @@ class AppDetailsScreen extends StatefulWidget {
 }
 
 class _AppDetailsScreenState extends State<AppDetailsScreen> {
+  final LanguageService _languageService = LanguageService();
   late InstallerService _installer;
+  Future<Map<String, dynamic>?>? _userReviewFuture;
 
   @override
   void initState() {
     super.initState();
     _installer = InstallerService();
     _installer.addListener(_updateState);
+    _languageService.addListener(_updateState);
     // Verify current status on entry
     _installer.updateAppStatus(widget.app);
+    _loadUserReview();
+  }
+
+  void _loadUserReview() {
+    setState(() {
+      _userReviewFuture = DeveloperService().getUserReview(widget.app.id);
+    });
   }
 
   @override
   void dispose() {
     _installer.removeListener(_updateState);
+    _languageService.removeListener(_updateState);
     super.dispose();
   }
 
@@ -97,18 +109,18 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(isBookmarked
-                              ? 'Removed from bookmarks'
-                              : 'Added to bookmarks'),
+                              ? _languageService.translate('bookmark_removed')
+                              : _languageService.translate('bookmark_added')),
                           duration: const Duration(seconds: 1),
                         ),
                       );
                     } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Failed to update bookmark. Check permissions.'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                          SnackBar(
+                            content: Text(_languageService.translate('bookmark_error')),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                     }
                   }
                 },
@@ -229,13 +241,13 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStatItem('${widget.app.rating} ★', 'RATING'),
+          _buildStatItem('${widget.app.rating} ★', _languageService.translate('stat_rating')),
           _buildStatDivider(),
-          _buildStatItem('${widget.app.reviews}+', 'REPORTS'),
+          _buildStatItem('${widget.app.reviews}+', _languageService.translate('stat_reports')),
           _buildStatDivider(),
-          _buildStatItem(widget.app.size, 'SIZE'),
+          _buildStatItem(widget.app.size, _languageService.translate('stat_size')),
           _buildStatDivider(),
-          _buildStatItem(widget.app.category, 'CATEGORY'),
+          _buildStatItem(widget.app.category, _languageService.translate('stat_category')),
         ],
       ),
     );
@@ -322,13 +334,13 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                       child: Text(
                         widget.app.status == AppStatus.downloading
                             ? (widget.app.progress == -1.0
-                                ? 'Downloading...'
+                                ? _languageService.translate('downloading')
                                 : '${(widget.app.progress * 100).toInt()}%')
                             : (widget.app.status == AppStatus.installing
-                                ? 'Installing...'
+                                ? _languageService.translate('installing')
                                 : (widget.app.status == AppStatus.installed
-                                    ? 'Open'
-                                    : (widget.app.isInLibrary ? 'Reinstall' : 'Install'))),
+                                    ? _languageService.translate('open')
+                                    : (widget.app.isInLibrary ? _languageService.translate('reinstall') : _languageService.translate('install')))),
                         style: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -360,15 +372,15 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(isBookmarked
-                                ? 'Removed from bookmarks'
-                                : 'Added to bookmarks'),
+                                ? _languageService.translate('bookmark_removed')
+                                : _languageService.translate('bookmark_added')),
                             duration: const Duration(seconds: 1),
                           ),
                         );
                       } else {
                          ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Failed to update bookmark. Check permissions.'),
+                          SnackBar(
+                            content: Text(_languageService.translate('bookmark_error')),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -446,7 +458,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Preview',
+                _languageService.translate('preview'),
                 style: GoogleFonts.lexend(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -454,7 +466,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 ),
               ),
               Text(
-                'Screenshots Coming Soon',
+                _languageService.translate('screenshots_soon'),
                 style: GoogleFonts.lexend(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -595,7 +607,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'About This App',
+            _languageService.translate('about_app'),
             style: GoogleFonts.lexend(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -649,17 +661,36 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Ratings & Reviews',
-                style: GoogleFonts.lexend(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-              ),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReviewsScreen(app: widget.app),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      _languageService.translate('ratings_reviews'),
+                      style: GoogleFonts.lexend(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: colorScheme.onSurface.withValues(alpha: 0.3),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => WriteReviewScreen(
@@ -669,6 +700,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                       ),
                     ),
                   );
+                  _loadUserReview(); // Refresh review status on return
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -680,13 +712,19 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                     children: [
                       Icon(Icons.edit_note_rounded, size: 16, color: colorScheme.primary),
                       const SizedBox(width: 4),
-                      Text(
-                        'Review',
-                        style: GoogleFonts.lexend(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.primary,
-                        ),
+                      FutureBuilder<Map<String, dynamic>?>(
+                        future: _userReviewFuture,
+                        builder: (context, snapshot) {
+                          final hasReviewed = snapshot.data != null;
+                          return Text(
+                            hasReviewed ? _languageService.translate('edit_review') : _languageService.translate('write_review'),
+                            style: GoogleFonts.lexend(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.primary,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -694,106 +732,105 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Column(
-                children: [
-                  Text(
-                    widget.app.rating,
-                    style: GoogleFonts.lexend(
-                      fontSize: 60,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                      height: 1,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'out of 5',
-                    style: GoogleFonts.lexend(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: colorScheme.onSurface.withValues(alpha: 0.4),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildRatingBar(5, 0.0, colorScheme), // We can calculate real percentages if needed, but keeping it clean
-                    const SizedBox(height: 8),
-                    _buildRatingBar(4, 0.0, colorScheme),
-                    const SizedBox(height: 8),
-                    _buildRatingBar(3, 0.0, colorScheme),
-                    const SizedBox(height: 8),
-                    _buildRatingBar(2, 0.0, colorScheme),
-                    const SizedBox(height: 8),
-                    _buildRatingBar(1, 0.0, colorScheme),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        '${widget.app.reviews} Reviews',
-                        style: GoogleFonts.lexend(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          color: colorScheme.onSurface.withValues(alpha: 0.4),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
           StreamBuilder<List<Map<String, dynamic>>>(
             stream: DeveloperService().getAppReviews(widget.app.id),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
               final reviews = snapshot.data ?? [];
-              if (reviews.isEmpty) {
-                return Center(
-                  child: Column(
+              final distribution = _calculateDistribution(reviews);
+              final total = reviews.length;
+
+              return Column(
+                children: [
+                  Row(
                     children: [
-                      Icon(Icons.rate_review_outlined, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.1)),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No reviews yet for this version.',
-                        style: GoogleFonts.lexend(
-                          fontSize: 14,
-                          color: colorScheme.onSurface.withValues(alpha: 0.3),
+                      Column(
+                        children: [
+                          Text(
+                            widget.app.rating,
+                            style: GoogleFonts.lexend(
+                              fontSize: 60,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                              height: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _languageService.translate('out_of_5'),
+                            style: GoogleFonts.lexend(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: colorScheme.onSurface.withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            _buildRatingBar(5, distribution[5] ?? 0.0, colorScheme),
+                            const SizedBox(height: 8),
+                            _buildRatingBar(4, distribution[4] ?? 0.0, colorScheme),
+                            const SizedBox(height: 8),
+                            _buildRatingBar(3, distribution[3] ?? 0.0, colorScheme),
+                            const SizedBox(height: 8),
+                            _buildRatingBar(2, distribution[2] ?? 0.0, colorScheme),
+                            const SizedBox(height: 8),
+                            _buildRatingBar(1, distribution[1] ?? 0.0, colorScheme),
+                            const SizedBox(height: 4),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                '$total ${_languageService.translate('stat_reports')}',
+                                style: GoogleFonts.lexend(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.4),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                );
-              }
-
-              return Column(
-                children: reviews.map((review) {
-                  final timestamp = review['createdAt'] as Timestamp?;
-                  final dateStr = timestamp != null 
-                    ? '${timestamp.toDate().day}/${timestamp.toDate().month}/${timestamp.toDate().year}'
-                    : 'Just now';
-                    
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildReviewCard(
-                      review['userName'] ?? 'User',
-                      dateStr,
-                      'User Review', // Title is optional now
-                      review['comment'] ?? '',
-                      (review['rating'] as num?)?.toInt() ?? 5,
-                    ),
-                  );
-                }).toList(),
+                  const SizedBox(height: 32),
+                  if (reviews.isEmpty)
+                    Center(
+                      child: Column(
+                        children: [
+                          Icon(Icons.rate_review_outlined, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.1)),
+                          const SizedBox(height: 16),
+                          Text(
+                            _languageService.translate('no_reviews'),
+                            style: GoogleFonts.lexend(
+                              fontSize: 14,
+                              color: colorScheme.onSurface.withValues(alpha: 0.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ...reviews.map((review) {
+                      final timestamp = review['createdAt'] as Timestamp?;
+                      final dateStr = timestamp != null
+                        ? '${timestamp.toDate().day}/${timestamp.toDate().month}/${timestamp.toDate().year}'
+                        : 'Just now';
+                        
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _buildReviewCard(
+                          review['userName'] ?? 'User',
+                          dateStr,
+                          '', // Title
+                          review['comment'] ?? '',
+                          (review['rating'] as num?)?.toInt() ?? 5,
+                        ),
+                      );
+                    }).toList(),
+                ],
               );
             },
           ),
@@ -1186,5 +1223,19 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         ),
       ],
     );
+  }
+
+  Map<int, double> _calculateDistribution(List<Map<String, dynamic>> reviews) {
+    if (reviews.isEmpty) return {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+    
+    Map<int, int> counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+    for (var review in reviews) {
+      int rating = (review['rating'] as num?)?.toInt() ?? 0;
+      if (rating >= 1 && rating <= 5) {
+        counts[rating] = (counts[rating] ?? 0) + 1;
+      }
+    }
+    
+    return counts.map((key, value) => MapEntry(key, value / reviews.length));
   }
 }
