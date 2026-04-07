@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'search_screen.dart';
@@ -79,19 +80,29 @@ class _HomeScreenState extends State<HomeScreen> {
                       bool isNewData = _lastApps == null || _lastApps!.length != snapshot.data!.length;
                       if (!isNewData) {
                         for (int i = 0; i < liveApps.length; i++) {
-                          if (liveApps[i].id != _lastApps![i].id) {
+                          final app = liveApps[i];
+                          final lastApp = _lastApps![i];
+                          
+                          // More thorough check for ANY property change
+                          if (app.id != lastApp.id || 
+                              app.iconAsset != lastApp.iconAsset ||
+                              app.screenshots.length != lastApp.screenshots.length ||
+                              (app.screenshots.isNotEmpty && lastApp.screenshots.isNotEmpty && app.screenshots[0] != lastApp.screenshots[0])) {
                             isNewData = true;
+                            debugPrint('Changes detected in app ${app.title}');
                             break;
                           }
                         }
                       }
 
                       if (isNewData && !_isCompletingPrecache) {
-                        _lastApps = snapshot.data;
                         _isPrecached = false;
                         _isCompletingPrecache = true;
                         _precacheApps(liveApps);
                       }
+                      
+                      // Always update _lastApps to current data so the UI isn't stale
+                      _lastApps = snapshot.data;
                     }
 
                     // Only show skeleton if we have literally nothing yet
@@ -726,18 +737,36 @@ class _HomeScreenState extends State<HomeScreen> {
               Positioned.fill(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          (app.themeColor ?? colorScheme.primary).withValues(alpha: 0.1),
-                          colorScheme.surface,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                  child: app.screenshots.isNotEmpty 
+                    ? CachedNetworkImage(
+                        imageUrl: DeveloperService.getOptimizedUrl(app.screenshots[0], width: 600),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(color: colorScheme.surface),
+                        errorWidget: (context, url, error) => Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                (app.themeColor ?? colorScheme.primary).withValues(alpha: 0.1),
+                                colorScheme.surface,
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              (app.themeColor ?? colorScheme.primary).withValues(alpha: 0.1),
+                              colorScheme.surface,
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
                 ),
               ),
               // Gradient overlay at the bottom
@@ -750,11 +779,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          colorScheme.surface.withValues(alpha: 0.95),
-                          colorScheme.surface.withValues(alpha: 0.8),
-                          colorScheme.surface.withValues(alpha: 0.0),
+                          Colors.black.withValues(alpha: 0.7),
+                          Colors.black.withValues(alpha: 0.4),
+                          Colors.transparent,
                         ],
-                        stops: const [0.0, 0.5, 1.0],
+                        stops: const [0.0, 0.4, 1.0],
                       ),
                     ),
                   ),
@@ -769,23 +798,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 9,
-                        vertical: 3,
+                        horizontal: 10,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: (app.themeColor ?? const Color(0xff2094f3)).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: (app.themeColor ?? const Color(0xff2094f3)).withValues(alpha: 0.2),
-                        ),
+                        color: app.themeColor ?? const Color(0xff2094f3),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (app.themeColor ?? const Color(0xff2094f3)).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Text(
                         'FEATURED APP',
                         style: GoogleFonts.lexend(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: app.themeColor ?? const Color(0xff2094f3),
-                          letterSpacing: 0.6,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 1.0,
                         ),
                       ),
                     ),
@@ -818,14 +851,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: GoogleFonts.lexend(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: colorScheme.onSurface,
+                                  color: Colors.white,
+                                  shadows: [
+                                    Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                                  ],
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 app.description,
                                 style: GoogleFonts.lexend(
                                   fontSize: 14,
-                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  shadows: [
+                                    Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                                  ],
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -950,12 +991,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              Text(
-                'See All',
-                style: GoogleFonts.lexend(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: colorScheme.primary,
+              GestureDetector(
+                onTap: () => setState(() => _selectedTabIndex = 1),
+                child: Text(
+                  'See All',
+                  style: GoogleFonts.lexend(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ),
             ],
@@ -1016,18 +1060,46 @@ class _HomeScreenState extends State<HomeScreen> {
                   Positioned.fill(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              colorScheme.surfaceContainerHighest,
-                              colorScheme.surface,
+                      child: app.screenshots.isNotEmpty 
+                        ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: DeveloperService.getOptimizedUrl(app.screenshots[0], width: 300),
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(color: colorScheme.surface),
+                                errorWidget: (context, url, error) => Container(
+                                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              // Scrim for readability
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                    colors: [
+                                      Colors.black.withValues(alpha: 0.6),
+                                      Colors.transparent,
+                                    ],
+                                    stops: const [0.0, 0.5],
+                                  ),
+                                ),
+                              ),
                             ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                          )
+                        : Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  colorScheme.surfaceContainerHighest,
+                                  colorScheme.surface,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
                     ),
                   ),
                   Positioned.fill(
@@ -1039,7 +1111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              colorScheme.surface.withValues(alpha: 0.9),
+                              colorScheme.surface.withValues(alpha: 0.6),
                               colorScheme.surface.withValues(alpha: 0.0),
                             ],
                           ),
@@ -1069,7 +1141,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: app.iconAsset.startsWith('http')
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(4),
-                              child: Image.network(app.iconAsset, width: 20, height: 20, fit: BoxFit.cover),
+                              child: CachedNetworkImage(
+                                imageUrl: DeveloperService.getOptimizedUrl(app.iconAsset, width: 64, height: 64),
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(color: colorScheme.surface),
+                                errorWidget: (context, url, error) => Icon(Icons.apps_rounded, size: 16, color: colorScheme.primary),
+                              ),
                             )
                           : Icon(iconData, color: iconColor, size: 16),
                       ),
@@ -1167,12 +1244,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: colorScheme.onSurface,
                 ),
               ),
-              Text(
-                'See All',
-                style: GoogleFonts.lexend(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: colorScheme.primary,
+              GestureDetector(
+                onTap: () => setState(() => _selectedTabIndex = 1),
+                child: Text(
+                  'See All',
+                  style: GoogleFonts.lexend(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ),
             ],
@@ -1408,8 +1488,13 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final List<Future<void>> futures = [];
       for (var app in apps) {
+        // Precache Icons
         if (app.iconAsset.startsWith('http')) {
           futures.add(precacheImage(NetworkImage(app.iconAsset), context));
+        }
+        // Precache Screenshots (at least the first one)
+        if (app.screenshots.isNotEmpty && app.screenshots[0].startsWith('http')) {
+          futures.add(precacheImage(NetworkImage(app.screenshots[0]), context));
         }
       }
       

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'services/developer_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class AddAppScreen extends StatefulWidget {
-  const AddAppScreen({super.key});
+  final Map<String, dynamic>? appData;
+  const AddAppScreen({super.key, this.appData});
 
   @override
   State<AddAppScreen> createState() => _AddAppScreenState();
@@ -21,8 +25,34 @@ class _AddAppScreenState extends State<AddAppScreen> {
   final _packageNameController = TextEditingController();
   final _versionController = TextEditingController();
   final _apkUrlController = TextEditingController();
-  final _iconUrlController = TextEditingController();
+  final _iconUrlController = TextEditingController(); // Stores the Cloudinary URL
+  bool _isUploadingIcon = false;
+  bool _isUploadingScreenshot = false;
   String _selectedCategory = 'Academic';
+  List<String> _screenshotUrls = [];
+  final _permissionsController = TextEditingController(); // NEW: Permissions chip/text field
+
+  bool get _isEditing => widget.appData != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      final data = widget.appData!;
+      _titleController.text = data['title'] ?? '';
+      _publisherController.text = data['publisher'] ?? '';
+      _descriptionController.text = data['description'] ?? '';
+      _packageNameController.text = data['packageName'] ?? '';
+      _versionController.text = data['version'] ?? '';
+      _apkUrlController.text = data['downloadUrl'] ?? '';
+      _iconUrlController.text = data['iconUrl'] ?? '';
+      _screenshotUrls = List<String>.from(data['screenshots'] ?? []);
+      if (['Academic', 'Social', 'Utility', 'Gaming'].contains(data['category'])) {
+        _selectedCategory = data['category'];
+      }
+      _permissionsController.text = (data['permissions'] as List?)?.join(', ') ?? '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +75,7 @@ class _AddAppScreenState extends State<AddAppScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Deploy New App',
+          _isEditing ? 'Edit Application' : 'Deploy New App',
           style: GoogleFonts.lexend(
             fontWeight: FontWeight.bold,
             color: textColor,
@@ -168,6 +198,8 @@ class _AddAppScreenState extends State<AddAppScreen> {
         const SizedBox(height: 24),
         _buildInputField('APK DOWNLOAD URL', 'Direct link to your .apk file', _apkUrlController, colorScheme),
         const SizedBox(height: 24),
+        _buildInputField('REQUESTED PERMISSIONS', 'e.g. Camera, Location, Storage (Optional, Comma separated)', _permissionsController, colorScheme),
+        const SizedBox(height: 24),
         _buildInfoBox('Make sure your APK link is publicly accessible for our review team.'),
       ],
     );
@@ -179,7 +211,7 @@ class _AddAppScreenState extends State<AddAppScreen> {
       children: [
         _buildSectionTitle('App Assets', colorScheme),
         const SizedBox(height: 8),
-        _buildInputField('ICON URL', 'Link to your app icon (PNG/SVG)', _iconUrlController, colorScheme),
+        _buildIconUploadField(colorScheme),
         const SizedBox(height: 32),
         Text(
           'SCREENSHOTS',
@@ -196,6 +228,7 @@ class _AddAppScreenState extends State<AddAppScreen> {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
+              ..._screenshotUrls.map((url) => _buildScreenshotItem(url, colorScheme)),
               _buildAddScreenshotCard(colorScheme),
             ],
           ),
@@ -322,18 +355,157 @@ class _AddAppScreenState extends State<AddAppScreen> {
     );
   }
 
-  Widget _buildAddScreenshotCard(ColorScheme colorScheme) {
+  Widget _buildScreenshotItem(String url, ColorScheme colorScheme) {
     return Container(
       width: 160,
+      margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
-        color: colorScheme.onSurface.withValues(alpha: 0.03),
+        color: colorScheme.onSurface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant, style: BorderStyle.solid),
+        image: DecorationImage(
+          image: CachedNetworkImageProvider(DeveloperService.getOptimizedUrl(url, width: 400)),
+          fit: BoxFit.cover,
+        ),
       ),
-      child: Center(
-        child: Icon(Icons.add_photo_alternate_outlined, color: colorScheme.onSurface.withValues(alpha: 0.2), size: 32),
+      child: Stack(
+        children: [
+          Positioned(
+            right: 8,
+            top: 8,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _screenshotUrls.remove(url);
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close_rounded, color: Colors.white, size: 16),
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildAddScreenshotCard(ColorScheme colorScheme) {
+    return GestureDetector(
+      onTap: _isUploadingScreenshot ? null : () => _pickAndUploadScreenshot(colorScheme),
+      child: Container(
+        width: 160,
+        decoration: BoxDecoration(
+          color: colorScheme.onSurface.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colorScheme.outlineVariant, style: BorderStyle.solid),
+        ),
+        child: Center(
+          child: _isUploadingScreenshot 
+            ? CircularProgressIndicator(color: colorScheme.primary, strokeWidth: 2)
+            : Icon(Icons.add_photo_alternate_outlined, color: colorScheme.onSurface.withValues(alpha: 0.2), size: 32),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconUploadField(ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'APP ICON',
+          style: GoogleFonts.lexend(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: _isUploadingIcon ? null : _pickAndUploadIcon,
+          child: Container(
+            height: 100,
+            width: 100,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: _isUploadingIcon
+                ? Center(child: CircularProgressIndicator(color: colorScheme.primary, strokeWidth: 2))
+                : _iconUrlController.text.startsWith('http')
+                    ? CachedNetworkImage(
+                        imageUrl: DeveloperService.getOptimizedUrl(_iconUrlController.text, width: 200, height: 200),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(color: colorScheme.surface),
+                        errorWidget: (context, url, error) => Icon(Icons.broken_image, color: colorScheme.outline),
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.add_a_photo_outlined,
+                          color: colorScheme.onSurface.withValues(alpha: 0.2),
+                          size: 32,
+                        ),
+                      ),
+          ),
+        ),
+        if (_iconUrlController.text.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Keep it simple and recognizable.',
+            style: GoogleFonts.lexend(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _pickAndUploadIcon() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      setState(() => _isUploadingIcon = true);
+      try {
+        final url = await DeveloperService().uploadToCloudinary(File(image.path));
+        setState(() {
+          _iconUrlController.text = url;
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        }
+      } finally {
+        if (mounted) setState(() => _isUploadingIcon = false);
+      }
+    }
+  }
+
+  Future<void> _pickAndUploadScreenshot(ColorScheme colorScheme) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      setState(() => _isUploadingScreenshot = true);
+      try {
+        final url = await DeveloperService().uploadToCloudinary(File(image.path));
+        setState(() {
+          _screenshotUrls.add(url);
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        }
+      } finally {
+        if (mounted) setState(() => _isUploadingScreenshot = false);
+      }
+    }
   }
 
   Widget _buildBottomNavigation(Color accent, ColorScheme colorScheme) {
@@ -369,19 +541,52 @@ class _AddAppScreenState extends State<AddAppScreen> {
                   // Final submission logic
                   setState(() => _isSaving = true);
                   try {
-                    await DeveloperService().submitApp(
-                      title: _titleController.text,
-                      publisher: _publisherController.text,
-                      description: _descriptionController.text,
-                      category: _selectedCategory,
-                      apkUrl: _apkUrlController.text,
-                      packageName: _packageNameController.text,
-                      version: _versionController.text,
-                      iconUrl: _iconUrlController.text,
+                    final permissionsList = _permissionsController.text.split(',')
+                        .map((p) => p.trim())
+                        .where((p) => p.isNotEmpty)
+                        .toList();
+
+                    // MAK Guard: Check for duplicate package name
+                    final isTaken = await DeveloperService().isPackageNameTaken(
+                      _packageNameController.text,
+                      excludeAppId: _isEditing ? widget.appData!['id'] : null,
                     );
+
+                    if (isTaken) {
+                      throw 'Package Name "${_packageNameController.text}" is already registered to another app. Please use a unique ID.';
+                    }
+
+                    if (_isEditing) {
+                      await DeveloperService().updateApp(
+                        appId: widget.appData!['id'],
+                        title: _titleController.text,
+                        publisher: _publisherController.text,
+                        description: _descriptionController.text,
+                        category: _selectedCategory,
+                        apkUrl: _apkUrlController.text,
+                        packageName: _packageNameController.text,
+                        version: _versionController.text,
+                        iconUrl: _iconUrlController.text,
+                        screenshotUrls: _screenshotUrls,
+                        permissions: permissionsList,
+                      );
+                    } else {
+                      await DeveloperService().submitApp(
+                        title: _titleController.text,
+                        publisher: _publisherController.text,
+                        description: _descriptionController.text,
+                        category: _selectedCategory,
+                        apkUrl: _apkUrlController.text,
+                        packageName: _packageNameController.text,
+                        version: _versionController.text,
+                        iconUrl: _iconUrlController.text,
+                        screenshotUrls: _screenshotUrls,
+                        permissions: permissionsList,
+                      );
+                    }
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('App submitted successfully!')),
+                        SnackBar(content: Text(_isEditing ? 'App updated successfully!' : 'App submitted successfully!')),
                       );
                       Navigator.pop(context);
                     }
@@ -417,7 +622,9 @@ class _AddAppScreenState extends State<AddAppScreen> {
                         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                       )
                     : Text(
-                        _currentStep == 2 ? 'Submit Application' : 'Continue',
+                        _currentStep == 2 
+                          ? (_isEditing ? 'Update Application' : 'Submit Application') 
+                          : 'Continue',
                         style: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

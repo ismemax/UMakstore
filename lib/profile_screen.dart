@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,7 +13,9 @@ import 'widgets/sign_out_dialog.dart';
 import 'services/auth_service.dart';
 import 'services/language_service.dart';
 import 'developer_dashboard_screen.dart';
+import 'admin_dashboard_screen.dart';
 import 'dart:io';
+import 'dart:convert';
 
 class ProfileScreen extends StatefulWidget {
   final Function(int)? onTabSelected;
@@ -25,24 +28,24 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final LanguageService _languageService = LanguageService();
   final User? _user = FirebaseAuth.instance.currentUser;
-  String? _localPhotoPath;
+  String? _photoBase64;
 
   @override
   void initState() {
     super.initState();
     _languageService.addListener(_updateUI);
-    _loadLocalPhoto();
+    _loadProfilePhoto();
   }
 
   void _updateUI() {
     if (mounted) setState(() {});
   }
 
-  Future<void> _loadLocalPhoto() async {
-    final path = await AuthService().getLocalProfilePhotoPath();
+  Future<void> _loadProfilePhoto() async {
+    final photo = await AuthService().getBase64ProfilePhoto();
     if (mounted) {
       setState(() {
-        _localPhotoPath = path;
+        _photoBase64 = photo;
       });
     }
   }
@@ -179,15 +182,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ? (_user!.displayName ?? 'User Name')
             : '$firstName $lastName';
         final fullName = userData['fullName'] ?? 'User Name'; // This line is from the snippet, but 'name' is used below. Keeping both for now as per instruction.
-        final email = userData['email'] ?? 'user@example.com'; // This line is from the snippet.
-        final photoUrl = userData['photoUrl']; // This line is from the snippet.
+        final email = userData['email'] ?? 'user@example.com';
+        final photoBase64 = userData['photoBase64'];
 
         return Scaffold(
           backgroundColor: colorScheme.surface,
           body: SingleChildScrollView(
             child: Column(
               children: [
-                _buildHeader(name, studentId, college, course, _localPhotoPath),
+                _buildHeader(name, studentId, college, course, photoBase64),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
@@ -209,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     const AccountSettingsScreen(),
                               ),
                             );
-                            _loadLocalPhoto();
+                            _loadProfilePhoto();
                           },
                         ),
                         _buildListItem(
@@ -269,12 +272,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildListItem(
                             Icons.dashboard_customize_rounded,
                             _languageService.translate('dev_portal'),
-                            hasBorder: false,
+                            hasBorder: userData['role'] == 'admin',
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => const DeveloperDashboardScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        if (userData['role'] == 'admin')
+                          _buildListItem(
+                            Icons.admin_panel_settings_rounded,
+                            'Admin Dashboard',
+                            hasBorder: false,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AdminDashboardScreen(),
                                 ),
                               );
                             },
@@ -306,7 +323,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ]),
 
-                      const SizedBox(height: 32),
+                      if (kDebugMode) ...[
+                        const SizedBox(height: 32),
+                        _buildSectionTitle('DEBUG BYPASS (DEVELOPER ONLY)'),
+                        const SizedBox(height: 8),
+                        _buildListCard([
+                          _buildListItem(
+                            Icons.bug_report_rounded,
+                            'Switch to Admin Role',
+                            hasBorder: true,
+                            onTap: () => _bypassRole('admin'),
+                          ),
+                          _buildListItem(
+                            Icons.code_rounded,
+                            'Switch to Developer Role',
+                            hasBorder: true,
+                            onTap: () => _bypassRole('developer'),
+                          ),
+                          _buildListItem(
+                            Icons.person_outline_rounded,
+                            'Switch to Student Role',
+                            hasBorder: false,
+                            onTap: () => _bypassRole('student'),
+                          ),
+                        ]),
+                      ],
+
+                      const SizedBox(height: 48),
                       _buildSignOutButton(context),
 
                       const SizedBox(height: 16),
@@ -331,7 +374,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeader(String name, String studentId, String college, String course, String? localPhotoPath) {
+  Future<void> _bypassRole(String role) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      await AuthService().updateCurrentUserRole(role);
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bypass Success: You are now a $role')),
+        );
+        // Refresh UI
+        setState(() {});
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bypass Failed: $e')),
+        );
+      }
+    }
+  }
+
+  Widget _buildHeader(String name, String studentId, String college, String course, String? photoBase64) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
@@ -359,8 +429,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 child: ClipOval(
-                  child: localPhotoPath != null && File(localPhotoPath).existsSync()
-                      ? Image.file(File(localPhotoPath), fit: BoxFit.cover)
+                  child: photoBase64 != null && photoBase64.isNotEmpty
+                      ? Image.memory(base64Decode(photoBase64), fit: BoxFit.cover)
                       : Container(
                           color: colorScheme.primary.withOpacity(0.1),
                           child: Icon(Icons.person_rounded, size: 60, color: colorScheme.primary),

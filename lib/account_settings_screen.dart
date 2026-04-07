@@ -5,6 +5,7 @@ import 'change_password_screen.dart';
 import 'widgets/profile_photo_bottom_sheet.dart';
 import 'services/language_service.dart';
 import 'dart:io';
+import 'dart:convert';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -21,7 +22,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   String? _selectedCollege;
   String? _selectedCourse;
-  String? _localPhotoPath;
+  String? _photoBase64;
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -56,8 +57,6 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       final doc = await AuthService().getUserProfile();
       if (doc != null && doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
-        // Try getting local photo path first
-        final localPath = await AuthService().getLocalProfilePhotoPath();
 
         setState(() {
           _firstNameController.text = data['firstName'] ?? '';
@@ -65,7 +64,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           _lastNameController.text = data['lastName'] ?? '';
           _selectedCollege = data['college'];
           _selectedCourse = data['course'];
-          _localPhotoPath = localPath;
+          _photoBase64 = data['photoBase64'];
           _isLoading = false;
         });
       }
@@ -170,18 +169,20 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
                     if (result == 'REMOVE') {
                       setState(() => _isSaving = true);
-                      await AuthService().removeProfilePhotoLocally();
+                      await AuthService().removeProfilePhotoBase64();
                       setState(() {
-                        _localPhotoPath = null;
+                        _photoBase64 = null;
                         _isSaving = false;
                       });
                     } else if (result is File) {
                       setState(() => _isSaving = true);
-                      // Save locally instead of Firebase
-                      final newPath = await AuthService()
-                          .saveProfilePhotoLocally(result);
+                      // Save as Base64 in Firestore
+                      await AuthService().updateProfilePhotoBase64(result);
+                      
+                      // For immediate UI update, we can convert to base64 here or just reload
+                      final bytes = await result.readAsBytes();
                       setState(() {
-                        _localPhotoPath = newPath;
+                        _photoBase64 = base64Encode(bytes);
                         _isSaving = false;
                       });
                     }
@@ -198,33 +199,29 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                               color: colorScheme.primary.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                               border: Border.all(color: colorScheme.surface, width: 4),
-                              image:
-                                  (_localPhotoPath != null &&
-                                      File(_localPhotoPath!).existsSync())
+                            image: (_photoBase64 != null && _photoBase64!.isNotEmpty)
                                   ? DecorationImage(
-                                      image: FileImage(File(_localPhotoPath!)),
+                                      image: MemoryImage(base64Decode(_photoBase64!)),
                                       fit: BoxFit.cover,
                                     )
                                   : null,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child:
-                                (_localPhotoPath == null ||
-                                    !File(_localPhotoPath!).existsSync())
-                                ? Center(
-                                    child: Icon(
-                                      Icons.person,
-                                      size: 80,
-                                      color: colorScheme.onSurface.withValues(alpha: 0.3),
-                                    ),
-                                  )
-                                : null,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 15,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: (_photoBase64 == null || _photoBase64!.isEmpty)
+                              ? Center(
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 80,
+                                    color: colorScheme.onSurface.withValues(alpha: 0.3),
+                                  ),
+                                )
+                              : null,
                           ),
                           Positioned(
                             bottom: 4,

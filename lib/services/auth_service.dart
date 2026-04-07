@@ -392,6 +392,18 @@ class AuthService {
     }
   }
 
+  /// UPDATES the user role (For Testing/Bypass)
+  Future<void> updateCurrentUserRole(String newRole) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw 'No user signed in';
+      await _db.collection('users').doc(user.uid).update({'role': newRole});
+    } catch (e) {
+      debugPrint('Error updating role: $e');
+      rethrow;
+    }
+  }
+
   /// Updates the user password after re-authenticating.
   Future<void> changePassword({
     required String currentPassword,
@@ -456,30 +468,63 @@ class AuthService {
     }
   }
 
-  /// Removes the local profile photo path from SharedPreferences.
-  Future<void> removeProfilePhotoLocally() async {
+  /// Saves a profile photo as a Base64 string in Firestore.
+  /// Note: Browsers and Firestore have limits, so this is best for small images only.
+  Future<void> updateProfilePhotoBase64(File imageFile) async {
     try {
       final user = _auth.currentUser;
       if (user == null) throw 'User not authenticated';
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('profile_photo_${user.uid}');
+      // 1. Read bytes from file
+      final bytes = await imageFile.readAsBytes();
+      
+      // 2. Convert to Base64 string
+      final String base64Image = base64Encode(bytes);
+      
+      // 3. Save to Firestore
+      await _db.collection('users').doc(user.uid).update({
+        'photoBase64': base64Image,
+        'hasCustomPhoto': true,
+        'photoUpdatedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       if (kDebugMode) {
-        print('Error removing local profile photo: $e');
+        print('Error saving base64 profile photo: $e');
       }
       rethrow;
     }
   }
 
-  /// Gets the local profile photo path if it exists.
-  Future<String?> getLocalProfilePhotoPath() async {
+  /// Removes the base64 profile photo from Firestore.
+  Future<void> removeProfilePhotoBase64() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw 'User not authenticated';
+
+      await _db.collection('users').doc(user.uid).update({
+        'photoBase64': FieldValue.delete(),
+        'hasCustomPhoto': false,
+        'photoUpdatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error removing base64 profile photo: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Gets the Base64 profile photo string from Firestore.
+  Future<String?> getBase64ProfilePhoto() async {
     try {
       final user = _auth.currentUser;
       if (user == null) return null;
 
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('profile_photo_${user.uid}');
+      final doc = await _db.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        return doc.data()?['photoBase64'];
+      }
+      return null;
     } catch (e) {
       return null;
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'services/developer_service.dart';
+import 'add_app_screen.dart';
 
 class ManageDeveloperAppsScreen extends StatelessWidget {
   const ManageDeveloperAppsScreen({super.key});
@@ -69,17 +70,7 @@ class ManageDeveloperAppsScreen extends StatelessWidget {
               final app = apps[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 20),
-                child: _buildAppItem(
-                  app['title'] ?? 'Untitled',
-                  'V. ${app['version'] ?? '1.0.0'}',
-                  app['status'] ?? 'Pending',
-                  app['createdAt'] != null 
-                    ? 'Submitted on ${(app['createdAt'] as Timestamp).toDate().toString().split(' ')[0]}'
-                    : 'Just now',
-                  Icons.apps_rounded,
-                  colorScheme,
-                  iconUrl: app['iconUrl'],
-                ),
+                child: _buildAppItem(context, app, colorScheme),
               );
             },
           );
@@ -88,7 +79,15 @@ class ManageDeveloperAppsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppItem(String title, String version, String status, String subtitle, IconData icon, ColorScheme colorScheme, {String? iconUrl}) {
+  Widget _buildAppItem(BuildContext context, Map<String, dynamic> app, ColorScheme colorScheme) {
+    final title = app['title'] ?? 'Untitled';
+    final version = 'V. ${app['version'] ?? '1.0.0'}';
+    final status = app['status'] ?? 'Pending';
+    final iconUrl = app['iconUrl'];
+    final subtitle = app['createdAt'] != null 
+        ? 'Submitted on ${(app['createdAt'] as Timestamp).toDate().toString().split(' ')[0]}'
+        : 'Just now';
+    
     final isDark = colorScheme.brightness == Brightness.dark;
     final iconColor = colorScheme.primary;
     return Container(
@@ -101,7 +100,7 @@ class ManageDeveloperAppsScreen extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -121,7 +120,7 @@ class ManageDeveloperAppsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         child: Image.network(iconUrl, width: 56, height: 56, fit: BoxFit.cover),
                       )
-                    : Icon(icon, color: iconColor, size: 28),
+                    : Icon(Icons.apps_rounded, color: iconColor, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -140,7 +139,7 @@ class ManageDeveloperAppsScreen extends StatelessWidget {
                       version,
                       style: GoogleFonts.lexend(
                         fontSize: 14,
-                        color: colorScheme.onSurface.withOpacity(0.4),
+                        color: colorScheme.onSurface.withValues(alpha: 0.4),
                       ),
                     ),
                   ],
@@ -149,6 +148,29 @@ class ManageDeveloperAppsScreen extends StatelessWidget {
               _buildStatusBadge(status),
             ],
           ),
+          if (app['screenshots'] != null && (app['screenshots'] as List).isNotEmpty) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 60,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: (app['screenshots'] as List).length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    width: 100,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: NetworkImage(app['screenshots'][index]),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -157,14 +179,24 @@ class ManageDeveloperAppsScreen extends StatelessWidget {
                 subtitle,
                 style: GoogleFonts.lexend(
                   fontSize: 12,
-                  color: status == 'Rejected' ? Colors.redAccent.withOpacity(0.6) : colorScheme.onSurface.withOpacity(0.2),
+                  color: status == 'Rejected' ? Colors.redAccent.withValues(alpha: 0.6) : colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
               ),
               Row(
                 children: [
-                  _buildIconButton(Icons.edit_outlined, colorScheme.onSurface.withOpacity(0.6), colorScheme),
+                  _buildIconButton(
+                    Icons.edit_outlined, 
+                    colorScheme.onSurface.withValues(alpha: 0.6), 
+                    colorScheme,
+                    onTap: () => _editApp(context, app),
+                  ),
                   const SizedBox(width: 12),
-                  _buildIconButton(Icons.delete_outline_rounded, Colors.redAccent.withOpacity(0.4), colorScheme),
+                  _buildIconButton(
+                    Icons.delete_outline_rounded, 
+                    Colors.redAccent.withValues(alpha: 0.4), 
+                    colorScheme,
+                    onTap: () => _deleteApp(context, app),
+                  ),
                 ],
               ),
             ],
@@ -208,14 +240,62 @@ class ManageDeveloperAppsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildIconButton(IconData icon, Color color, ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: colorScheme.onSurface.withValues(alpha: 0.03),
-        shape: BoxShape.circle,
+  Widget _buildIconButton(IconData icon, Color color, ColorScheme colorScheme, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: colorScheme.onSurface.withValues(alpha: 0.03),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: color, size: 20),
       ),
-      child: Icon(icon, color: color, size: 20),
+    );
+  }
+
+  void _editApp(BuildContext context, Map<String, dynamic> app) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddAppScreen(appData: app),
+      ),
+    );
+  }
+
+  void _deleteApp(BuildContext context, Map<String, dynamic> app) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Application', style: GoogleFonts.lexend(fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to delete "${app['title']}"? This action cannot be undone.', style: GoogleFonts.lexend()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: GoogleFonts.lexend(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                await DeveloperService().deleteApp(app['id']);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Application deleted successfully')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting application: $e')),
+                  );
+                }
+              }
+            },
+            child: Text('Delete', style: GoogleFonts.lexend(color: Colors.redAccent)),
+          ),
+        ],
+      ),
     );
   }
 }

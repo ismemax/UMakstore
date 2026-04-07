@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screenshots_screen.dart';
 import 'about_app_screen.dart';
 import 'reviews_screen.dart';
 import 'write_review_screen.dart';
+import 'widgets/full_screen_image.dart';
 import 'models/app_model.dart';
 import 'services/installer_service.dart';
 import 'services/developer_service.dart';
@@ -151,6 +153,10 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
               child: Divider(color: Color(0xfff1f5f9), height: 1),
             ),
             _buildPreviewSection(context),
+            if (widget.app.permissions.isNotEmpty) ...[
+              const SizedBox(height: 32),
+              _buildPermissionsSection(context),
+            ],
             const SizedBox(height: 32),
             _buildAboutSection(context),
             const SizedBox(height: 32),
@@ -167,6 +173,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         const SizedBox(height: 8),
@@ -181,7 +188,14 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             child: widget.app.iconAsset.startsWith('http')
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(28),
-                  child: Image.network(widget.app.iconAsset, width: 120, height: 120, fit: BoxFit.cover),
+                  child: CachedNetworkImage(
+                    imageUrl: DeveloperService.getOptimizedUrl(widget.app.iconAsset, width: 240, height: 240),
+                    width: 120, 
+                    height: 120, 
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1)),
+                    errorWidget: (context, url, error) => Icon(Icons.apps_rounded, size: 48, color: colorScheme.outline),
+                  ),
                 )
               : Center(
                   child: Column(
@@ -465,33 +479,82 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              Text(
-                _languageService.translate('screenshots_soon'),
-                style: GoogleFonts.lexend(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+              if (widget.app.screenshots.isEmpty)
+                Text(
+                  _languageService.translate('screenshots_soon'),
+                  style: GoogleFonts.lexend(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
         const SizedBox(height: 16),
         SizedBox(
           height: 240,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            children: [
-              _buildScreenshotPlaceholder(context, 'Core Interface'),
-              const SizedBox(width: 16),
-              _buildScreenshotPlaceholder(context, 'Data Visualization'),
-              const SizedBox(width: 16),
-              _buildScreenshotPlaceholder(context, 'Settings & Profile'),
-            ],
-          ),
+          child: widget.app.screenshots.isNotEmpty
+            ? ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                itemCount: widget.app.screenshots.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: _buildRealScreenshot(context, widget.app.screenshots[index]),
+                  );
+                },
+              )
+            : ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  _buildScreenshotPlaceholder(context, 'Core Interface'),
+                  const SizedBox(width: 16),
+                  _buildScreenshotPlaceholder(context, 'Data Visualization'),
+                  const SizedBox(width: 16),
+                  _buildScreenshotPlaceholder(context, 'Settings & Profile'),
+                ],
+              ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRealScreenshot(BuildContext context, String url) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FullScreenImage(imageUrl: url),
+          ),
+        );
+      },
+      child: Container(
+        width: 140,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: CachedNetworkImage(
+            imageUrl: DeveloperService.getOptimizedUrl(url, width: 400),
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+            errorWidget: (context, url, error) => Center(
+              child: Icon(Icons.broken_image_outlined, color: Theme.of(context).colorScheme.outline),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1202,6 +1265,78 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
       },
     );
   }
+  Widget _buildPermissionsSection(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.security_rounded, color: colorScheme.primary, size: 20),
+              const SizedBox(width: 12),
+              Text(
+                'PERMISSIONS REQUIRED',
+                style: GoogleFonts.lexend(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'This application requests access to the following features on your device:',
+                  style: GoogleFonts.lexend(
+                    fontSize: 12,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: widget.app.permissions.map((p) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
+                    ),
+                    child: Text(
+                      p,
+                      style: GoogleFonts.lexend(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                  )).toList(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildChecklistItem(IconData icon, String text, bool checked) {
     return Row(
