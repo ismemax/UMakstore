@@ -22,6 +22,29 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   String? _selectedCollege;
   String? _selectedCourse;
 
+  String? _migrateCollegeName(String? oldCollege) {
+    if (oldCollege == null) return null;
+    
+    // Map old college names to new ones
+    final Map<String, String?> collegeMigration = {
+      'College of Arts and Letters': null, // Removed
+      'College of Business and Financial Services': 'CBFS - College of Business and Financial Sciences',
+      'College of Computing and Information Sciences': 'CCIS - College of Computer and Information Science',
+      'College of Governance and Public Policy': 'CGPP - College of Governance and Public Policy',
+      'College of Computer Science': 'CCIS - College of Computer and Information Science', // Old name
+    };
+    
+    final migratedCollege = collegeMigration[oldCollege] ?? oldCollege;
+    
+    // Check if the migrated college exists in the current list
+    if (_colleges.contains(migratedCollege)) {
+      return migratedCollege;
+    }
+    
+    // If not found, return null to reset selection
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -39,17 +62,66 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   }
 
   final List<String> _colleges = [
-    'College of Arts and Letters',
-    'College of Business and Financial Services',
-    'College of Computing and Information Sciences',
-    'College of Governance and Public Policy',
+    'CBFS - College of Business and Financial Sciences',
+    'CITE - College of Innovative Teacher Education',
+    'CTHM - College of Tourism and Hospitality Management',
+    'SOL - School of Law',
+    'CCIS - College of Computer and Information Science',
+    'CCAPS - College of Continuing, Advanced and Professional Studies',
+    'CET - College of Engineering and Technology',
+    'IAD - Institute of Accountancy',
+    'IOA - Institute of Architecture',
+    'CHK - College of Human Kinetics',
+    'IDEM - Institute of Design and Engineering Management',
+    'ISW - Institute of Social Work',
+    'IOP - Institute of Pharmacy',
+    'ITEST - Institute of Technology and Entrepreneurship Studies',
+    'IOPsy - Institute of Psychology',
+    'IIHS - Institute of Integrated Health Sciences',
+    'CGPP - College of Governance and Public Policy',
+    'CCSE - College of Computing and Software Engineering',
+    'ION - Institute of Nursing',
   ];
 
   final List<String> _courses = [
-    'BS Information Technology',
-    'BS Computer Science',
+    'BS Accountancy',
     'BS Business Administration',
+    'BS Management Accounting',
+    'BS Real Estate Management',
+    'BS Tourism Management',
+    'BS Hospitality Management',
+    'Bachelor of Elementary Education',
+    'Bachelor of Secondary Education',
+    'Juris Doctor',
+    'BS Computer Science',
+    'BS Information Technology',
+    'BS Information Systems',
+    'BS Computer Engineering',
+    'BS Electronics Engineering',
+    'BS Civil Engineering',
+    'BS Architecture',
+    'BS Psychology',
+    'BS Social Work',
+    'BS Pharmacy',
+    'BS Nursing',
+    'BS Physical Therapy',
+    'BS Medical Technology',
+    'BS Public Administration',
+    'BS Development Management',
+    'BS Applied Mathematics',
+    'BS Statistics',
+    'BS Biology',
+    'BS Chemistry',
+    'BS Physics',
+    'AB English',
+    'AB Filipino',
     'AB Communication',
+    'AB History',
+    'AB Political Science',
+    'AB Sociology',
+    'BS Entrepreneurship',
+    'BS Tourism Technology',
+    'BS Hospitality Technology',
   ];
 
   @override

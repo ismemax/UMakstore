@@ -29,7 +29,7 @@ class AboutAppScreen extends StatelessWidget {
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
-                'About This App',
+                'About UMak App Store',
                 style: GoogleFonts.lexend(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -51,38 +51,38 @@ class AboutAppScreen extends StatelessWidget {
             _buildSectionTitle('Description'),
             const SizedBox(height: 16),
             _buildText(
-              'The official UMak Portal app brings your university life directly to your fingertips. Designed specifically for students, faculty, and staff, this application serves as a centralized hub for all your academic needs.',
+              'The UMak App Store is your official gateway to discovering and downloading applications developed by the University of Makati community. Designed specifically for students, faculty, and staff, this platform showcases innovative apps created within our university.',
             ),
             const SizedBox(height: 16),
             _buildText(
-              "Experience a seamless mobile interface that allows you to manage your academic journey with ease. The app integrates directly with the university's main database ensuring that all data presented is real-time and accurate.",
+              "Experience a curated collection of educational tools, productivity apps, and student-developed projects. The platform provides a secure environment to explore, download, and review applications that enhance your academic and campus life.",
             ),
             const SizedBox(height: 32),
             _buildSectionTitle('Key Features', fontSize: 18),
             const SizedBox(height: 16),
             _buildBulletItem(
-              'Real-time Grades:',
-              'Check your latest grades as soon as they are posted by your professors. View a detailed breakdown of your academic performance across all semesters.',
+              'App Discovery:',
+              'Browse through a curated collection of apps developed by UMak students and faculty. Discover tools that enhance your learning experience.',
             ),
             _buildBulletItem(
-              'Smart Schedule:',
-              'View your daily class schedule with room assignments, instructor details, and time slots. The smart view highlights your current and upcoming classes.',
+              'Secure Downloads:',
+              'All apps are verified and scanned for security. Download with confidence knowing all applications meet university standards.',
             ),
             _buildBulletItem(
-              'Campus News & Announcements:',
-              'Receive real-time push notifications for important campus announcements, class suspensions, and university events.',
+              'Developer Portal:',
+              'Submit your own apps to the store. Track downloads, read reviews, and manage your app portfolio.',
             ),
             _buildBulletItem(
-              'Student Profile:',
-              'Access your digital ID and student information anytime. Update your contact details directly through the app.',
+              'Reviews & Ratings:',
+              'Read authentic reviews from fellow students and faculty. Rate apps to help others make informed decisions.',
             ),
             _buildBulletItem(
-              'Library Access:',
-              'Search for books, check availability, and view your borrowed history and due dates.',
+              'Bookmarks & Favorites:',
+              'Save your favorite apps for quick access. Create a personalized collection of go-to applications.',
             ),
             const SizedBox(height: 24),
             _buildText(
-              'Whether you are a freshman navigating the campus for the first time or a graduating senior tracking your final requirements, the UMak Portal is your essential companion for a successful academic year.',
+              'Whether you are looking for productivity tools, educational apps, or innovative student projects, UMak App Store is your destination for discovering quality applications that enhance your university experience.',
             ),
             const SizedBox(height: 40),
             const Divider(color: Color(0xfff1f5f9), height: 1),
@@ -94,10 +94,10 @@ class AboutAppScreen extends StatelessWidget {
             _buildSectionTitle('App Information', fontSize: 18),
             const SizedBox(height: 16),
             _buildInfoRow('Provider', 'University of Makati'),
-            _buildInfoRow('Size', '45.2 MB'),
-            _buildInfoRow('Category', 'Education'),
-            _buildInfoRow('Compatibility', 'iOS 14.0 or later'),
-            _buildInfoRow('Languages', 'English'),
+            _buildInfoRow('Size', '25.8 MB'),
+            _buildInfoRow('Category', 'App Store'),
+            _buildInfoRow('Compatibility', 'Android 5.0 or later'),
+            _buildInfoRow('Languages', 'English, Filipino'),
             _buildInfoRow('Age Rating', '4+', isLast: true),
           ],
         ),
@@ -163,7 +163,7 @@ class AboutAppScreen extends StatelessWidget {
           children: [
             _buildSectionTitle("What's New", fontSize: 20),
             Text(
-              'Version 2.4.1',
+              'Version 1.2.0',
               style: GoogleFonts.lexend(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -199,7 +199,7 @@ class AboutAppScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'UPDATED OCT 24, 2023',
+                    'UPDATED APR 10, 2026',
                     style: GoogleFonts.lexend(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -211,20 +211,20 @@ class AboutAppScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _buildText(
-                "We're constantly improving the app to make your experience better! In this update:",
+                "We're constantly improving the app store to make your experience better! In this update:",
               ),
               const SizedBox(height: 16),
               _buildUpdateItem(
-                'New Dark Mode Support:',
-                "The app now fully respects your system's dark mode settings for comfortable viewing at night.",
+                'Enhanced Security:',
+                "Added comprehensive DDoS protection and rate limiting to ensure secure app downloads and user data protection.",
               ),
               _buildUpdateItem(
-                'Schedule Widget:',
-                'Added a home screen widget so you can see your next class without opening the app.',
+                'Improved Developer Portal:',
+                'Enhanced app submission process with better validation and real-time status tracking for developers.',
               ),
               _buildUpdateItem(
-                'Performance Improvements:',
-                'Faster loading times for the grades module and fixed a bug where notifications were sometimes delayed.',
+                'Performance Optimizations:',
+                'Faster app browsing, improved search functionality, and reduced loading times across all sections.',
               ),
             ],
           ),

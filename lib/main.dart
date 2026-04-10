@@ -8,6 +8,8 @@ import 'home_screen.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
 import 'services/notification_service.dart';
+import 'services/device_service.dart';
+import 'services/auth_service.dart';
 import 'utils/app_theme.dart';
 
 void main() async {

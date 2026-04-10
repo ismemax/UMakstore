@@ -407,14 +407,24 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 32),
           _buildRecentlyUpdatedSection(apps),
-          const SizedBox(height: 32),
-          _buildCategoriesSection(),
         ],
       ),
     );
   }
 
   Widget _buildTopRatedTab(List<AppModel> apps) {
+    // Sort apps by rating (highest first)
+    final sortedApps = List<AppModel>.from(apps);
+    sortedApps.sort((a, b) {
+      try {
+        final ratingA = double.tryParse(a.rating) ?? 0.0;
+        final ratingB = double.tryParse(b.rating) ?? 0.0;
+        return ratingB.compareTo(ratingA); // Descending order (highest first)
+      } catch (e) {
+        return 0;
+      }
+    });
+
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 32),
@@ -433,9 +443,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisSpacing: 16,
                 childAspectRatio: 0.62,
               ),
-              itemCount: apps.length,
+              itemCount: sortedApps.length,
               itemBuilder: (context, index) {
-                final app = apps[index];
+                final app = sortedApps[index];
                 return _buildTopRatedAppCard(
                   rank: index + 1,
                   app: app,
@@ -1317,18 +1327,18 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               width: 64,
               height: 64,
-              decoration: BoxDecoration(
-                color: iconColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: app.iconAsset.startsWith('http')
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(app.iconAsset, width: 44, height: 44, fit: BoxFit.cover),
-                    )
-                  : Icon(iconData, color: Colors.white, size: 28),
-              ),
+              child: app.iconAsset.startsWith('http')
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(app.iconAsset, width: 64, height: 64, fit: BoxFit.cover),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: iconColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(iconData, color: Colors.white, size: 32),
+                  ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -1414,74 +1424,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoriesSection() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            'Categories',
-            style: GoogleFonts.lexend(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 2.5, // roughly 160 width / 60 height
-            children: [
-              _buildCategoryCard('Academic', Icons.school_rounded, colorScheme),
-              _buildCategoryCard('Student Life', Icons.sports_esports_rounded, colorScheme),
-              _buildCategoryCard('Dining', Icons.restaurant_rounded, colorScheme),
-              _buildCategoryCard('Events', Icons.event_rounded, colorScheme),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryCard(String title, IconData icon, ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: colorScheme.primary, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              title,
-              style: GoogleFonts.lexend(
-                fontSize: 14, // Adjusted slightly to fit better horizontally
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  
+  
   Future<void> _precacheApps(List<AppModel> apps) async {
     if (!mounted) return;
     

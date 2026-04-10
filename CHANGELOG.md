@@ -4,6 +4,43 @@ This document tracks major changes, optimizations, and bug fixes implemented dur
 
 ---
 
+## 📅 April 10, 2026
+
+### 🚀 New Features & Enhancements
+
+#### 🔔 Single-Device Access Restriction
+- **Device Fingerprinting**: Implemented unique device identification using device info and UUID generation
+- **Backend Device Tracking**: Added Firebase-based device registration and validation system
+- **API Endpoints**: Created `/api/register-device`, `/api/validate-device`, `/api/revoke-all-devices`
+- **Automatic Enforcement**: Single-device access enforced at app startup with clear error messaging
+- **Device Management UI**: Complete device management interface with revoke functionality
+
+#### 🚀 Enhanced DDoS Protection
+- **Rate Limiting**: General (100 req/15min) and strict (5 req/15min for OTP) rate limiting
+- **Security Headers**: Helmet middleware with CSP and HSTS configuration
+- **Request Size Limiting**: 10kb payload limits for all endpoints
+- **IP Blocking**: Automatic IP blocking for suspicious activity patterns
+- **HTTP Parameter Pollution**: HPP protection against parameter injection attacks
+
+#### 🏗️ College & Course System Update
+- **Official College List**: Updated with 18 official UMak colleges and institutes
+- **Comprehensive Courses**: Added 37 courses matching the new college structure
+- **Migration Logic**: Smooth migration from old college names to new format
+- **Error Handling**: Robust dropdown validation to prevent selection conflicts
+
+#### 📦 UI/UX Improvements
+- **Recently Updated Apps**: Removed background colors, made app icons fill entire space
+- **Categories Section**: Removed unused categories section for cleaner interface
+- **Top Rated Apps**: Fixed sorting to show most-rated apps instead of latest added
+- **About Page**: Updated UMak App Store information with current features
+
+#### 📦 New Services & Components
+- **Device Service**: Complete device identification and management service
+- **Update Message Widget**: Reusable update message components with variants
+- **Enhanced Auth Service**: Added device authorization methods
+
+---
+
 ## 📅 April 5, 2026
 
 ### 🚀 New Features & Enhancements

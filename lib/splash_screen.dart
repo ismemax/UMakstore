@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'onboarding_screen.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
+import 'services/device_service.dart';
+import 'services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,17 +37,46 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (user != null) {
-      // User is authenticated, go to Home
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const HomeScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
-      );
+      // User is authenticated, validate device first
+      final deviceRegistered = await DeviceService().isDeviceRegistered();
+      
+      if (deviceRegistered) {
+        // Device is registered, validate it
+        final isValidDevice = await AuthService().validateDevice();
+        if (isValidDevice) {
+          // Device is valid, go to Home
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 500),
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const HomeScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+            ),
+          );
+        } else {
+          // Device is not valid, show error and sign out
+          _showDeviceErrorDialog();
+        }
+      } else {
+        // First time on this device, register it
+        final registered = await AuthService().registerDevice();
+        if (registered) {
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 500),
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const HomeScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+            ),
+          );
+        } else {
+          _showDeviceErrorDialog();
+        }
+      }
     } else if (!hasFinishedOnboarding) {
       // No user, and hasn't seen onboarding, go to Onboarding
       Navigator.of(context).pushReplacement(
@@ -71,6 +102,64 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       );
     }
+  }
+
+  void _showDeviceErrorDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.security, color: Colors.red, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              'Device Access Denied',
+              style: GoogleFonts.lexend(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your account is already active on another device.',
+              style: GoogleFonts.lexend(fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'For security reasons, UMak App Store allows access from only one device at a time.',
+              style: GoogleFonts.lexend(fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Please sign out from the other device and try again.',
+              style: GoogleFonts.lexend(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await AuthService().signOutUser();
+              Navigator.of(context).pushReplacementNamed('/auth');
+            },
+            child: Text(
+              'OK',
+              style: GoogleFonts.lexend(
+                color: Colors.blue,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

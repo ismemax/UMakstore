@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'notification_service.dart';
+import 'device_service.dart';
 
 class AuthService {
   // IMPORTANT: For Android Emulator, use 10.0.2.2.
@@ -217,6 +218,108 @@ class AuthService {
         print('Error during sign-out: $e');
       }
       rethrow;
+    }
+  }
+
+  /// Register device for single-device access
+  Future<bool> registerDevice() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+
+      final idToken = await user.getIdToken();
+      final deviceId = await DeviceService().getDeviceId();
+      final deviceInfo = await DeviceService().getDeviceInfo();
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/register-device'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: jsonEncode({
+          'deviceId': deviceId,
+          'deviceInfo': deviceInfo,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        await DeviceService().markDeviceAsRegistered();
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw errorData['error'] ?? 'Device registration failed';
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error registering device: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Validate device for session continuation
+  Future<bool> validateDevice() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+
+      final idToken = await user.getIdToken();
+      final deviceId = await DeviceService().getDeviceId();
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/validate-device'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: jsonEncode({
+          'deviceId': deviceId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw errorData['error'] ?? 'Device validation failed';
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error validating device: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Revoke all devices
+  Future<bool> revokeAllDevices() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+
+      final idToken = await user.getIdToken();
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/revoke-all-devices'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        await DeviceService().clearDeviceRegistration();
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw errorData['error'] ?? 'Device revocation failed';
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error revoking devices: $e');
+      }
+      return false;
     }
   }
 

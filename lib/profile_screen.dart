@@ -9,6 +9,8 @@ import 'notifications_screen.dart';
 import 'bookmarks_screen.dart';
 import 'settings_screen.dart';
 import 'help_and_feedback_screen.dart';
+import 'about_app_screen.dart';
+import 'device_management_screen.dart';
 import 'widgets/sign_out_dialog.dart';
 import 'services/auth_service.dart';
 import 'services/language_service.dart';
@@ -268,6 +270,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
+                        _buildListItem(
+                          Icons.phone_android_outlined,
+                          'Device Management',
+                          key: const Key('tile_device_management'),
+                          hasBorder: userData['role'] == 'developer',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DeviceManagementScreen(),
+                              ),
+                            );
+                          },
+                        ),
                         if (userData['role'] == 'developer')
                           _buildListItem(
                             Icons.dashboard_customize_rounded,
@@ -320,6 +336,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Icons.info_outline_rounded,
                           _languageService.translate('about'),
                           hasBorder: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AboutAppScreen(),
+                              ),
+                            );
+                          },
                         ),
                       ]),
 
