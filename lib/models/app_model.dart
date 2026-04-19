@@ -16,6 +16,7 @@ class AppModel {
   final String description;
   final String iconAsset;
   final String category;
+  final String college;
   final String downloadUrl;
   final String? packageName; // e.g. com.example.app
   final String version;
@@ -40,6 +41,7 @@ class AppModel {
     required this.description,
     required this.iconAsset,
     required this.category,
+    required this.college,
     required this.downloadUrl,
     this.packageName,
     required this.version,

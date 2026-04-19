@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'screenshots_screen.dart';
+import 'about_app_screen.dart';
 import 'reviews_screen.dart';
 import 'write_review_screen.dart';
 import 'widgets/full_screen_image.dart';
@@ -28,6 +30,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    _colorScheme = Theme.of(context).colorScheme;
     _installer = InstallerService();
     _installer.addListener(_updateState);
     _languageService.addListener(_updateState);
@@ -71,9 +74,9 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _colorScheme = Theme.of(context).colorScheme;
-    final colorScheme = _colorScheme;
-        
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
@@ -105,29 +108,29 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 ),
                 onPressed: () async {
                   final success = await BookmarkService().toggleBookmark(widget.app.id);
-                  if (mounted && success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(isBookmarked
-                            ? _languageService.translate('bookmark_removed')
-                            : _languageService.translate('bookmark_added')),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
+                  if (mounted) {
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(isBookmarked
+                              ? _languageService.translate('bookmark_removed')
+                              : _languageService.translate('bookmark_added')),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(_languageService.translate('bookmark_error')),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                    }
                   }
                 },
               );
             },
           ),
-          if (widget.app.status == AppStatus.installed)
-            IconButton(
-              icon: Icon(
-                Icons.delete_outline_rounded,
-                color: colorScheme.error,
-                size: 24,
-              ),
-              onPressed: () => _showUninstallConfirmationDialog(context),
-            ),
           IconButton(
             icon: Icon(
               Icons.share_outlined,
@@ -147,9 +150,9 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             _buildStats(),
             _buildActionButtons(),
             _buildDataRetentionInfo(),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.5), height: 1),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Divider(color: Color(0xfff1f5f9), height: 1),
             ),
             _buildPreviewSection(context),
             if (widget.app.permissions.isNotEmpty) ...[
@@ -172,68 +175,52 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildHeader() {
-    final colorScheme = _colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         const SizedBox(height: 8),
         Center(
-          child: Hero(
-            tag: 'app_icon_${widget.app.id}',
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: widget.app.iconAsset.startsWith('http')
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(28),
-                    child: CachedNetworkImage(
-                      imageUrl: DeveloperService.getOptimizedUrl(widget.app.iconAsset, width: 240, height: 240),
-                      width: 120, 
-                      height: 120, 
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1)),
-                      errorWidget: (context, url, error) => Icon(Icons.apps_rounded, size: 48, color: colorScheme.outline),
-                    ),
-                  )
-                : Container(
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary,
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            widget.app.iconData ?? Icons.apps_rounded,
-                            color: colorScheme.onPrimary,
-                            size: 48,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'APPLICATION',
-                            style: GoogleFonts.lexend(
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onPrimary.withValues(alpha: 0.8),
-                              letterSpacing: 2,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(28),
             ),
+            child: widget.app.iconAsset.startsWith('http')
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: CachedNetworkImage(
+                    imageUrl: DeveloperService.getOptimizedUrl(widget.app.iconAsset, width: 240, height: 240),
+                    width: 120, 
+                    height: 120, 
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1)),
+                    errorWidget: (context, url, error) => Icon(Icons.apps_rounded, size: 48, color: colorScheme.outline),
+                  ),
+                )
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        widget.app.iconData ?? Icons.apps_rounded,
+                        color: _colorScheme.onPrimary,
+                        size: 48,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'APPLICATION',
+                        style: GoogleFonts.lexend(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
           ),
         ),
         const SizedBox(height: 24),
@@ -242,7 +229,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           style: GoogleFonts.lexend(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
+            color: Theme.of(context).colorScheme.onSurface,
             letterSpacing: -0.6,
           ),
         ),
@@ -252,11 +239,9 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           child: Text(
             widget.app.description,
             textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.lexend(
               fontSize: 14,
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               height: 1.5,
             ),
           ),
@@ -267,7 +252,6 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildStats() {
-    final colorScheme = _colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
@@ -286,7 +270,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildStatItem(String value, String label) {
-    final colorScheme = _colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Text(
@@ -312,11 +296,10 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildStatDivider() {
-    return Container(height: 24, width: 1, color: _colorScheme.outlineVariant);
+    return Container(height: 24, width: 1, color: Theme.of(context).colorScheme.outlineVariant);
   }
 
   Widget _buildActionButtons() {
-    final colorScheme = _colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
       child: Row(
@@ -333,11 +316,13 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
               child: Container(
                 height: 54,
                 decoration: BoxDecoration(
-                  color: colorScheme.primary,
+                  color: widget.app.status == AppStatus.installed
+                      ? const Color(0xff2094f3)
+                      : const Color(0xff2094f3),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.25),
+                      color: const Color(0xff2094f3).withValues(alpha: 0.25),
                       blurRadius: 15,
                       offset: const Offset(0, 10),
                       spreadRadius: -3,
@@ -356,7 +341,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                                 : widget.app.progress,
                             backgroundColor: Colors.transparent,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              colorScheme.onPrimary.withValues(alpha: 0.3),
+                              Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.3),
                             ),
                           ),
                         ),
@@ -375,7 +360,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                         style: GoogleFonts.lexend(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: colorScheme.onPrimary,
+                          color: _colorScheme.onPrimary,
                         ),
                       ),
                     ),
@@ -389,19 +374,34 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             stream: BookmarkService().isBookmarked(widget.app.id),
             builder: (context, snapshot) {
               final isBookmarked = snapshot.data ?? false;
+              final isInstalled = widget.app.status == AppStatus.installed;
+              final colorScheme = Theme.of(context).colorScheme;
 
               return GestureDetector(
                 onTap: () async {
-                  final success = await BookmarkService().toggleBookmark(widget.app.id);
-                  if (mounted && success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(isBookmarked
-                            ? _languageService.translate('bookmark_removed')
-                            : _languageService.translate('bookmark_added')),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
+                  if (isInstalled) {
+                    _showUninstallConfirmationDialog(context);
+                  } else {
+                    final success = await BookmarkService().toggleBookmark(widget.app.id);
+                    if (mounted) {
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(isBookmarked
+                                ? _languageService.translate('bookmark_removed')
+                                : _languageService.translate('bookmark_added')),
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      } else {
+                         ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(_languageService.translate('bookmark_error')),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   }
                 },
                 child: Container(
@@ -413,10 +413,14 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                     border: Border.all(color: colorScheme.outlineVariant, width: 2),
                   ),
                   child: Icon(
-                    isBookmarked
-                        ? Icons.bookmark_rounded
-                        : Icons.bookmark_border_rounded,
-                    color: isBookmarked ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.6),
+                    isInstalled
+                        ? Icons.delete_outline_rounded
+                        : (isBookmarked
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_border_rounded),
+                    color: isInstalled && isBookmarked
+                        ? colorScheme.primary
+                        : (isInstalled ? const Color(0xffef4444) : (isBookmarked ? colorScheme.primary : const Color(0xff64748b))),
                     size: 24,
                   ),
                 ),
@@ -430,27 +434,26 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
 
   Widget _buildDataRetentionInfo() {
     if (widget.app.status != AppStatus.installed) return const SizedBox.shrink();
-    final colorScheme = _colorScheme;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          color: const Color(0xfff1f5f9),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
-            Icon(Icons.info_outline_rounded,
-                size: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+            const Icon(Icons.info_outline_rounded,
+                size: 16, color: Color(0xff64748b)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 'You can choose to keep your app data when uninstalling to preserve your settings.',
                 style: GoogleFonts.lexend(
                   fontSize: 11,
-                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: const Color(0xff64748b),
                 ),
               ),
             ),
@@ -461,7 +464,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildPreviewSection(BuildContext context) {
-    final colorScheme = _colorScheme;
+    // We don't have real screenshots yet, so we show placeholders but with the app name
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -475,7 +478,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 style: GoogleFonts.lexend(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               if (widget.app.screenshots.isEmpty)
@@ -484,7 +487,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                   style: GoogleFonts.lexend(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurface.withValues(alpha: 0.4),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
             ],
@@ -501,7 +504,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 16),
-                    child: _buildRealScreenshot(context, widget.app.screenshots[index], index),
+                    child: _buildRealScreenshot(context, widget.app.screenshots[index]),
                   );
                 },
               )
@@ -521,47 +524,35 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
     );
   }
 
-  Widget _buildRealScreenshot(BuildContext context, String url, int index) {
-    final colorScheme = _colorScheme;
-    final tag = 'preview_${widget.app.id}_$index';
+  Widget _buildRealScreenshot(BuildContext context, String url) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => FullScreenImage(imageUrl: url, tag: tag),
+            builder: (context) => FullScreenImage(imageUrl: url),
           ),
         );
       },
-      child: Hero(
-        tag: tag,
-        child: Container(
-          width: 140,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colorScheme.outlineVariant),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+      child: Container(
+        width: 140,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: CachedNetworkImage(
+            imageUrl: DeveloperService.getOptimizedUrl(url, width: 400),
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: CachedNetworkImage(
-              imageUrl: DeveloperService.getOptimizedUrl(url, width: 400),
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
-                ),
-              ),
-              errorWidget: (context, url, error) => Center(
-                child: Icon(Icons.broken_image_outlined, color: colorScheme.outline),
-              ),
+            ),
+            errorWidget: (context, url, error) => Center(
+              child: Icon(Icons.broken_image_outlined, color: Theme.of(context).colorScheme.outline),
             ),
           ),
         ),
@@ -570,7 +561,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildScreenshotPlaceholder(BuildContext context, String label) {
-    final colorScheme = _colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 140,
       decoration: BoxDecoration(
@@ -601,8 +592,79 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
     );
   }
 
+  Widget _buildScreenshotCard(BuildContext context, Color bgColor) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                const ScreenshotsScreen(appName: 'UMak Portal'),
+          ),
+        );
+      },
+      child: Container(
+        width: 200,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xffe2e8f0)),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const SizedBox(width: 8),
+                        const CircleAvatar(
+                          radius: 12,
+                          backgroundColor: Color(0xfff1f5f9),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 40,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: const Color(0xfff1f5f9),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xfff8fafc),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildAboutSection(BuildContext context) {
-    final colorScheme = _colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -613,21 +675,23 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
             style: GoogleFonts.lexend(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
           Text(
             widget.app.description,
+            maxLines: 6,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.lexend(
               fontSize: 14,
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               height: 1.6,
             ),
           ),
-          const SizedBox(height: 24),
-          _buildInfoRow(Icons.verified_user_outlined, 'Secure Deployment'),
           const SizedBox(height: 12),
+          _buildInfoRow(Icons.verified_user_outlined, 'Secure Deployment'),
+          const SizedBox(height: 8),
           _buildInfoRow(Icons.update_rounded, 'Latest Version ${widget.app.version}'),
         ],
       ),
@@ -635,17 +699,16 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildInfoRow(IconData icon, String text) {
-    final colorScheme = _colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 18, color: colorScheme.primary),
-        const SizedBox(width: 12),
+        Icon(icon, size: 16, color: colorScheme.primary),
+        const SizedBox(width: 8),
         Text(
           text,
           style: GoogleFonts.lexend(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: colorScheme.onSurface.withValues(alpha: 0.7),
+            fontSize: 12,
+            color: colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
       ],
@@ -653,7 +716,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildRatingsSection(BuildContext context) {
-    final colorScheme = _colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -701,7 +764,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                       ),
                     ),
                   );
-                  _loadUserReview();
+                  _loadUserReview(); // Refresh review status on return
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -733,7 +796,6 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
           StreamBuilder<List<Map<String, dynamic>>>(
             stream: DeveloperService().getAppReviews(widget.app.id),
             builder: (context, snapshot) {
@@ -771,16 +833,16 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                       Expanded(
                         child: Column(
                           children: [
-                            _buildRatingBar(5, distribution[5] ?? 0.0),
+                            _buildRatingBar(5, distribution[5] ?? 0.0, colorScheme),
                             const SizedBox(height: 8),
-                            _buildRatingBar(4, distribution[4] ?? 0.0),
+                            _buildRatingBar(4, distribution[4] ?? 0.0, colorScheme),
                             const SizedBox(height: 8),
-                            _buildRatingBar(3, distribution[3] ?? 0.0),
+                            _buildRatingBar(3, distribution[3] ?? 0.0, colorScheme),
                             const SizedBox(height: 8),
-                            _buildRatingBar(2, distribution[2] ?? 0.0),
+                            _buildRatingBar(2, distribution[2] ?? 0.0, colorScheme),
                             const SizedBox(height: 8),
-                            _buildRatingBar(1, distribution[1] ?? 0.0),
-                            const SizedBox(height: 8),
+                            _buildRatingBar(1, distribution[1] ?? 0.0, colorScheme),
+                            const SizedBox(height: 4),
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
@@ -815,7 +877,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                       ),
                     )
                   else
-                    ...reviews.take(3).map((review) {
+                    ...reviews.map((review) {
                       final timestamp = review['createdAt'] as Timestamp?;
                       final dateStr = timestamp != null
                         ? '${timestamp.toDate().day}/${timestamp.toDate().month}/${timestamp.toDate().year}'
@@ -841,8 +903,7 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
     );
   }
 
-  Widget _buildRatingBar(int star, double percent) {
-    final colorScheme = _colorScheme;
+  Widget _buildRatingBar(int star, double percent, ColorScheme colorScheme) {
     return Row(
       children: [
         SizedBox(
@@ -857,26 +918,26 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           ),
         ),
         const SizedBox(width: 4),
-        Icon(Icons.star_rounded, color: colorScheme.onSurface.withValues(alpha: 0.5), size: 10),
+        Icon(Icons.star_rounded, color: colorScheme.onSurface, size: 10),
         const SizedBox(width: 8),
         Expanded(
           child: Stack(
             children: [
               Container(
-                height: 6,
+                height: 8,
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(3),
+                  color: colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
               if (percent > 0)
                 FractionallySizedBox(
                   widthFactor: percent,
                   child: Container(
-                    height: 6,
+                    height: 8,
                     decoration: BoxDecoration(
                       color: colorScheme.primary,
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                 ),
@@ -894,13 +955,19 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
     String content,
     int rating,
   ) {
-    final colorScheme = _colorScheme;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+        color: _colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _colorScheme.outline),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -908,27 +975,22 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-                    child: Text(
-                      user.isEmpty ? 'U' : user[0].toUpperCase(),
-                      style: GoogleFonts.lexend(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   Text(
                     user,
                     style: GoogleFonts.lexend(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
+                      color: const Color(0xff0a192f),
+                    ),
+                  ),
+                  Text(
+                    date,
+                    style: GoogleFonts.lexend(
+                      fontSize: 10,
+                      color: const Color(0xff94a3b8),
                     ),
                   ),
                 ],
@@ -938,29 +1000,30 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                   return Icon(
                     Icons.star_rounded,
                     color: index < rating
-                        ? const Color(0xffFFC107)
-                        : colorScheme.outlineVariant,
+                        ? const Color(0xff0a192f)
+                        : const Color(0xffe2e8f0),
                     size: 14,
                   );
                 }),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: GoogleFonts.lexend(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xff0a192f),
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             content,
             style: GoogleFonts.lexend(
               fontSize: 12,
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            date,
-            style: GoogleFonts.lexend(
-              fontSize: 10,
-              color: colorScheme.onSurface.withValues(alpha: 0.4),
+              color: const Color(0xff475569),
+              height: 1.6,
             ),
           ),
         ],
@@ -969,33 +1032,31 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildDeveloperSection() {
-    final colorScheme = _colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'DEVELOPER',
+            'Developer',
             style: GoogleFonts.lexend(
-              fontSize: 14,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-              letterSpacing: 1.2,
+              color: const Color(0xff0a192f),
             ),
           ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colorScheme.outlineVariant),
-              boxShadow: [
+              color: _colorScheme.onPrimary,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Theme.of(context).colorScheme.outline),
+              boxShadow: const [
                 BoxShadow(
-                  color: colorScheme.shadow.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: _colorScheme.shadow.withValues(alpha: 0.1),
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
                 ),
               ],
             ),
@@ -1005,13 +1066,13 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.1),
+                    color: const Color(0xff2094f3).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Icon(
                       Icons.code_rounded,
-                      color: colorScheme.primary,
+                      color: Color(0xff2094f3),
                       size: 24,
                     ),
                   ),
@@ -1025,36 +1086,29 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                         widget.app.publisher,
                         style: GoogleFonts.lexend(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Icon(Icons.verified_rounded, size: 14, color: colorScheme.primary),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Verified Publisher',
-                            style: GoogleFonts.lexend(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'Verified Publisher',
+                        style: GoogleFonts.lexend(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.chevron_right_rounded,
-                  color: colorScheme.onSurface.withValues(alpha: 0.3),
+                  color: Color(0xff2094f3),
+                  size: 20,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Row(
             children: [
               _buildFooterLink(Icons.privacy_tip_outlined, 'Privacy Policy'),
@@ -1068,17 +1122,15 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildFooterLink(IconData icon, String label) {
-    final colorScheme = _colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.5)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 16, color: const Color(0xff64748b)),
+        const SizedBox(width: 4),
         Text(
           label,
           style: GoogleFonts.lexend(
             fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: colorScheme.onSurface.withValues(alpha: 0.5),
+            color: const Color(0xff64748b),
           ),
         ),
       ],
@@ -1086,33 +1138,15 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
   }
 
   Widget _buildFooter() {
-    final colorScheme = _colorScheme;
     return Center(
-      child: Column(
-        children: [
-          Text(
-            'Version ${widget.app.version}',
-            style: GoogleFonts.lexend(
-              fontSize: 12, 
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface.withValues(alpha: 0.4)
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Managed Deployment • PolyStore Certification',
-            style: GoogleFonts.lexend(
-              fontSize: 10, 
-              color: colorScheme.onSurface.withValues(alpha: 0.3)
-            ),
-          ),
-        ],
+      child: Text(
+        'Version ${widget.app.version} • Managed Deployment',
+        style: GoogleFonts.lexend(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
       ),
     );
   }
 
   void _showUninstallConfirmationDialog(BuildContext context) {
-    final colorScheme = _colorScheme;
     bool keepData = true;
 
     showDialog(
@@ -1121,16 +1155,15 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              backgroundColor: colorScheme.surface,
+              backgroundColor: _colorScheme.surface,
               surfaceTintColor: Colors.transparent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               title: Text(
                 'Uninstall ${widget.app.title}?',
-                softWrap: true,
                 style: GoogleFonts.lexend(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
-                  color: colorScheme.onSurface,
+                  color: _colorScheme.onSurface,
                 ),
               ),
               content: Column(
@@ -1138,51 +1171,42 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildChecklistItem(Icons.delete_sweep_outlined, 'Removes app files from your device', true),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   InkWell(
                     onTap: () => setState(() => keepData = !keepData),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: keepData ? colorScheme.primary.withValues(alpha: 0.2) : Colors.transparent,
-                        ),
-                      ),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Icon(
-                            keepData ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                            color: keepData ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.4),
+                            keepData ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                            color: const Color(0xff2094f3),
+                            size: 24,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Keep ${widget.app.size} of app data',
-                                  softWrap: true,
-                                  style: GoogleFonts.lexend(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ),
-                                Text(
-                                  'Recommended if you reinstall later',
-                                  softWrap: true,
-                                  style: GoogleFonts.lexend(
-                                    fontSize: 11,
-                                    color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              'Keep ${widget.app.size} of app data',
+                              style: GoogleFonts.lexend(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xff475569),
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 32),
+                    child: Text(
+                      'Recommended if you reinstall later',
+                      style: GoogleFonts.lexend(
+                        fontSize: 11,
+                        color: const Color(0xff94a3b8),
                       ),
                     ),
                   ),
@@ -1190,15 +1214,15 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                   _buildChecklistItem(Icons.library_books_outlined, 'Keeps record in your library', true),
                 ],
               ),
-              actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     'CANCEL',
                     style: GoogleFonts.lexend(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xff64748b),
                     ),
                   ),
                 ),
@@ -1208,11 +1232,9 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                     if (keepData) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(
-                            'Note: Tap "Keep data" in the system prompt below!',
-                            softWrap: true,
-                          ),
+                          content: Text('Note: Tap "Keep data" in the system prompt below!'),
                           behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 4),
                         ),
                       );
                     }
@@ -1224,15 +1246,17 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.error,
-                    foregroundColor: colorScheme.onError,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: const Color(0xffef4444),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                   child: Text(
                     'UNINSTALL',
-                    style: GoogleFonts.lexend(fontWeight: FontWeight.bold),
+                    style: GoogleFonts.lexend(
+                      fontWeight: FontWeight.bold,
+                      color: _colorScheme.onPrimary,
+                    ),
                   ),
                 ),
               ],
@@ -1242,9 +1266,8 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
       },
     );
   }
-
   Widget _buildPermissionsSection(BuildContext context) {
-    final colorScheme = _colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1315,23 +1338,22 @@ class _AppDetailsScreenState extends State<AppDetailsScreen> {
     );
   }
 
+
   Widget _buildChecklistItem(IconData icon, String text, bool checked) {
-    final colorScheme = _colorScheme;
     return Row(
       children: [
         Icon(
           checked ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
           size: 20,
-          color: checked ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.2),
+          color: checked ? const Color(0xff10b981) : const Color(0xffcbd5e1),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             text,
-            softWrap: true,
             style: GoogleFonts.lexend(
               fontSize: 14,
-              color: colorScheme.onSurface.withValues(alpha: 0.8),
+              color: const Color(0xff475569),
             ),
           ),
         ),

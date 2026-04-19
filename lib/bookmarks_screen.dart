@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'services/bookmark_service.dart';
 import 'services/developer_service.dart';
+import 'services/installer_service.dart';
+import 'services/language_service.dart';
 import 'models/app_model.dart';
 import 'app_details_screen.dart';
 
@@ -13,8 +16,40 @@ class BookmarksScreen extends StatefulWidget {
 }
 
 class _BookmarksScreenState extends State<BookmarksScreen> {
+  final LanguageService _languageService = LanguageService();
   final BookmarkService _bookmarkService = BookmarkService();
   final DeveloperService _developerService = DeveloperService();
+  late InstallerService _installer;
+  StreamSubscription? _appsSubscription;
+  late Stream<List<AppModel>> _appsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _installer = InstallerService();
+    _installer.addListener(_updateState);
+    _languageService.addListener(_updateState);
+    _appsStream = _developerService.getStoreApps();
+
+    // Subscribe to update statuses whenever new apps arrive
+    _appsSubscription = _appsStream.listen((apps) {
+      if (mounted) {
+        _installer.updateAllStatuses(apps);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _appsSubscription?.cancel();
+    _installer.removeListener(_updateState);
+    _languageService.removeListener(_updateState);
+    super.dispose();
+  }
+
+  void _updateState() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -225,6 +260,26 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (app.status == AppStatus.installed) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xff22c55e).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: const Color(0xff22c55e).withValues(alpha: 0.2)),
+                      ),
+                      child: Text(
+                        'INSTALLED',
+                        style: GoogleFonts.lexend(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xff22c55e),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -261,6 +316,26 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                       ),
                     ],
                   ),
+                  if (app.status == AppStatus.installed) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => _installer.launchApp(app),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          _languageService.translate('open'),
+                          style: GoogleFonts.lexend(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -119,6 +119,19 @@ class NotificationService {
             .toList());
   }
 
+  Stream<int> getUnreadCount() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return Stream.value(0);
+
+    return _db
+        .collection('users')
+        .doc(user.uid)
+        .collection('notifications')
+        .where('isRead', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
+
   Future<void> deleteNotification(String id) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;

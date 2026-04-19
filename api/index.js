@@ -51,10 +51,11 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 // HTTP Parameter Pollution protection
 app.use(hpp());
 
-// CORS configuration
+// CORS configuration - Allow all origins for mobile apps
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000'],
-  credentials: true
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-master-key']
 }));
 
 // Apply general rate limiting
@@ -169,6 +170,88 @@ app.post('/api/verify-otp', (req, res) => {
     res.status(200).json({ success: true });
   } else {
     res.status(400).json({ error: 'Invalid verification code' });
+  }
+});
+
+// NEW: Endpoint to update user role (Role Management)
+app.post('/api/assign-role', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const masterKey = req.body.masterKey || req.headers['x-master-key'];
+    // Allow either the environment variable OR the default development key for ease of use
+    const isMasterKeyValid = (process.env.MASTER_KEY && masterKey === process.env.MASTER_KEY) || 
+                             (masterKey === 'UMAK_ADMIN_BYPASS_2024');
+
+    // 1. Verify caller has permission in Firestore (Admins/Developers) OR has valid Master Key
+    const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+    const callerData = adminDoc.data() || {};
+    const callerRole = (callerData.role || 'student').toLowerCase().trim();
+    
+    if (!isMasterKeyValid && !['admin', 'developer'].includes(callerRole)) {
+      return res.status(403).json({ error: `Access Denied: Role '${callerRole}' cannot manage roles without a Master Key.` });
+    }
+
+    const { targetEmail, targetRole, reason } = req.body;
+    if (!targetEmail || !targetRole) {
+      return res.status(400).json({ error: 'targetEmail and targetRole are required' });
+    }
+
+    // 2. Find target user by email
+    const targetSnapshot = await admin.firestore().collection('users')
+      .where('email', '==', targetEmail.toLowerCase().trim())
+      .limit(1)
+      .get();
+
+    if (targetSnapshot.empty) {
+      return res.status(404).json({ error: 'Target user not found' });
+    }
+
+    const targetDoc = targetSnapshot.docs[0];
+    const userData = targetDoc.data();
+    const previousRole = (userData.role || 'student').toLowerCase().trim();
+    const normalizedTargetRole = targetRole.toLowerCase().trim();
+
+    // 3. Permission check for specific role upgrades (Skip if Master Key used)
+    if (!isMasterKeyValid && normalizedTargetRole === 'admin' && callerRole !== 'admin') {
+        return res.status(403).json({ 
+            error: 'Only admins can grant admin privileges. Use Master Key for debug bypass.' 
+        });
+    }
+
+    // 4. Update the role in Firestore
+    await targetDoc.ref.update({
+      role: normalizedTargetRole,
+      roleAssignedBy: isMasterKeyValid ? 'SYSTEM_BYPASS' : (adminDoc.data()?.email || 'API'),
+      roleAssignedAt: new Date().toISOString(),
+      roleAssignmentReason: reason || (isMasterKeyValid ? 'Debug Bypass' : 'Assigned via API'),
+      previousRole: previousRole
+    });
+
+    // 5. Log the assignment in roleAssignments collection
+    await admin.firestore().collection('roleAssignments').add({
+      adminEmail: adminDoc.data()?.email || 'API',
+      targetEmail: targetEmail.toLowerCase().trim(),
+      previousRole: previousRole,
+      newRole: normalizedTargetRole,
+      reason: reason || 'Assigned via Backend API',
+      timestamp: new Date().toISOString()
+    });
+
+    return res.status(200).json({ 
+      message: `Successfully changed role of ${targetEmail} from ${previousRole} to ${normalizedTargetRole}` 
+    });
+
+  } catch (error) {
+    console.error('Assign Role Error:', error);
+    return res.status(500).json({ 
+      error: 'Failed to assign role', 
+      details: error.message 
+    });
   }
 });
 

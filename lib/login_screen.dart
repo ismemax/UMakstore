@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'services/auth_service.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
+import 'terms_of_service_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +22,40 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCredentials();
+  }
+
+  Future<void> _loadCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('remembered_email') ?? '';
+    final password = prefs.getString('remembered_password') ?? '';
+    final rememberMe = prefs.getBool('remember_me') ?? false;
+
+    if (rememberMe) {
+      setState(() {
+        _emailController.text = email;
+        _passwordController.text = password;
+        _rememberMe = true;
+      });
+    }
+  }
+
+  Future<void> _saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setString('remembered_email', _emailController.text);
+      await prefs.setString('remembered_password', _passwordController.text);
+      await prefs.setBool('remember_me', true);
+    } else {
+      await prefs.remove('remembered_email');
+      await prefs.remove('remembered_password');
+      await prefs.setBool('remember_me', false);
+    }
+  }
 
   @override
   void dispose() {
@@ -335,6 +372,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     email,
                                     password,
                                   );
+                                  await _saveCredentials();
                                   if (!mounted) return;
                                   Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
@@ -508,6 +546,71 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: colorScheme.primary,
                             ),
                           ),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Terms and Privacy Links
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'By continuing, you agree to our ',
+                              style: GoogleFonts.lexend(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 12,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const TermsOfServiceScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Terms of Service',
+                                style: GoogleFonts.lexend(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  color: colorScheme.primary,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              ' and ',
+                              style: GoogleFonts.lexend(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 12,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const PrivacyPolicyScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Privacy Policy',
+                                style: GoogleFonts.lexend(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  color: colorScheme.primary,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

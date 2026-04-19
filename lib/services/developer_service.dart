@@ -13,6 +13,12 @@ class DeveloperService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  /// Instance method wrapper for static getOptimizedUrl
+  String getOptimizedImageUrl(String url, {int? width, int? height, int quality = 80}) {
+    return DeveloperService.getOptimizedUrl(url, width: width, height: height, quality: quality);
+  }
+
+  
   /// Checks if a package name is already taken by another app
   Future<bool> isPackageNameTaken(String packageName, {String? excludeAppId}) async {
     if (packageName.isEmpty) return false;
@@ -35,6 +41,7 @@ class DeveloperService {
     required String publisher,
     required String description,
     required String category,
+    required String college,
     required String apkUrl,
     String? packageName,
     required String version,
@@ -66,6 +73,7 @@ class DeveloperService {
       'publisher': publisher,
       'description': description,
       'category': category,
+      'college': college,
       'downloadUrl': apkUrl,
       'packageName': packageName,
       'version': version,
@@ -124,6 +132,7 @@ class DeveloperService {
               description: data['description']?.toString() ?? '',
               iconAsset: data['iconUrl']?.toString() ?? 'assets/logo.svg',
               category: data['category']?.toString() ?? 'App',
+              college: data['college']?.toString() ?? 'University-wide',
               downloadUrl: data['downloadUrl']?.toString() ?? '',
               packageName: data['packageName']?.toString(),
               version: data['version']?.toString() ?? '1.0.0',
@@ -240,6 +249,7 @@ class DeveloperService {
     required String publisher,
     required String description,
     required String category,
+    required String college,
     required String apkUrl,
     required String packageName,
     required String version,
@@ -271,6 +281,7 @@ class DeveloperService {
       'publisher': publisher,
       'description': description,
       'category': category,
+      'college': college,
       'downloadUrl': apkUrl,
       'packageName': packageName,
       'version': version,
@@ -360,16 +371,34 @@ class DeveloperService {
   }
 
   /// Helper to convert a normal Cloudinary URL to an optimized one with transformations
+  /// Also handles Firebase Storage URLs
   static String getOptimizedUrl(String url, {int? width, int? height, int quality = 80}) {
-    if (!url.contains('cloudinary.com')) return url;
+    // Handle Firebase Storage URLs
+    if (url.contains('firebasestorage.googleapis.com')) {
+      String optimizedUrl = url;
+      if (width != null) {
+        optimizedUrl += '?width=$width';
+        if (height != null) {
+          optimizedUrl += '&height=$height';
+        }
+      } else if (height != null) {
+        optimizedUrl += '?height=$height';
+      }
+      return optimizedUrl;
+    }
     
-    // Insert the transformation into the URL (after /upload/)
-    // Auto format (f_auto) and Auto quality (q_auto)
-    String transform = 'f_auto,q_auto';
-    if (width != null) transform += ',w_$width';
-    if (height != null) transform += ',h_$height,c_fill';
+    // Handle Cloudinary URLs
+    if (url.contains('cloudinary.com')) {
+      // Insert the transformation into the URL (after /upload/)
+      // Auto format (f_auto) and Auto quality (q_auto)
+      String transform = 'f_auto,q_auto';
+      if (width != null) transform += ',w_$width';
+      if (height != null) transform += ',h_$height,c_fill';
 
-    return url.replaceFirst('/upload/', '/upload/$transform/');
+      return url.replaceFirst('/upload/', '/upload/$transform/');
+    }
+    
+    return url;
   }
 
   /// Compresses an image before upload to save bandwidth and credits

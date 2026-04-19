@@ -363,17 +363,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                                       setState(() => _isLoading = true);
                                       try {
-                                        await AuthService()
-                                            .verifyCodeAndResetPassword(email, code);
+                                        await AuthService().confirmUser(
+                                          email: email,
+                                          confirmationCode: code,
+                                        );
                                         if (mounted) {
-                                          Navigator.pushReplacement(
-                                            context,
+                                          // Success! Now go to the Reset Password Screen
+                                          Navigator.of(context).push(
                                             MaterialPageRoute(
-                                              builder: (context) =>
+                                              builder: (_) =>
                                                   ConfirmResetPasswordScreen(
-                                                email: email,
-                                                code: code,
-                                              ),
+                                                    email: email,
+                                                    code: code,
+                                                  ),
                                             ),
                                           );
                                         }
@@ -384,79 +386,84 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           ).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Invalid code: $e',
+                                                'Verification failed: $e',
                                               ),
                                             ),
                                           );
                                         }
                                       } finally {
-                                        if (mounted) {
+                                        if (mounted)
                                           setState(() => _isLoading = false);
-                                        }
                                       }
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: colorScheme.primary,
-                                foregroundColor: colorScheme.onPrimary,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xff2094f3),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shadowColor: const Color(0x332094f3),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: _isLoading
-                                  ? Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                              colorScheme.onPrimary,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Text('Verifying...'),
-                                      ],
-                                    )
-                                  : Text(
-                                      'Verify Code',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: colorScheme.onPrimary,
-                                      ),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
                                     ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 48),
-                        // Back to Login
-                        Center(
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(0, 0),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Text(
-                              'Back to Login',
-                              style: GoogleFonts.lexend(
-                                fontSize: 14,
-                                color: colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                                  )
+                                : Text(
+                                    _isCodeSent
+                                        ? 'Verify & Continue'
+                                        : 'Send Recovery Code',
+                                    style: GoogleFonts.lexend(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
                     ),
+                  ),
+                ),
+                // Footer
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Remember your password? ',
+                        style: GoogleFonts.lexend(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300,
+                          color: const Color(0xff6b7280),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          'Log in',
+                          style: GoogleFonts.lexend(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xff2094f3),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

@@ -29,8 +29,32 @@ class _AddAppScreenState extends State<AddAppScreen> {
   bool _isUploadingIcon = false;
   bool _isUploadingScreenshot = false;
   String _selectedCategory = 'Academic';
+  String _selectedCollege = 'University-wide';
   List<String> _screenshotUrls = [];
-  final _permissionsController = TextEditingController(); // NEW: Permissions chip/text field
+  final _permissionsController = TextEditingController();
+
+  final List<String> _colleges = [
+    'University-wide',
+    'CBFS - College of Business and Financial Sciences',
+    'CITE - College of Innovative Teacher Education',
+    'CTHM - College of Tourism and Hospitality Management',
+    'SOL - School of Law',
+    'CCIS - College of Computer and Information Science',
+    'CCAPS - College of Continuing, Advanced and Professional Studies',
+    'CET - College of Engineering and Technology',
+    'IAD - Institute of Accountancy',
+    'IOA - Institute of Architecture',
+    'CHK - College of Human Kinetics',
+    'IDEM - Institute of Design and Engineering Management',
+    'ISW - Institute of Social Work',
+    'IOP - Institute of Pharmacy',
+    'ITEST - Institute of Technology and Entrepreneurship Studies',
+    'IOPsy - Institute of Psychology',
+    'IIHS - Institute of Integrated Health Sciences',
+    'CGPP - College of Governance and Public Policy',
+    'CCSE - College of Computing and Software Engineering',
+    'ION - Institute of Nursing',
+  ];
 
   bool get _isEditing => widget.appData != null;
 
@@ -49,6 +73,9 @@ class _AddAppScreenState extends State<AddAppScreen> {
       _screenshotUrls = List<String>.from(data['screenshots'] ?? []);
       if (['Academic', 'Social', 'Utility', 'Gaming'].contains(data['category'])) {
         _selectedCategory = data['category'];
+      }
+      if (data['college'] != null && _colleges.contains(data['college'])) {
+        _selectedCollege = data['college'];
       }
       _permissionsController.text = (data['permissions'] as List?)?.join(', ') ?? '';
     }
@@ -182,6 +209,8 @@ class _AddAppScreenState extends State<AddAppScreen> {
         ),
         const SizedBox(height: 24),
         _buildCategoryDropdown(colorScheme),
+        const SizedBox(height: 24),
+        _buildCollegeDropdown(colorScheme),
       ],
     );
   }
@@ -287,45 +316,78 @@ class _AddAppScreenState extends State<AddAppScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'CATEGORY',
-          style: GoogleFonts.lexend(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface.withValues(alpha: 0.4),
-            letterSpacing: 1.2,
-          ),
-        ),
+        _buildDropdownLabel('CATEGORY', colorScheme),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              isExpanded: true,
-              dropdownColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
-              value: _selectedCategory,
-              style: GoogleFonts.lexend(color: colorScheme.onSurface),
-              items: ['Academic', 'Social', 'Utility', 'Gaming'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
-                }
-              },
-            ),
-          ),
+        _buildDropdown(
+          value: _selectedCategory,
+          items: ['Academic', 'Social', 'Utility', 'Gaming'],
+          onChanged: (val) {
+            if (val != null) setState(() => _selectedCategory = val);
+          },
+          colorScheme: colorScheme,
         ),
       ],
+    );
+  }
+
+  Widget _buildCollegeDropdown(ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDropdownLabel('TARGET COLLEGE', colorScheme),
+        const SizedBox(height: 12),
+        _buildDropdown(
+          value: _selectedCollege,
+          items: _colleges,
+          onChanged: (val) {
+            if (val != null) setState(() => _selectedCollege = val);
+          },
+          colorScheme: colorScheme,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownLabel(String label, ColorScheme colorScheme) {
+    return Text(
+      label,
+      style: GoogleFonts.lexend(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        color: colorScheme.onSurface.withValues(alpha: 0.4),
+        letterSpacing: 1.2,
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    required ColorScheme colorScheme,
+  }) {
+    final isDark = colorScheme.brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          dropdownColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
+          value: value,
+          style: GoogleFonts.lexend(color: colorScheme.onSurface),
+          items: items.map((String val) {
+            return DropdownMenuItem<String>(
+              value: val,
+              child: Text(val, overflow: TextOverflow.ellipsis),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ),
     );
   }
 
@@ -563,6 +625,7 @@ class _AddAppScreenState extends State<AddAppScreen> {
                         publisher: _publisherController.text,
                         description: _descriptionController.text,
                         category: _selectedCategory,
+                        college: _selectedCollege,
                         apkUrl: _apkUrlController.text,
                         packageName: _packageNameController.text,
                         version: _versionController.text,
@@ -576,6 +639,7 @@ class _AddAppScreenState extends State<AddAppScreen> {
                         publisher: _publisherController.text,
                         description: _descriptionController.text,
                         category: _selectedCategory,
+                        college: _selectedCollege,
                         apkUrl: _apkUrlController.text,
                         packageName: _packageNameController.text,
                         version: _versionController.text,

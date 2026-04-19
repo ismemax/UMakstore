@@ -11,6 +11,7 @@ import 'settings_screen.dart';
 import 'help_and_feedback_screen.dart';
 import 'about_app_screen.dart';
 import 'device_management_screen.dart';
+import 'role_management_screen.dart';
 import 'widgets/sign_out_dialog.dart';
 import 'services/auth_service.dart';
 import 'services/language_service.dart';
@@ -178,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final firstName = userData['firstName'] ?? '';
         final lastName = userData['lastName'] ?? '';
         final studentId = userData['studentId'] ?? 'ID: NOT SET';
-        final college = userData['college'] ?? 'College of Computer Science';
+        final college = userData['college'] ?? 'CCIS - College of Computer and Information Science';
         final course = userData['course'] ?? 'BS Application Development';
         final name = (firstName.isEmpty && lastName.isEmpty)
             ? (_user!.displayName ?? 'User Name')
@@ -284,6 +285,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
+                        if (userData['role'] == 'admin')
+                          _buildListItem(
+                            Icons.admin_panel_settings_outlined,
+                            'Role Management',
+                            key: const Key('tile_role_management'),
+                            hasBorder: userData['role'] == 'admin',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RoleManagementScreen(),
+                                ),
+                              );
+                            },
+                          ),
                         if (userData['role'] == 'developer')
                           _buildListItem(
                             Icons.dashboard_customize_rounded,

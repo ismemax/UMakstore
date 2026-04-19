@@ -9,7 +9,8 @@ import 'services/developer_service.dart';
 import 'services/language_service.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final int initialFilterIndex;
+  const SearchScreen({super.key, this.initialFilterIndex = 0});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -17,14 +18,26 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final LanguageService _languageService = LanguageService();
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   int _selectedFilterIndex = 0;
+  String _sortBy = 'Relevance'; // Relevance, Rating, Newest
 
   final List<String> _filters = [
-    'All Apps',
+    'All',
     'Official',
-    'CCIS Dept',
+    'CCIS',
+    'CBFS',
+    'CGPP',
+    'COE',
+    'COHS',
+    'CTM',
+    'SOL',
+    'CCE',
+    'Academic',
     'Utility',
-    'Events',
+    'Social',
+    'Gaming',
   ];
   late InstallerService _installer;
 
@@ -34,6 +47,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedFilterIndex = widget.initialFilterIndex;
     _installer = InstallerService();
     _installer.addListener(_updateState);
     _languageService.addListener(_updateState);
@@ -50,6 +64,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void dispose() {
     _appsSubscription?.cancel();
+    _searchController.dispose();
     _installer.removeListener(_updateState);
     _languageService.removeListener(_updateState);
     super.dispose();
@@ -81,11 +96,37 @@ class _SearchScreenState extends State<SearchScreen> {
 
                 final apps = snapshot.data ?? [];
                 
-                // For now, filtering is simulated or can be implemented here
                 final filteredApps = apps.where((app) {
-                  if (_selectedFilterIndex == 0) return true;
-                  return app.publisher.contains(_filters[_selectedFilterIndex]); // Simple simulation
+                  // Filter by category, college, or publisher
+                  bool matchesFilter = true;
+                  if (_selectedFilterIndex != 0) {
+                    final filter = _filters[_selectedFilterIndex].toLowerCase();
+                    
+                    // Specific mapping for colleges if they use full names in DB
+                    matchesFilter = app.publisher.toLowerCase().contains(filter) || 
+                                    app.category.toLowerCase().contains(filter) ||
+                                    app.college.toLowerCase().contains(filter);
+                  }
+
+                  // Filter by search query
+                  bool matchesSearch = true;
+                  if (_searchQuery.isNotEmpty) {
+                    final query = _searchQuery.toLowerCase();
+                    matchesSearch = app.title.toLowerCase().contains(query) || 
+                                    app.publisher.toLowerCase().contains(query) ||
+                                    app.description.toLowerCase().contains(query);
+                  }
+
+                  return matchesFilter && matchesSearch;
                 }).toList();
+
+                // Apply Sorting
+                if (_sortBy == 'Rating') {
+                  filteredApps.sort((a, b) => (double.tryParse(b.rating) ?? 0).compareTo(double.tryParse(a.rating) ?? 0));
+                } else if (_sortBy == 'Newest') {
+                  // Assuming ID or something represents age? Or maybe we just reverse for now if no date
+                  filteredApps.sort((a, b) => b.version.compareTo(a.version));
+                }
 
                 if (filteredApps.isEmpty) {
                   return Center(
@@ -172,6 +213,12 @@ class _SearchScreenState extends State<SearchScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
+                          controller: _searchController,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                            });
+                          },
                           style: GoogleFonts.lexend(
                             fontSize: 14,
                             color: colorScheme.onSurface,
@@ -184,6 +231,15 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                             border: InputBorder.none,
                             isDense: true,
+                            suffixIcon: _searchQuery.isNotEmpty 
+                              ? GestureDetector(
+                                  onTap: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                  child: Icon(Icons.close_rounded, size: 18, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+                                )
+                              : null,
                           ),
                         ),
                       ),
@@ -192,19 +248,28 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.tune_rounded,
-                    color: colorScheme.primary,
-                    size: 20,
+              GestureDetector(
+                onTap: () => _showFilterSettings(context, colorScheme),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _sortBy != 'Relevance' 
+                        ? colorScheme.primary.withValues(alpha: 0.1) 
+                        : colorScheme.surfaceContainerHighest,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _sortBy != 'Relevance' 
+                          ? colorScheme.primary 
+                          : colorScheme.outlineVariant,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.tune_rounded,
+                      color: _sortBy != 'Relevance' ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.6),
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
@@ -350,7 +415,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(width: 8),
             _buildActionButton(
-              status == AppStatus.installed ? _languageService.translate('open') : 'GET',
+              status == AppStatus.installed ? _languageService.translate('open') : _languageService.translate('get'),
               onTap: () {
                 if (status == AppStatus.installed) {
                   _installer.launchApp(app);
@@ -420,6 +485,115 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Image.network(iconUrl, width: 64, height: 64, fit: BoxFit.cover),
               )
             : Icon(iconData, color: iconColor, size: 32),
+      ),
+    );
+  }
+
+  void _showFilterSettings(BuildContext context, ColorScheme colorScheme) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Filter & Sort',
+                    style: GoogleFonts.lexend(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'SORT BY',
+                    style: GoogleFonts.lexend(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSortOption(context, 'Relevance', Icons.sort_rounded, colorScheme, setModalState),
+                  _buildSortOption(context, 'Rating', Icons.star_rounded, colorScheme, setModalState),
+                  _buildSortOption(context, 'Newest', Icons.new_releases_rounded, colorScheme, setModalState),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Apply Filters',
+                        style: GoogleFonts.lexend(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOption(BuildContext context, String value, IconData icon, ColorScheme colorScheme, Function setModalState) {
+    final isSelected = _sortBy == value;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _sortBy = value;
+        });
+        setModalState(() {});
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              value,
+              style: GoogleFonts.lexend(
+                fontSize: 15,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              Icon(Icons.check_circle_rounded, color: colorScheme.primary, size: 20),
+          ],
+        ),
       ),
     );
   }

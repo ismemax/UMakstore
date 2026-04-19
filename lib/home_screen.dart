@@ -1,18 +1,35 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'search_screen.dart';
-import 'profile_screen.dart';
-import 'app_details_screen.dart';
-import 'notifications_screen.dart';
-import 'favorites_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:uuid/uuid.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'models/app_model.dart';
 import 'services/installer_service.dart';
-import 'services/developer_service.dart';
+import 'services/notification_service.dart';
 import 'services/language_service.dart';
+import 'services/device_service.dart';
+import 'services/bookmark_service.dart';
+import 'services/developer_service.dart';
+import 'app_details_screen.dart';
+import 'search_screen.dart';
+import 'favorites_screen.dart';
+import 'profile_screen.dart';
+import 'screenshots_screen.dart';
+import 'reviews_screen.dart';
+import 'widgets/update_message_widget.dart';
+import 'widgets/shimmer_widget.dart';
 import 'splash_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,9 +40,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final LanguageService _languageService = LanguageService();
+  final InstallerService _installer = InstallerService();
+  final NotificationService _notificationService = NotificationService();
+  final DeviceService _deviceService = DeviceService();
+  final BookmarkService _bookmarkService = BookmarkService();
+  final DeveloperService _developerService = DeveloperService();
   int _selectedIndex = 0;
+  int _initialSearchFilterIndex = 0;
   int _selectedTabIndex = 0;
-  late InstallerService _installer;
   late Stream<List<AppModel>> _appsStream;
   List<AppModel>? _lastApps;
   bool _isPrecached = false;
@@ -36,15 +58,24 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _installer = InstallerService();
+    _appsStream = _developerService.getStoreApps();
+    if (!kIsWeb) {
+      _initializeNotifications();
+    }
+    _loadApps();
+    _preloadAppIcons();
+    _checkForUpdates();
+    _initializeLanguage();
+    _initializeDeviceValidation();
     _installer.addListener(_updateState);
     _languageService.addListener(_updateState);
-    _appsStream = DeveloperService().getStoreApps();
-    
-    // Subscribe to the stream to update statuses whenever new apps arrive
     _appsSubscription = _appsStream.listen((apps) {
       if (mounted) {
          _installer.updateAllStatuses(apps);
+         // Force immediate UI update after status check
+         Future.delayed(const Duration(milliseconds: 500), () {
+           if (mounted) setState(() {});
+         });
       }
     });
   }
@@ -55,6 +86,30 @@ class _HomeScreenState extends State<HomeScreen> {
     _installer.removeListener(_updateState);
     _languageService.removeListener(_updateState);
     super.dispose();
+  }
+
+  void _initializeNotifications() {
+    // Initialize notifications
+  }
+
+  void _loadApps() {
+    // Load apps
+  }
+
+  void _preloadAppIcons() {
+    // Preload app icons
+  }
+
+  void _checkForUpdates() {
+    // Check for updates
+  }
+
+  void _initializeLanguage() {
+    // Initialize language
+  }
+
+  void _initializeDeviceValidation() {
+    // Initialize device validation
   }
 
   void _updateState() {
@@ -184,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 )
             : (_selectedIndex == 1
-                ? const SearchScreen()
+                ? SearchScreen(initialFilterIndex: _initialSearchFilterIndex)
                 : (_selectedIndex == 2 
                     ? const FavoritesScreen()
                     : ProfileScreen(
@@ -204,10 +259,11 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: (index) {
             setState(() {
               _selectedIndex = index;
+              if (index == 1) _initialSearchFilterIndex = 0;
             });
           },
           selectedItemColor: colorScheme.primary,
-          unselectedItemColor: const Color(0xff94a3b8),
+          unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
           selectedLabelStyle: GoogleFonts.lexend(
             fontSize: 10,
             fontWeight: FontWeight.w500,
@@ -295,17 +351,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: colorScheme.onSurface,
                         size: 20,
                       ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xffef4444),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
+                      StreamBuilder<int>(
+                        stream: _notificationService.getUnreadCount(),
+                        builder: (context, snapshot) {
+                          final unreadCount = snapshot.data ?? 0;
+                          if (unreadCount == 0) return const SizedBox.shrink();
+                          
+                          return Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xffef4444),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -402,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 32),
           _buildHorizontalListSection(
             title1: 'For College of\n',
-            title2: 'Computer Studies',
+            title2: 'Computer and Information Science',
             apps: apps,
           ),
           const SizedBox(height: 32),
@@ -477,30 +541,80 @@ class _HomeScreenState extends State<HomeScreen> {
                   _languageService.translate('academic'),
                   Icons.school_rounded,
                   const Color(0xff3b82f6),
+                  onTap: () => setState(() {
+                    _initialSearchFilterIndex = 9; // Academic
+                    _selectedIndex = 1;
+                  }),
                 ),
                 const SizedBox(width: 8),
                 _buildCategoryChip(
-                  _languageService.translate('library'),
-                  Icons.menu_book_rounded,
-                  const Color(0xff22c55e),
+                  'CCIS',
+                  Icons.code_rounded,
+                  const Color(0xffef4444),
+                  onTap: () => setState(() {
+                    _initialSearchFilterIndex = 2; // CCIS
+                    _selectedIndex = 1;
+                  }),
                 ),
                 const SizedBox(width: 8),
                 _buildCategoryChip(
-                  _languageService.translate('campus_services'),
-                  Icons.business_rounded,
-                  const Color(0xffa855f7),
+                  'CBFS',
+                  Icons.account_balance_rounded,
+                  const Color(0xff10b981),
+                  onTap: () => setState(() {
+                    _initialSearchFilterIndex = 3; // CBFS
+                    _selectedIndex = 1;
+                  }),
+                ),
+                const SizedBox(width: 8),
+                _buildCategoryChip(
+                  _languageService.translate('utility'),
+                  Icons.settings_suggest_rounded,
+                  const Color(0xff64748b),
+                  onTap: () => setState(() {
+                    _initialSearchFilterIndex = 10; // Utility
+                    _selectedIndex = 1;
+                  }),
+                ),
+                const SizedBox(width: 8),
+                _buildCategoryChip(
+                  'COE',
+                  Icons.history_edu_rounded,
+                  const Color(0xfff59e0b),
+                  onTap: () => setState(() {
+                    _initialSearchFilterIndex = 5; // COE
+                    _selectedIndex = 1;
+                  }),
+                ),
+                const SizedBox(width: 8),
+                _buildCategoryChip(
+                  'COHS',
+                  Icons.medical_services_rounded,
+                  const Color(0xffef4444),
+                  onTap: () => setState(() {
+                    _initialSearchFilterIndex = 6; // COHS
+                    _selectedIndex = 1;
+                  }),
                 ),
                 const SizedBox(width: 8),
                 _buildCategoryChip(
                   _languageService.translate('student_life'),
-                  Icons.sports_esports_rounded,
+                  Icons.movie_rounded,
                   const Color(0xfff97316),
+                  onTap: () => setState(() {
+                    _initialSearchFilterIndex = 11; // Social
+                    _selectedIndex = 1;
+                  }),
                 ),
                 const SizedBox(width: 8),
                 _buildCategoryChip(
-                  _languageService.translate('dining'),
-                  Icons.restaurant_rounded,
+                  'Gaming',
+                  Icons.sports_esports_rounded,
                   const Color(0xffeab308),
+                  onTap: () => setState(() {
+                    _initialSearchFilterIndex = 12; // Gaming
+                    _selectedIndex = 1;
+                  }),
                 ),
               ],
             ),
@@ -534,7 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
           border: Border.all(color: colorScheme.outlineVariant),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: colorScheme.shadow.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -684,29 +798,32 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryChip(String label, IconData iconData, Color iconColor) {
+  Widget _buildCategoryChip(String label, IconData iconData, Color iconColor, {VoidCallback? onTap}) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(9999),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(iconData, color: iconColor, size: 16),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: GoogleFonts.lexend(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(9999),
+          border: Border.all(color: colorScheme.outlineVariant),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(iconData, color: iconColor, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: GoogleFonts.lexend(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -734,7 +851,7 @@ class _HomeScreenState extends State<HomeScreen> {
             border: Border.all(color: colorScheme.outlineVariant),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: colorScheme.shadow.withValues(alpha: 0.2),
                 blurRadius: 15,
                 offset: const Offset(0, 10),
                 spreadRadius: -3,
@@ -749,7 +866,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(16),
                   child: app.screenshots.isNotEmpty 
                     ? CachedNetworkImage(
-                        imageUrl: DeveloperService.getOptimizedUrl(app.screenshots[0], width: 600),
+                        imageUrl: _developerService.getOptimizedImageUrl(app.screenshots[0], width: 600),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(color: colorScheme.surface),
                         errorWidget: (context, url, error) => Container(
@@ -790,7 +907,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         end: Alignment.topCenter,
                         colors: [
                           Colors.black.withValues(alpha: 0.7),
-                          Colors.black.withValues(alpha: 0.4),
+                          colorScheme.shadow.withValues(alpha: 0.5),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.4, 1.0],
@@ -863,7 +980,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                   shadows: [
-                                    Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                                    Shadow(color: colorScheme.shadow.withValues(alpha: 0.8), blurRadius: 4, offset: const Offset(0, 1)),
                                   ],
                                 ),
                                 maxLines: 1,
@@ -873,9 +990,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 app.description,
                                 style: GoogleFonts.lexend(
                                   fontSize: 14,
-                                  color: Colors.white.withValues(alpha: 0.8),
+                                  color: colorScheme.shadow.withValues(alpha: 0.6),
                                   shadows: [
-                                    Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                                    Shadow(color: colorScheme.shadow.withValues(alpha: 0.8), blurRadius: 4, offset: const Offset(0, 1)),
                                   ],
                                 ),
                                 maxLines: 1,
@@ -941,21 +1058,32 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Container(
-                          height: 44,
-                          width: 44,
-                          decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: colorScheme.outlineVariant),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.bookmark_outline_rounded,
-                              color: app.themeColor ?? colorScheme.primary,
-                              size: 20,
-                            ),
-                          ),
+                        StreamBuilder<bool>(
+                          stream: _bookmarkService.isBookmarked(app.id),
+                          builder: (context, snapshot) {
+                            final isBookmarked = snapshot.data ?? false;
+                            return Container(
+                              height: 44,
+                              width: 44,
+                              decoration: BoxDecoration(
+                                color: colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: colorScheme.outlineVariant),
+                              ),
+                              child: Center(
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    await _bookmarkService.toggleBookmark(app.id);
+                                  },
+                                  child: Icon(
+                                    isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                                    color: isBookmarked ? Colors.blue : (app.themeColor ?? colorScheme.primary),
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -984,21 +1112,23 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              RichText(
-                text: TextSpan(
-                  style: GoogleFonts.lexend(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                    height: 1.375,
-                  ),
-                  children: [
-                    TextSpan(text: title1),
-                    TextSpan(
-                      text: title2,
-                      style: TextStyle(color: colorScheme.primary),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.lexend(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                      height: 1.375,
                     ),
-                  ],
+                    children: [
+                      TextSpan(text: title1),
+                      TextSpan(
+                        text: title2,
+                        style: TextStyle(color: colorScheme.primary),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               GestureDetector(
@@ -1040,8 +1170,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final rating = app.rating;
     final iconData = app.iconData ?? Icons.apps_rounded;
     final iconColor = app.themeColor ?? const Color(0xff3b82f6);
-    final category = 'Academic'; // For demo
+    final category = app.category;
     final colorScheme = Theme.of(context).colorScheme;
+    final isInstalled = app.status == AppStatus.installed;
+    final isDownloading = app.status == AppStatus.downloading;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -1075,7 +1208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             fit: StackFit.expand,
                             children: [
                               CachedNetworkImage(
-                                imageUrl: DeveloperService.getOptimizedUrl(app.screenshots[0], width: 300),
+                                imageUrl: _developerService.getOptimizedImageUrl(app.screenshots[0], width: 300),
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(color: colorScheme.surface),
                                 errorWidget: (context, url, error) => Container(
@@ -1089,7 +1222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     begin: Alignment.bottomCenter,
                                     end: Alignment.topCenter,
                                     colors: [
-                                      Colors.black.withValues(alpha: 0.6),
+                                      colorScheme.shadow.withValues(alpha: 0.7),
                                       Colors.transparent,
                                     ],
                                     stops: const [0.0, 0.5],
@@ -1141,7 +1274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         border: Border.all(color: colorScheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: colorScheme.shadow.withValues(alpha: 0.1),
                             blurRadius: 2,
                             offset: const Offset(0, 1),
                           ),
@@ -1152,7 +1285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(4),
                               child: CachedNetworkImage(
-                                imageUrl: DeveloperService.getOptimizedUrl(app.iconAsset, width: 64, height: 64),
+                                imageUrl: _developerService.getOptimizedImageUrl(app.iconAsset, width: 64, height: 64),
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(color: colorScheme.surface),
                                 errorWidget: (context, url, error) => Icon(Icons.apps_rounded, size: 16, color: colorScheme.primary),
@@ -1160,6 +1293,37 @@ class _HomeScreenState extends State<HomeScreen> {
                             )
                           : Icon(iconData, color: iconColor, size: 16),
                       ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: StreamBuilder<bool>(
+                      stream: _bookmarkService.isBookmarked(app.id),
+                      builder: (context, snapshot) {
+                        final isBookmarked = snapshot.data ?? false;
+                        return GestureDetector(
+                          onTap: () async {
+                            await _bookmarkService.toggleBookmark(app.id);
+                          },
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: colorScheme.surface.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                                color: isBookmarked ? Colors.blue : colorScheme.primary,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -1216,11 +1380,14 @@ class _HomeScreenState extends State<HomeScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
+                color: isInstalled ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(9999),
+                border: isInstalled ? Border.all(color: colorScheme.primary.withValues(alpha: 0.2)) : null,
               ),
               child: Text(
-                'GET',
+                isDownloading 
+                    ? '${(app.progress * 100).toInt()}%'
+                    : (isInstalled ? _languageService.translate('open') : _languageService.translate('get')),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.lexend(
                   fontSize: 12,
@@ -1293,8 +1460,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final timeAgo = 'Just now';
     final iconColor = app.themeColor ?? const Color(0xff3b82f6);
     final iconData = app.iconData ?? Icons.apps_rounded;
-    final actionText = app.status == AppStatus.installed ? 'Open' : 'Get';
-    final isUpdate = false;
+    final isInstalled = app.status == AppStatus.installed;
+    final isDownloading = app.status == AppStatus.downloading;
+    final actionText = isDownloading 
+        ? '${(app.progress * 100).toInt()}%' 
+        : (isInstalled ? _languageService.translate('open') : _languageService.translate('get'));
+    final isUpdate = app.status == AppStatus.updateAvailable;
     
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
@@ -1316,7 +1487,7 @@ class _HomeScreenState extends State<HomeScreen> {
           border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: colorScheme.shadow.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -1398,27 +1569,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            _buildActionButton(actionText, isUpdate, colorScheme),
+            _buildActionButton(actionText, isUpdate || isInstalled, colorScheme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionButton(String text, bool isUpdate, ColorScheme colorScheme) {
+  Widget _buildActionButton(String text, bool isHighlight, ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       decoration: BoxDecoration(
-        color: isUpdate ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surfaceContainerHighest,
+        color: isHighlight ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
-        border: isUpdate ? null : Border.all(color: colorScheme.outlineVariant),
+        border: isHighlight ? Border.all(color: colorScheme.primary.withValues(alpha: 0.2)) : Border.all(color: colorScheme.outlineVariant),
       ),
       child: Text(
         text,
         style: GoogleFonts.lexend(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: isUpdate ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.6),
+          color: isHighlight ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ),
     );
@@ -1472,7 +1643,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _buildHeader(),
         _buildTabs(),
         Expanded(
-          child: Shimmer.fromColors(
+          child: ShimmerWidget.fromColors(
             baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
             highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
             child: SingleChildScrollView(

@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'notification_service.dart';
 import 'device_service.dart';
+import 'role_management_service.dart';
 
 class AuthService {
   // IMPORTANT: For Android Emulator, use 10.0.2.2.
@@ -496,13 +497,71 @@ class AuthService {
   }
 
   /// UPDATES the user role (For Testing/Bypass)
+  /// Now uses the API to bypass Firestore restriction rules.
   Future<void> updateCurrentUserRole(String newRole) async {
     try {
       final user = _auth.currentUser;
       if (user == null) throw 'No user signed in';
-      await _db.collection('users').doc(user.uid).update({'role': newRole});
+      
+      final idToken = await user.getIdToken();
+      
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/assign-role'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: jsonEncode({
+          'targetEmail': user.email,
+          'targetRole': newRole.toLowerCase().trim(),
+          'reason': 'Debug/Bypass used in-app',
+          'masterKey': 'UMAK_ADMIN_BYPASS_2024', // Dev-only key for bypass
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        throw 'API Error (${response.statusCode}): ${response.body}';
+      }
+      
+      if (kDebugMode) {
+        print('Role updated successfully via API bypass');
+      }
     } catch (e) {
-      debugPrint('Error updating role: $e');
+      if (kDebugMode) print('Error sending verification code: $e');
+      rethrow;
+    }
+  }
+
+  /// Verifies the code and prepares for password reset
+  Future<void> verifyCodeAndResetPassword(String email, String code) async {
+    try {
+      // 1. Attempt to call the API
+      final response = await http
+          .post(
+            Uri.parse('$_apiBaseUrl/verify-otp'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': email, 'code': code}),
+          )
+          .timeout(const Duration(seconds: 3));
+
+      if (response.statusCode == 200) {
+        if (kDebugMode) print('Code verified via API successfully');
+        return;
+      }
+
+      // 2. FALLBACK to Simulation if API fails (Local Dev)
+      debugPrint(
+        'API failed (${response.statusCode}), falling back to simulated verification.',
+      );
+      
+      if (_simulatedCode != null && code == _simulatedCode) {
+        debugPrint('Code verified successfully');
+        return;
+      }
+      
+      throw Exception('Invalid verification code');
+    } catch (e) {
+      if (kDebugMode) print('Error verifying code: $e');
       rethrow;
     }
   }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 import 'splash_screen.dart';
 import 'home_screen.dart';
@@ -18,9 +20,17 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // App Check initialization
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+    appleProvider: kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
+    webProvider: ReCaptchaV3Provider('dummy-key-for-web'),
+  );
   debugPrint('Firebase App Initialized');
   await ThemeService().init();
   debugPrint('ThemeService Initialized');
+  debugPrint('Main: Theme mode after init: ${ThemeService().themeMode.toString()}');
   await LanguageService().init();
   debugPrint('LanguageService Initialized');
   NotificationService().init();
@@ -47,6 +57,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onStateChanged() {
+    debugPrint('MainApp: Theme changed to ${_themeService.themeMode.toString()}');
     if (mounted) setState(() {});
   }
 
@@ -59,6 +70,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('MainApp: Building MaterialApp with theme mode: ${_themeService.themeMode.toString()}');
     return MaterialApp(
       title: 'UMak App Store',
       debugShowCheckedModeBanner: false,

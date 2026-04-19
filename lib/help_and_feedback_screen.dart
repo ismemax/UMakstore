@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/feedback_service.dart';
 
 class HelpAndFeedbackScreen extends StatefulWidget {
   const HelpAndFeedbackScreen({super.key});
@@ -11,6 +12,17 @@ class HelpAndFeedbackScreen extends StatefulWidget {
 class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
   // Simple state to handle tab switching for demonstration
   int _selectedTabIndex = 0;
+  String? _selectedCategory;
+  final TextEditingController _subjectController = TextEditingController();
+  final TextEditingController _detailsController = TextEditingController();
+  final List<int> _expandedFaqIndices = [];
+
+  @override
+  void dispose() {
+    _subjectController.dispose();
+    _detailsController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -157,9 +169,17 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           _buildSectionHeader('ACCOUNT'),
           const SizedBox(height: 12),
           _buildFaqGroupCard([
-            _buildFaqItem('How do I reset my password?'),
+            _buildFaqItem(
+              0,
+              'How do I reset my password?',
+              'Go to Settings > Security > Change Password. If you forgot your password, use the "Forgot Password" link on the login screen to receive a reset code.',
+            ),
             _buildDivider(),
-            _buildFaqItem('Can I change my student ID?'),
+            _buildFaqItem(
+              1,
+              'Can I change my student ID?',
+              'Student IDs are strictly locked after registration to maintain record integrity. If there is a typo, please visit the University IT Center with your physical ID.',
+            ),
           ]),
 
           const SizedBox(height: 24),
@@ -167,9 +187,17 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           _buildSectionHeader('INSTALLATION'),
           const SizedBox(height: 12),
           _buildFaqGroupCard([
-            _buildFaqItem('Why is my app not installing?'),
+            _buildFaqItem(
+              2,
+              'Why is my app not installing?',
+              'Check if you have enough storage space (at least 2x the app size). Also ensure you have "Install from Unknown Sources" enabled if prompted.',
+            ),
             _buildDivider(),
-            _buildFaqItem('Minimum requirements for apps'),
+            _buildFaqItem(
+              3,
+              'Minimum requirements for apps',
+              'UMakstore apps generally require Android 8.0 or higher. Specific RAM requirements vary by department-specific software.',
+            ),
           ]),
 
           const SizedBox(height: 24),
@@ -177,9 +205,17 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           _buildSectionHeader('SECURITY'),
           const SizedBox(height: 12),
           _buildFaqGroupCard([
-            _buildFaqItem('How is my data protected?'),
+            _buildFaqItem(
+              4,
+              'How is my data protected?',
+              'All personal data is encrypted and stored securely via Firebase. We never share your institutional data with third-party advertisers.',
+            ),
             _buildDivider(),
-            _buildFaqItem('What are license keys?'),
+            _buildFaqItem(
+              5,
+              'What are license keys?',
+              'Certain specialized apps (like engineering simulators) require keys provided by your college dean or department head.',
+            ),
           ]),
 
           const SizedBox(height: 32),
@@ -196,7 +232,11 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                 ),
                 const SizedBox(height: 8),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Contact support at support@umak.edu.ph')),
+                    );
+                  },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -244,6 +284,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 isExpanded: true,
+                value: _selectedCategory,
                 hint: Text(
                   'Select category',
                   style: GoogleFonts.lexend(
@@ -267,7 +308,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
                           ),
                         )
                         .toList(),
-                onChanged: (_) {},
+                onChanged: (val) => setState(() => _selectedCategory = val),
               ),
             ),
           ),
@@ -275,12 +316,16 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
 
           _buildInputLabel('Subject'),
           const SizedBox(height: 8),
-          _buildTextField(hintText: 'Brief summary of your feedback'),
+          _buildTextField(
+            controller: _subjectController,
+            hintText: 'Brief summary of your feedback',
+          ),
           const SizedBox(height: 24),
 
           _buildInputLabel('Details'),
           const SizedBox(height: 8),
           _buildTextField(
+            controller: _detailsController,
             hintText: 'Tell us more about your experience...',
             maxLines: 6,
           ),
@@ -289,7 +334,11 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           // Screenshot Attachment
           _DottedBorderContainer(
             child: InkWell(
-              onTap: () {},
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Feature coming soon: Screenshot upload')),
+                );
+              },
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: double.infinity,
@@ -330,7 +379,61 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                if (_selectedCategory == null || _subjectController.text.isEmpty || _detailsController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill all fields')),
+                  );
+                  return;
+                }
+                
+                // Show loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                );
+
+                try {
+                  await FeedbackService().submitFeedback(
+                    category: _selectedCategory!,
+                    subject: _subjectController.text,
+                    details: _detailsController.text,
+                  );
+                  
+                  if (mounted) {
+                    Navigator.pop(context); // Close loading
+                    // Show success
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Feedback Sent'),
+                        content: const Text('Thank you for your feedback! Our team will review it shortly.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              setState(() {
+                                _selectedCategory = null;
+                                _subjectController.clear();
+                                _detailsController.clear();
+                              });
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    Navigator.pop(context); // Close loading
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xff2094f3),
                 foregroundColor: Colors.white,
@@ -373,7 +476,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
     );
   }
 
-  Widget _buildTextField({required String hintText, int maxLines = 1}) {
+  Widget _buildTextField({required String hintText, int maxLines = 1, TextEditingController? controller}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
@@ -382,6 +485,7 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
         border: Border.all(color: const Color(0xffe2e8f0)),
       ),
       child: TextField(
+        controller: controller,
         maxLines: maxLines,
         decoration: InputDecoration(
           hintText: hintText,
@@ -431,31 +535,56 @@ class _HelpAndFeedbackScreenState extends State<HelpAndFeedbackScreen> {
     );
   }
 
-  Widget _buildFaqItem(String title) {
+  Widget _buildFaqItem(int index, String title, String answer) {
+    bool isExpanded = _expandedFaqIndices.contains(index);
     return InkWell(
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
+      onTap: () {
+        setState(() {
+          if (isExpanded) {
+            _expandedFaqIndices.remove(index);
+          } else {
+            _expandedFaqIndices.add(index);
+          }
+        });
+      },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.lexend(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xff1e3a8a),
+                    ),
+                  ),
+                ),
+                Icon(
+                  isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.chevron_right_rounded,
+                  color: const Color(0xff94a3b8),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+          if (isExpanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Text(
-                title,
+                answer,
                 style: GoogleFonts.lexend(
                   fontSize: 14,
-                  fontWeight: FontWeight.w600, // SemiBold
-                  color: const Color(0xff1e3a8a),
+                  color: const Color(0xff64748b),
+                  height: 1.5,
                 ),
               ),
             ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: Color(0xff94a3b8),
-              size: 20,
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

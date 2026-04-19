@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'services/developer_service.dart';
 import 'services/installer_service.dart';
+import 'services/feedback_service.dart';
 import 'models/app_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -15,26 +18,237 @@ class AdminDashboardScreen extends StatelessWidget {
     final bgColor = colorScheme.surface;
     final textColor = colorScheme.onSurface;
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
         backgroundColor: bgColor,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: textColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Admin Dashboard',
-          style: GoogleFonts.lexend(
-            fontWeight: FontWeight.bold,
-            color: textColor,
-            fontSize: 20,
+        appBar: AppBar(
+          backgroundColor: bgColor,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_rounded, color: textColor),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Admin Dashboard',
+            style: GoogleFonts.lexend(
+              fontWeight: FontWeight.bold,
+              color: textColor,
+              fontSize: 20,
+            ),
+          ),
+          bottom: TabBar(
+            labelColor: colorScheme.primary,
+            unselectedLabelColor: textColor.withValues(alpha: 0.5),
+            indicatorColor: colorScheme.primary,
+            labelStyle: GoogleFonts.lexend(fontWeight: FontWeight.bold, fontSize: 13),
+            tabs: const [
+              Tab(text: 'APP REVIEWS', icon: Icon(Icons.app_registration_rounded, size: 20)),
+              Tab(text: 'USER FEEDBACK', icon: Icon(Icons.feedback_outlined, size: 20)),
+            ],
           ),
         ),
+        body: TabBarView(
+          children: [
+            _AdminDashboardBody(),
+            _FeedbackDashboardBody(),
+          ],
+        ),
       ),
-      body: _AdminDashboardBody(),
+    );
+  }
+}
+
+class _FeedbackDashboardBody extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = colorScheme.onSurface;
+
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: FeedbackService().getAllFeedback(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final feedbacks = snapshot.data ?? [];
+        if (feedbacks.isEmpty) {
+          return Center(
+            child: Text('No feedback received yet', 
+              style: GoogleFonts.lexend(color: textColor.withValues(alpha: 0.3))),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: feedbacks.length,
+          itemBuilder: (context, index) {
+            final f = feedbacks[index];
+            return _FeedbackCard(feedback: f);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _FeedbackCard extends StatelessWidget {
+  final Map<String, dynamic> feedback;
+  const _FeedbackCard({required this.feedback});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final rawTimestamp = feedback['timestamp'];
+    String dateStr = 'Unknown date';
+    if (rawTimestamp is Timestamp) {
+      dateStr = DateFormat('MMM dd, yyyy • HH:mm').format(rawTimestamp.toDate());
+    } else if (rawTimestamp is String) {
+      final dateTime = DateTime.tryParse(rawTimestamp);
+      if (dateTime != null) {
+        dateStr = DateFormat('MMM dd, yyyy • HH:mm').format(dateTime);
+      }
+    }
+    final status = feedback['status'] ?? 'New';
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  feedback['category']?.toUpperCase() ?? 'OTHER',
+                  style: GoogleFonts.lexend(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
+                ),
+              ),
+              _buildStatusBadge(status),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            feedback['subject'] ?? 'No Subject',
+            style: GoogleFonts.lexend(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'From: ${feedback['userEmail'] ?? 'Anonymous'}',
+            style: GoogleFonts.lexend(
+              fontSize: 12,
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+          Text(
+            dateStr,
+            style: GoogleFonts.lexend(
+              fontSize: 11,
+              color: colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorScheme.onSurface.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              feedback['details'] ?? 'No details provided.',
+              style: GoogleFonts.lexend(
+                fontSize: 14,
+                color: colorScheme.onSurface.withValues(alpha: 0.8),
+                height: 1.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              if (status == 'New')
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => FeedbackService().updateFeedbackStatus(feedback, 'Acknowledged'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text('Mark as Read', style: GoogleFonts.lexend(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              if (status == 'Acknowledged')
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => FeedbackService().updateFeedbackStatus(feedback, 'Resolved'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.green,
+                      side: const BorderSide(color: Colors.green),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text('Resolved', style: GoogleFonts.lexend(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              if (status == 'Resolved')
+                const Expanded(
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                        SizedBox(width: 8),
+                        Text('Resolved', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color color;
+    switch (status) {
+      case 'New': color = Colors.amber; break;
+      case 'Acknowledged': color = Colors.blue; break;
+      case 'Resolved': color = Colors.green; break;
+      default: color = Colors.grey;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Text(status, style: GoogleFonts.lexend(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
     );
   }
 }
@@ -61,6 +275,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
       description: data['description'] ?? '',
       iconAsset: data['iconUrl'] ?? 'assets/logo.svg',
       category: data['category'] ?? 'App',
+      college: data['college'] ?? 'University-wide',
       downloadUrl: data['downloadUrl'] ?? '',
       packageName: data['packageName'],
       version: data['version'] ?? '1.0.0',

@@ -246,14 +246,38 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ),
                   ),
                   if (app.status == AppStatus.installed)
-                    Text(
-                      'INSTALLED',
-                      style: GoogleFonts.lexend(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xff22c55e),
-                        letterSpacing: 0.5,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xff22c55e).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'INSTALLED',
+                            style: GoogleFonts.lexend(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xff22c55e),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => _installer.launchApp(app),
+                          child: Text(
+                            _languageService.translate('open').toUpperCase(),
+                            style: GoogleFonts.lexend(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.primary,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                 ],
               ),

@@ -227,48 +227,53 @@ class InstallerService with ChangeNotifier {
 
   Future<void> updateAppStatus(AppModel app) async {
     // 1. Check persistent memory first for a quick answer (by ID)
-    final persisted = await getPersistedStatus(app.id);
-    final inLibrary = await getPersistedLibraryStatus(app.id);
+    final persistedInstalled = await getPersistedStatus(app.id);
+    final persistedInLibrary = await getPersistedLibraryStatus(app.id);
     
-    app.isInLibrary = inLibrary;
-
-    if (persisted) {
-      app.status = AppStatus.installed;
-      // Note: We don't notifyListeners here yet to avoid excessive rebuilds if in a loop
+    // 2. Cross-reference with the ACTUAL device (Gold Standard)
+    bool isInstalled = false;
+    if (app.packageName != null && app.packageName!.isNotEmpty) {
+      try {
+        isInstalled = await LaunchApp.isAppInstalled(
+          androidPackageName: app.packageName!,
+          iosUrlScheme: '',
+        ).timeout(const Duration(seconds: 2), onTimeout: () => false);
+      } catch (e) {
+        debugPrint('Error checking install status for ${app.packageName}: $e');
+      }
     }
-
-    if (app.packageName == null) return;
     
-    try {
-      // 2. Cross-reference with the ACTUAL device (Gold Standard)
-      final isInstalled = await LaunchApp.isAppInstalled(
-        androidPackageName: app.packageName!,
-        iosUrlScheme: '',
-      );
-      
-      if (isInstalled) {
-        if (_uninstallingIds.contains(app.id)) {
-           app.status = AppStatus.uninstalling;
-        } else {
-           app.status = AppStatus.installed;
-           app.isInLibrary = true;
-           // Ensure persistence is up to date
-           if (!persisted) await persistAppStatus(app.id, true);
-           if (!inLibrary) await persistLibraryStatus(app.id, true);
-        }
+    if (isInstalled) {
+      if (_uninstallingIds.contains(app.id)) {
+         app.status = AppStatus.uninstalling;
       } else {
-        // App is NOT installed on device
-        _uninstallingIds.remove(app.id); // Done removing if it was in set
-        
-        // Only mark as not installed if we were NOT just installing it
-        if (app.status != AppStatus.downloading && app.status != AppStatus.installing) {
-          app.status = AppStatus.notInstalled;
-          if (persisted) await persistAppStatus(app.id, false);
+         app.status = AppStatus.installed;
+         app.isInLibrary = true;
+         // Ensure persistence is up to date
+         await persistAppStatus(app.id, true);
+         await persistLibraryStatus(app.id, true);
+      }
+    } else {
+      // App is NOT installed on device
+      _uninstallingIds.remove(app.id); // Done removing if it was in set
+      
+      // Update status: only mark as not installed if not currently busy
+      if (app.status != AppStatus.downloading && app.status != AppStatus.installing && app.status != AppStatus.uninstalling) {
+        app.status = AppStatus.notInstalled;
+        // If it was persisted as installed previously, but is gone now, update persistence
+        if (persistedInstalled) {
+          await persistAppStatus(app.id, false);
         }
       }
-    } catch (e) {
-      debugPrint('Error checking app status for ${app.packageName}: $e');
     }
+    
+    // If not installed on device, it can still be in the 'Library' (e.g. cloud history)
+    if (!isInstalled) {
+      app.isInLibrary = persistedInLibrary;
+    }
+    
+    // Always notify listeners of status change
+    notifyListeners();
   }
 
   Future<void> updateAllStatuses(List<AppModel> apps) async {

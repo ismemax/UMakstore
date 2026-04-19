@@ -403,14 +403,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: colorScheme.shadow.withValues(alpha: 0.2),
                           blurRadius: 15,
                           offset: const Offset(0, 10),
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(Icons.store_rounded, color: Colors.white),
+                    child: Center(
+                      child: Icon(Icons.store_rounded, color: colorScheme.onPrimary),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -517,24 +517,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildThemeTag(String label, ThemeMode mode, ColorScheme colorScheme) {
-    bool isSelected = _themeService.themeMode == mode;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => _themeService.setTheme(mode),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? colorScheme.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+    return GestureDetector(
+      onTap: () async {
+        debugPrint('Settings: Theme tag tapped - setting to ${mode.toString()}');
+        await _themeService.setTheme(mode);
+        debugPrint('Settings: Theme set to ${_themeService.themeMode.toString()}');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: _themeService.themeMode == mode ? colorScheme.primary : colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _themeService.themeMode == mode ? colorScheme.primary : colorScheme.outline.withOpacity(0.3),
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.lexend(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.lexend(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: _themeService.themeMode == mode ? colorScheme.onPrimary : colorScheme.onSurface,
           ),
         ),
       ),
@@ -578,7 +581,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: value,
             onChanged: onChanged,
             activeTrackColor: colorScheme.primary,
-            inactiveThumbColor: Colors.white,
+            inactiveThumbColor: colorScheme.surface,
             inactiveTrackColor: colorScheme.outlineVariant,
           ),
         ],

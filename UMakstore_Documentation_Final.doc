@@ -1,0 +1,139 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset='utf-8'>
+<title>UMak App Store Documentation - Final</title>
+<style>
+    body { font-family: 'Calibri', 'Arial', sans-serif; color: #333; padding: 40px; }
+    h1 { color: #0a2540; border-bottom: 3px solid #0a2540; padding-bottom: 10px; font-size: 28pt; }
+    h2 { color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-top: 30px; font-size: 18pt; }
+    h3 { color: #475569; margin-top: 20px; font-size: 14pt; }
+    p, li { font-size: 11pt; line-height: 1.5; margin-bottom: 10px; }
+    .bold { font-weight: bold; color: #0f172a; }
+    .diagram { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 15px; font-family: 'Courier New', monospace; white-space: pre; margin: 20px 0; }
+    .footer { margin-top: 50px; font-size: 9pt; color: #94a3b8; text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+    th { background-color: #f8fafc; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>UMak App Store (UMakstore) Project Overview</h1>
+
+<div class='section'>
+    <h2>1. Project Overview</h2>
+    <p><span class='bold'>System Name:</span> UMak App Store (UMakstore)</p>
+    <p><span class='bold'>Purpose:</span> To provide a secure, centralized, and university-exclusive platform for distributing mobile applications designed specifically for the University of Makati community.</p>
+    <p><span class='bold'>Target Users:</span> UMak Students, Student Developers, and University Administrators.</p>
+    <p><span class='bold'>Short Description:</span> A native mobile ecosystem where students can discover verified campus apps, developers can showcase academic projects, and administrators can maintain a safe digital environment—all secured by the official university authentication system.</p>
+</div>
+
+<div class='section'>
+    <h2>2. System Features</h2>
+    <ul>
+        <li><span class='bold'>UMak Auth Integration:</span> Registration restricted to @umak.edu.ph emails with OTP verification.</li>
+        <li><span class='bold'>College-Centric Discovery:</span> Apps categorized by university colleges (CCIS, CBFS, SOL, etc.).</li>
+        <li><span class='bold'>App Review System:</span> Peer-to-peer ratings and feedback for all listed applications.</li>
+        <li><span class='bold'>One-Tap Installation:</span> Direct download and installation of APK files to Android devices.</li>
+        <li><span class='bold'>Developer Dashboard:</span> In-app tools for uploading and managing university projects.</li>
+        <li><span class='bold'>Admin Control Center:</span> Tools for monitoring feedback and approving app submissions.</li>
+    </ul>
+</div>
+
+<div class='section'>
+    <h2>3. System Architecture</h2>
+    <div class='diagram'>
+[ Mobile Application (Flutter) ]
+       |        ^
+       |        | (Real-time Sync)
+       v        |
+[ Backend API (Node.js/Vercel) ] <---> [ Firestore Database ]
+       |                                      |
+       |                                      v
+       |                          [ Firebase Authentication ]
+       v
+[ External Services (Cloudinary / File Storage) ]
+    </div>
+    <h3>Mobile App</h3>
+    <p>A native Flutter application that serves as the primary interface for all user types (Students, Developers, and Admins).</p>
+    <h3>Backend / API</h3>
+    <p>A Node.js server hosted on Vercel handling sensitive logic such as Role Management and OTP generation.</p>
+    <h3>Database</h3>
+    <p>Google Firestore providing a schema-less, real-time data layer for user profiles and app metadata.</p>
+</div>
+
+<div class='section'>
+    <h2>4. Tech Stack</h2>
+    <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Frontend (Mobile)</td><td>Flutter, Dart, Material Design 3</td></tr>
+        <tr><td>Backend</td><td>Node.js, Express.js</td></tr>
+        <tr><td>Database</td><td>Firebase Firestore</td></tr>
+        <tr><td>Cloud Services</td><td>Firebase Auth, Google Sign-In, <b>Cloudinary (Asset Storage)</b></td></tr>
+        <tr><td>Hosting</td><td>Vercel (API), Firebase (APK Storage)</td></tr>
+        <tr><td>Tools</td><td>VS Code, Figma, GitHub</td></tr>
+    </table>
+</div>
+
+<div class='section'>
+    <h2>5. User Flow / Process Flow</h2>
+    <ol>
+        <li><span class='bold'>Verification:</span> Input @umak.edu.ph email and verify via 6-digit OTP code.</li>
+        <li><span class='bold'>Profile Setup:</span> Register Student ID, name, and select primary College/Course.</li>
+        <li><span class='bold'>Browsing:</span> Explore the home screen featured apps or filter by college department.</li>
+        <li><span class='bold'>Installation:</span> Select an app, review permissions, and tap "Install".</li>
+        <li><span class='bold'>Feedback:</span> Submit reviews for apps or send bug reports via the Help & Feedback section.</li>
+    </ol>
+</div>
+
+<div class='section'>
+    <h2>6. Screens / UI Overview</h2>
+    <ul>
+        <li><span class='bold'>Splash Screen:</span> Brand-focused entry point with UMak identity.</li>
+        <li><span class='bold'>Authentication:</span> Minimalist design for secure email and OTP verification.</li>
+        <li><span class='bold'>Home Screen:</span> Central hub featuring "Featured Apps" and College categories.</li>
+        <li><span class='bold'>App Detail Page:</span> Complete information including downloads, size, and reviews.</li>
+        <li><span class='bold'>Developer Mode:</span> Specialized UI for submitting new APKs and tracking approval.</li>
+        <li><span class='bold'>Admin Dashboard:</span> Management view for resolving user issues and moderating content.</li>
+    </ul>
+</div>
+
+<div class='section'>
+    <h2>7. Database Structure</h2>
+    <p><span class='bold'>Collection: Users</span> - Stores student profiles, academic IDs, roles, and profile photo URLs (<b>Cloudinary</b>).</p>
+    <p><span class='bold'>Collection: Submitted_Apps</span> - Contains app APK links, development metadata, and optimized asset URLs (<b>Screenshots/Icons hosted on Cloudinary</b>).</p>
+    <p><span class='bold'>Data Field: user_feedbacks</span> - An array inside the User document containing all submitted support tickets.</p>
+</div>
+
+<div class='section'>
+    <h2>8. Key Functionalities Explanation</h2>
+    <h3>Role-Based Permissions</h3>
+    <p>The system dynamically changes its features based on the user's role. A student only sees app listings, while a developer has access to the "Upload" menu, and an admin sees the "Moderation" dashboard.</p>
+    <h3>Identity-Linked Feedback</h3>
+    <p>Feedback is linked directly to the user's university profile. This allows developers to see exactly which student is reporting a bug, improving the resolution time for campus-specific issues.</p>
+</div>
+
+<div class='section'>
+    <h2>9. Challenges & Solutions</h2>
+    <p><span class='bold'>Permission Denied Errors:</span> Encountered during feedback submission due to restrictive Firestore rules. We solved this by migrating feedback storage into an array inside the user's own document, leveraging pre-existing "owner" permissions.</p>
+    <p><span class='bold'>Official Name Overflows:</span> Long college names were breaking the UI layout. We implemented Responsive Design principles using Expanded widgets to ensure perfect alignment on all screen sizes.</p>
+</div>
+
+<div class='section'>
+    <h2>10. Future Improvements</h2>
+    <ul>
+        <li>Offline access for bookmarked apps.</li>
+        <li>Automated version update notifications.</li>
+        <li>Integrated student-to-developer chat support.</li>
+    </ul>
+</div>
+
+<div class='section'>
+    <h2>11. Conclusion</h2>
+    <p>UMakstore centralizes the university's digital innovation, making it easier for students to access the tools they need while providing a professional platform for student developers to grow their skills.</p>
+</div>
+
+<div class='footer'>Generated for the University of Makati Community - UMakstore Project Team</div>
+
+</body>
+</html>

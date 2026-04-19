@@ -13,6 +13,7 @@ class ThemeService with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final isDark = prefs.getBool('isDarkMode') ?? false;
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+    debugPrint('ThemeService: Initialized with ${_themeMode.toString()} (isDark: $isDark)');
     notifyListeners();
   }
 
@@ -20,6 +21,7 @@ class ThemeService with ChangeNotifier {
     _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', _themeMode == ThemeMode.dark);
+    debugPrint('ThemeService: Toggled to ${_themeMode.toString()}');
     notifyListeners();
   }
 
@@ -27,6 +29,7 @@ class ThemeService with ChangeNotifier {
     _themeMode = mode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', mode == ThemeMode.dark); // Simplified, ideally store as string for "System"
+    debugPrint('ThemeService: Set to ${mode.toString()}');
     notifyListeners();
   }
 }

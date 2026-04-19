@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class FullScreenImage extends StatelessWidget {
   final String imageUrl;
+  final String? tag;
 
-  const FullScreenImage({super.key, required this.imageUrl});
+  const FullScreenImage({super.key, required this.imageUrl, this.tag});
 
   @override
   Widget build(BuildContext context) {
@@ -12,14 +13,17 @@ class FullScreenImage extends StatelessWidget {
       body: Stack(
         children: [
           Center(
-            child: InteractiveViewer(
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.contain,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(child: CircularProgressIndicator(color: Colors.white));
-                },
+            child: Hero(
+              tag: tag ?? imageUrl,
+              child: InteractiveViewer(
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  },
+                ),
               ),
             ),
           ),
