@@ -2,10 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+/// Collects and manages user feedback and bug reports.
+/// 
+/// Feedback is stored as an array within the user's primary document to 
+/// simplify permissions while allowing for administrative aggregation.
 class FeedbackService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  /// Submits a new feedback entry by appending it to the user's document.
+  /// 
+  /// The entry includes a timestamp, a unique ID, and the initial 'New' status.
   Future<void> submitFeedback({
     required String category,
     required String subject,
@@ -38,6 +45,10 @@ class FeedbackService {
     }
   }
 
+  /// Aggregate all feedback from every user in the system.
+  /// 
+  /// This method is designed for Admin consumption and returns a flattened 
+  /// list sorted by submission date.
   Stream<List<Map<String, dynamic>>> getAllFeedback() {
     // Aggregating from all users who have the 'user_feedbacks' array
     return _firestore
@@ -63,6 +74,9 @@ class FeedbackService {
         });
   }
 
+  /// Updates the status (e.g., 'In Progress', 'Resolved') of a specific feedback entry.
+  /// 
+  /// Since feedback is in an array, this performs a retrieval-modification-write cycle.
   Future<void> updateFeedbackStatus(Map<String, dynamic> feedback, String status) async {
     final userDocId = feedback['userDocId'];
     final feedbackId = feedback['id'];

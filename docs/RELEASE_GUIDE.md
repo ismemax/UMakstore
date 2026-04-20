@@ -2,7 +2,7 @@
 
 This guide outlines the process for building and deploying a new version of the UMAS (UMak App Store) application for Android.
 
-## 📦 Versioning Strategy
+## Versioning Strategy
 
 UMAS follows Semantic Versioning (`major.minor.patch+build`).
 - **Major**: Breaking changes or major overhauls.
@@ -12,7 +12,7 @@ UMAS follows Semantic Versioning (`major.minor.patch+build`).
 
 Example: `version: 1.4.0+2`
 
-## 🔑 Signing the App
+## Signing the App
 
 To distribute the APK, it must be signed with the official UMak Keystore.
 
@@ -25,7 +25,7 @@ To distribute the APK, it must be signed with the official UMak Keystore.
    storeFile=../app/key.jks
    ```
 
-## 🏗 Build Process
+## Build Process
 
 ### 1. Pre-build checks
 - Ensure `flutter analyze` passes with no issues.
@@ -45,7 +45,7 @@ If publishing to the Google Play Store (optional for university internal use):
 flutter build appbundle --release
 ```
 
-## 🚀 Deployment Steps
+## Deployment Steps
 
 1. **Internal Distribution**:
    - Upload the generated APK (found in `build/app/outputs/flutter-apk/`) to the UMAS Admin Dashboard's "UMAS Update" section.
@@ -54,7 +54,7 @@ flutter build appbundle --release
 2. **Firebase App Check**:
    - For every new release, ensure the SHA-256 fingerprint of your signing key is registered in the Firebase Console under App Check. This prevents the "Unauthorized Request" error in production.
 
-## 🛠 Troubleshooting Builds
+## Troubleshooting Builds
 
 - **Multidex Issues**: If the build fails with a "Dex" error, ensure `multiDexEnabled true` is set in `android/app/build.gradle`.
 - **R8/ProGuard**: If the app crashes in release but works in debug, check the R8 shrinking rules in `android/app/proguard-rules.pro` to ensure Firebase and Cloudinary classes aren't being stripped.

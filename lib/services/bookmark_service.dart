@@ -2,11 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart'; // Required for debugPrint
 
+/// Manages the user's bookmarked applications using a Firestore sub-collection.
 class BookmarkService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Toggles the bookmark status of an app for the current user
+  /// Toggles the bookmark status for a specific app ID.
+  /// 
+  /// If the bookmark exists, it is removed. If it does not, it is created
+  /// with a server timestamp.
   Future<bool> toggleBookmark(String appId) async {
     final user = _auth.currentUser;
     if (user == null) {
@@ -37,7 +41,9 @@ class BookmarkService {
     }
   }
 
-  /// Checks if an app is bookmarked by the current user
+  /// Listens to the bookmark status of a specific app for the current user.
+  /// 
+  /// Returns a [Stream] of booleans that updates in real-time.
   Stream<bool> isBookmarked(String appId) {
     final user = _auth.currentUser;
     if (user == null) return Stream.value(false);
@@ -51,7 +57,9 @@ class BookmarkService {
         .map((snapshot) => snapshot.exists);
   }
 
-  /// Fetches all bookmarked app IDs for the current user
+  /// Fetches the IDs of all apps currently bookmarked by the user.
+  /// 
+  /// Useful for filtering the store list or displaying the 'My Bookmarks' screen.
   Stream<List<String>> getBookmarkedAppIds() {
     final user = _auth.currentUser;
     if (user == null) return Stream.value([]);

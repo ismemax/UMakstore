@@ -6,7 +6,7 @@
 
 **UMAS (University of Makati App Store)** is a specialized application distribution platform tailored for the University of Makati community. Developed to streamline the discovery, installation, and management of university-internal applications, UMAS provides a centralized hub for students and faculty to access academic and administrative tools securely.
 
-## 🚀 Key Features
+## Key Features
 
 - **Centralized App Distribution:** Seamlessly download and install university-approved applications.
 - **User Management:** Secure authentication using UMak credentials and comprehensive profile management.
@@ -16,7 +16,7 @@
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Core
 - **Framework:** [Flutter](https://flutter.dev) (Cross-platform toolkit for high-performance apps)
@@ -37,7 +37,7 @@
 
 ---
 
-## 🏁 Getting Started
+## Getting Started
 
 ### Prerequisites
 - **Flutter SDK:** `^3.11.0`
@@ -77,7 +77,7 @@
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 The project follows **Clean Architecture** principles combined with **MVVM** to ensure separation of concerns, high testability, and maintainable data flow.
 
@@ -105,7 +105,7 @@ graph TD
 
 ---
 
-## 📖 Project Documentation
+## Project Documentation
 
 For in-depth technical details, please refer to our internal documentation:
 
@@ -114,10 +114,11 @@ For in-depth technical details, please refer to our internal documentation:
 - **[Media Strategy](docs/MEDIA_STRATEGY.md)**: Cloudinary configuration and image optimization logic.
 - **[Security & Roles](docs/SECURITY_ROLES.md)**: RBAC (Role-Based Access Control) and authorization flow.
 - **[Release Guide](docs/RELEASE_GUIDE.md)**: Building, signing, and deploying the application.
+- **[Developer Walkthrough](docs/DEVELOPER_GUIDE.md)**: Onboarding guide for junior developers and coding standards.
 
 ---
 
-## 🤝 Contributing & Standards
+## Contributing & Standards
 
 - **Linting:** We use the `flutter_lints` package. Run `flutter analyze` before committing.
 - **Branch Strategy:** We follow GitFlow. Features branch off `develop` and are merged via Pull Requests.
@@ -125,7 +126,7 @@ For in-depth technical details, please refer to our internal documentation:
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 

@@ -2,7 +2,7 @@
 
 This document provides a detailed breakdown of the technical architecture and design patterns used in the UMAS (University of Makati App Store) application.
 
-## 🏗 High-Level Architecture
+## High-Level Architecture
 
 UMAS is built using a **Modified Clean Architecture** approach, emphasizing separation of concerns and maintainability. It utilizes Flutter's standard `StatefulWidget` and `StatelessWidget` patterns, complemented by global services for cross-cutting concerns.
 
@@ -17,7 +17,7 @@ lib/
 └── [screens].dart  # Direct screen widgets (Presentation Layer)
 ```
 
-## 🧠 State Management
+## State Management
 
 The application primarily uses a combination of **ChangeNotifier** for global settings and **StreamBuilder** for real-time data flow.
 
@@ -25,7 +25,7 @@ The application primarily uses a combination of **ChangeNotifier** for global se
 - **Real-time Data**: Interactions with Firestore (like the App List and Reviews) utilize `Streams`. This ensures the UI is always in sync with the backend without manual refreshes.
 - **Authentication**: Managed by `AuthGate`, which listens to `FirebaseAuth.instance.authStateChanges()`.
 
-## 📡 Service Layer
+## Service Layer
 
 Logic is encapsulated within the `services/` directory to keep screens focused on the UI.
 
@@ -37,7 +37,7 @@ Logic is encapsulated within the `services/` directory to keep screens focused o
 | `NotificationService` | Local notifications and FCM integration. |
 | `ThemeService` | Persistence of user theme preferences (Light/Dark/System). |
 
-## 🛠 Coding Standards
+## Coding Standards
 
 1. **Service Injection**: Services are generally accessed via singleton patterns or direct instantiation where performance allows.
 2. **Asynchronous Operations**: All Firebase and Network operations must be `async` and include proper `try-catch` blocks for error propagation.

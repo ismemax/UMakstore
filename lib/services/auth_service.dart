@@ -13,6 +13,10 @@ import 'notification_service.dart';
 import 'device_service.dart';
 import 'role_management_service.dart';
 
+/// Handles all user authentication flows, profile management, and device-locking logic.
+/// 
+/// This service acts as the bridge between [FirebaseAuth], [FirebaseFirestore], 
+/// and the custom backend API for role assignment and device validation.
 class AuthService {
   // IMPORTANT: For Android Emulator, use 10.0.2.2.
   // FOR PHYSICAL DEVICES (like your SM S908E), you must use your computer's
@@ -30,7 +34,10 @@ class AuthService {
     return email.toLowerCase().trim().endsWith('@umak.edu.ph');
   }
 
-  /// Sign up user with email and password.
+  /// Sign up a new user with email and password.
+  /// 
+  /// Automatically sends a verification email upon successful creation.
+  /// Throws an error if the email domain is not [@umak.edu.ph].
   Future<void> signUpUser({
     required String email,
     required String password,
@@ -135,7 +142,9 @@ class AuthService {
     }
   }
 
-  /// Sign in user with email and password.
+  /// Sign in an existing user with email and password.
+  /// 
+  /// Validates the university domain before attempting the Firebase login.
   Future<void> signInUser(String email, String password) async {
     try {
       final sanitizedEmail = email.toLowerCase().trim();
@@ -154,7 +163,10 @@ class AuthService {
     }
   }
 
-  /// Sign in user with Google.
+  /// Authenticate using Google Sign-In.
+  /// 
+  /// Restricts access to students with university accounts and creates a 
+  /// basic profile in Firestore upon the first successful login.
   Future<UserCredential?> signInWithGoogle() async {
     try {
       // Trigger the authentication flow
@@ -222,7 +234,9 @@ class AuthService {
     }
   }
 
-  /// Register device for single-device access
+  /// Registers the current physical device to the user's account via the API.
+  /// 
+  /// This is used to enforce single-device session policies or trusted device access.
   Future<bool> registerDevice() async {
     try {
       final user = _auth.currentUser;
@@ -446,7 +460,9 @@ class AuthService {
     return subParts.last.toUpperCase();
   }
 
-  /// Saves the user profile data to Firestore.
+  /// Saves or overwrites the full user profile data to the Firestore 'users' collection.
+  /// 
+  /// Triggers a welcome notification upon completion.
   Future<void> saveUserProfile({
     required String email,
     required String studentId,
@@ -496,8 +512,10 @@ class AuthService {
     }
   }
 
-  /// UPDATES the user role (For Testing/Bypass)
-  /// Now uses the API to bypass Firestore restriction rules.
+  /// Updates the current user's role via the secure API bypass.
+  /// 
+  /// This method is primarily used for testing or emergency role escalation
+  /// using a developmental master key.
   Future<void> updateCurrentUserRole(String newRole) async {
     try {
       final user = _auth.currentUser;

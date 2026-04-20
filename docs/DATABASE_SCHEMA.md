@@ -2,7 +2,7 @@
 
 UMAS uses Google Cloud Firestore (NoSQL) for all persistence. The data is organized into three primary collections.
 
-## 📁 Collection: `users`
+## Collection: `users`
 Stores student and staff profile information.
 
 | Field | Type | Description |
@@ -19,7 +19,7 @@ Stores student and staff profile information.
 | `user_feedbacks` | `List<Map>` | Array of feedback objects submitted by the user. |
 | `createdAt` | `Timestamp` | Account creation server timestamp. |
 
-### 📂 Sub-collection: `users/{userId}/bookmarks`
+### Sub-collection: `users/{userId}/bookmarks`
 Stores a reference to apps bookmarked by the user.
 
 | Field | Type | Description |
@@ -27,7 +27,7 @@ Stores a reference to apps bookmarked by the user.
 | `appId` | `String` | The ID of the bookmarked application. |
 | `timestamp` | `Timestamp` | When the bookmark was added. |
 
-## 📁 Collection: `submitted_apps`
+## Collection: `submitted_apps`
 Stores metadata for all applications submitted to the store.
 
 | Field | Type | Description |
@@ -49,7 +49,7 @@ Stores metadata for all applications submitted to the store.
 | `developerId` | `String` | UID of the submitting user. |
 | `createdAt` | `Timestamp` | Submission timestamp. |
 
-### 📂 Sub-collection: `submitted_apps/{appId}/reviews`
+### Sub-collection: `submitted_apps/{appId}/reviews`
 Stores individual user reviews for a specific app.
 
 | Field | Type | Description |

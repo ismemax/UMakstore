@@ -8,9 +8,18 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
+/// The administrative nerve center for application moderation and system feedback.
+/// 
+/// Provides high-level visibility into pending submissions, user feedback arrays, 
+/// and global store metrics.
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Represents the current physical state of the application on the user's device.
 enum AppStatus {
   notInstalled,
   downloading,
@@ -9,6 +10,10 @@ enum AppStatus {
   updateAvailable,
 }
 
+/// The core data structure representing an application in the store.
+/// 
+/// This model encapsulates both metadata from Firestore (like [title] and [downloadUrl])
+/// and local state information (like [status] and [progress]).
 class AppModel {
   final String id;
   final String title;
@@ -28,10 +33,19 @@ class AppModel {
 
   final List<String> screenshots;
 
+  /// The current installation status of the app.
   AppStatus status;
+
+  /// Download progress as a value between 0.0 and 1.0.
   double progress;
+
+  /// Error message captured during failed downloads or installations.
   String? errorMessage;
+
+  /// Whether the app is bookmarked or added to the user's personal context.
   bool isInLibrary;
+
+  /// List of Android permissions required by the app.
   final List<String> permissions;
 
   AppModel({

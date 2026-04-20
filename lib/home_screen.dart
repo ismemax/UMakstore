@@ -31,6 +31,10 @@ import 'widgets/shimmer_widget.dart';
 import 'splash_screen.dart';
 import 'notifications_screen.dart';
 
+/// The primary search and discovery portal for the UMak App Store.
+/// 
+/// This screen handles category filtering, search queries, and real-time 
+/// orchestration of the store list via [DeveloperService.getStoreApps()].
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 

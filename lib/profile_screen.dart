@@ -32,6 +32,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final LanguageService _languageService = LanguageService();
   final User? _user = FirebaseAuth.instance.currentUser;
   String? _photoBase64;
+  int _debugTapCount = 0;
+  bool _developerModeActive = false;
 
   @override
   void initState() {
@@ -363,13 +365,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ]),
 
-                      if (kDebugMode) ...[
+                      if (_developerModeActive) ...[
                         const SizedBox(height: 32),
-                        _buildSectionTitle('DEBUG BYPASS (DEVELOPER ONLY)'),
+                        _buildSectionTitle('DEVELOPER BYPASS TOOLS'),
                         const SizedBox(height: 8),
                         _buildListCard([
                           _buildListItem(
-                            Icons.bug_report_rounded,
+                            Icons.admin_panel_settings_rounded,
                             'Switch to Admin Role',
                             hasBorder: true,
                             onTap: () => _bypassRole('admin'),
@@ -394,11 +396,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 16),
                       Center(
-                        child: Text(
-                          'Version 1.0.2 • Build 20231025',
-                          style: GoogleFonts.lexend(
-                            fontSize: 12,
-                            color: const Color(0xff94a3b8),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _debugTapCount++;
+                              if (_debugTapCount >= 7 && !_developerModeActive) {
+                                _developerModeActive = true;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Developer Mode Enabled'),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                              }
+                            });
+                          },
+                          child: Text(
+                            'Version 1.4.0 • Build 20260420',
+                            style: GoogleFonts.lexend(
+                              fontSize: 12,
+                              color: const Color(0xff94a3b8),
+                            ),
                           ),
                         ),
                       ),

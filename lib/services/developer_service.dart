@@ -13,13 +13,18 @@ class DeveloperService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Instance method wrapper for static getOptimizedUrl
+  /// Instance method wrapper for static [getOptimizedUrl].
+  /// 
+  /// Transforms a raw URL into an optimized Cloudinary delivery URL.
   String getOptimizedImageUrl(String url, {int? width, int? height, int quality = 80}) {
     return DeveloperService.getOptimizedUrl(url, width: width, height: height, quality: quality);
   }
 
   
-  /// Checks if a package name is already taken by another app
+  /// Checks if a package name is already taken by another app in the store.
+  /// 
+  /// [packageName] - The Android package string (e.g., com.example.app).
+  /// [excludeAppId] - Optional ID to ignore during the check (useful for updates).
   Future<bool> isPackageNameTaken(String packageName, {String? excludeAppId}) async {
     if (packageName.isEmpty) return false;
     
@@ -35,7 +40,10 @@ class DeveloperService {
     return snapshot.docs.isNotEmpty;
   }
 
-  /// Submits a new app to Firestore
+  /// Submits a new application entry to the Firestore 'submitted_apps' collection.
+  /// 
+  /// This method handles metadata creation, including calculating the APK file size 
+  /// by performing an HTTP HEAD request to the [apkUrl].
   Future<void> submitApp({
     required String title,
     required String publisher,
@@ -343,7 +351,12 @@ class DeveloperService {
   static const String _cloudinaryCloudName = 'dkgrsvydx'; // Default for UMak
   static const String _cloudinaryUploadPreset = 'makstore'; // Default for UMak
 
-  /// Uploads a file to Cloudinary and returns the secure URL.
+  /// Uploads a file to Cloudinary and returns the secure delivery URL.
+  /// 
+  /// [file] - The image file to upload.
+  /// 
+  /// This method first calls [compressImage] to ensure minimal bandwidth usage,
+  /// then performs an unsigned upload to the 'makstore' preset.
   Future<String> uploadToCloudinary(File file) async {
     try {
       // 0. Compress the image before uploading to save credits/data

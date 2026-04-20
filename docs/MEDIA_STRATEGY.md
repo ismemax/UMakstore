@@ -2,21 +2,21 @@
 
 UMAS (UMak App Store) migrates away from standard Firebase Storage for image assets to **Cloudinary**, an industry-leading media management platform. This switch provides superior image optimization, faster delivery via CDN, and dynamic transformations.
 
-## ⚙️ Configuration
+## Configuration
 
 The application interacts with Cloudinary via its REST API (specifically the unsigned upload preset flow).
 
 - **Cloud Name**: `dkgrsvydx`
 - **Upload Preset**: `makstore`
 
-## 🖼️ Media Types
+## Media Types
 
 Cloudinary handles the following assets for the store:
 1. **App Icons**: Standardized square icons for app listings.
 2. **Screenshots**: High-resolution previews for the app details section.
 3. **User Content**: Any images uploaded by developers during the submission process.
 
-## 🚀 Optimization & Transformations
+## Optimization & Transformations
 
 To ensure high performance on mobile devices and reduce data consumption, UMAS implements dynamic transformations using Cloudinary's URL-based API.
 

@@ -6,6 +6,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math';
 
+/// Handles security-critical role assignment logic and authorization levels.
+/// 
+/// This service manages the transition of users between roles (Student, Developer, Admin)
+/// and communicates with the backend API to enforce secure permission updates.
 class RoleManagementService {
   static final RoleManagementService _instance = RoleManagementService._internal();
   factory RoleManagementService() => _instance;
@@ -44,7 +48,7 @@ class RoleManagementService {
     'super_admin': ['@umak.edu.ph email verification'],
   };
 
-  /// Get role hierarchy information
+  /// Retrieves the permission level and capabilities for a specific role.
   Map<String, dynamic> getRoleInfo(String role) {
     return _roleHierarchy[role.toLowerCase()] ?? {
       'level': 0,
@@ -54,7 +58,9 @@ class RoleManagementService {
     };
   }
 
-  /// Check if user can assign specific role
+  /// Determines if a user with [currentUserRole] is authorized to assign [targetRole].
+  /// 
+  /// Logic is based on the [level] defined in the role hierarchy.
   bool canAssignRole(String currentUserRole, String targetRole) {
     final currentRoleInfo = getRoleInfo(currentUserRole);
     final targetRoleInfo = getRoleInfo(targetRole);
@@ -63,7 +69,7 @@ class RoleManagementService {
     return currentRoleInfo['level'] >= targetRoleInfo['level'];
   }
 
-  /// Check if user meets criteria for role assignment
+  /// Validates if a user's email domain and other metrics meet university requirements for a role.
   Future<bool> meetsRoleCriteria(String email, String targetRole) async {
     final criteria = _assignmentCriteria[targetRole];
     if (criteria == null) return false;
@@ -148,7 +154,13 @@ class RoleManagementService {
     }
   }
 
-  /// Assign a new role to a user
+  /// Updates a user's role by calling the secure Vercel-hosted API.
+  /// 
+  /// [adminEmail] - The active administrator's identifier.
+  /// [targetUserEmail] - The user being promoted/demoted.
+  /// [targetRole] - The new role string.
+  /// 
+  /// Throws an error if the API is unreachable or if the [adminEmail] lacks sufficient permissions.
   Future<String> assignRole(String adminEmail, String targetUserEmail, String targetRole, {String? reason}) async {
     try {
       final user = _auth.currentUser;
@@ -311,7 +323,9 @@ class RoleManagementService {
     }
   }
 
-  /// Get all users with their roles for admin management
+  /// Retrieves a snapshot of all registered users and their current roles.
+  /// 
+  /// Used primarily for populations the Administrator's user management dashboard.
   Future<List<Map<String, dynamic>>> getAllUsers() async {
     try {
       final usersSnapshot = await _db.collection('users').get();

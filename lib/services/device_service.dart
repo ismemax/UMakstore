@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:convert';
 
+/// Provides hardware-level identification and tracks local device registration status.
+/// 
+/// This service is used to enforce security policies like single-device sessions.
 class DeviceService {
   static final DeviceService _instance = DeviceService._internal();
   factory DeviceService() => _instance;
@@ -13,6 +16,9 @@ class DeviceService {
   static const String _deviceIdKey = 'device_id';
   static const String _deviceRegisteredKey = 'device_registered';
 
+  /// Retrieves a persistent, unique ID for the current device.
+  /// 
+  /// If no ID exists, one is generated using hardware fingerprints for consistency.
   Future<String> getDeviceId() async {
     final prefs = await SharedPreferences.getInstance();
     
@@ -58,6 +64,9 @@ class DeviceService {
     return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join('');
   }
 
+  /// Collects detailed metadata about the current hardware and OS.
+  /// 
+  /// Used for providing diagnostic context during device registration.
   Future<Map<String, dynamic>> getDeviceInfo() async {
     try {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -103,6 +112,9 @@ class DeviceService {
     return prefs.getBool(_deviceRegisteredKey) ?? false;
   }
 
+  /// Resets the local device identifiers and registration state.
+  /// 
+  /// Usually called during a deep logout or account reset flow.
   Future<void> clearDeviceRegistration() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_deviceRegisteredKey);

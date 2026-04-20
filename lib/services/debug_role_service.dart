@@ -18,7 +18,7 @@ class DebugRoleService {
           .doc(user.uid)
           .update({'debugMode': true});
 
-      print('🔧 DEBUG MODE ENABLED: Role validation bypassed');
+      print('DEBUG MODE ENABLED: Role validation bypassed');
     } catch (e) {
       print('Error enabling debug mode: $e');
     }
@@ -36,7 +36,7 @@ class DebugRoleService {
           .doc(user.uid)
           .update({'debugMode': FieldValue.delete()});
 
-      print('🔒 DEBUG MODE DISABLED: Role validation restored');
+      print('DEBUG MODE DISABLED: Role validation restored');
     } catch (e) {
       print('Error disabling debug mode: $e');
     }
@@ -79,7 +79,7 @@ class DebugRoleService {
           .doc(user.uid)
           .update({'role': role});
 
-      print('🔧 DEBUG: Assigned role "$role" without validation');
+      print('DEBUG: Assigned role "$role" without validation');
     } catch (e) {
       print('Error assigning debug role: $e');
     }

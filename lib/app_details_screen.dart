@@ -11,6 +11,10 @@ import 'services/bookmark_service.dart';
 import 'services/language_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// A comprehensive view of a single application's metadata, reviews, and installation options.
+/// 
+/// This screen coordinates the [flutter_downloader] for APK retrieval and 
+/// enables user interaction with Cloudinary screenshots and Firestore reviews.
 class AppDetailsScreen extends StatefulWidget {
   final AppModel app;
   const AppDetailsScreen({super.key, required this.app});
