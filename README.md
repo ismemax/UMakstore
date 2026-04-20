@@ -26,13 +26,13 @@
 ### Backend & Infrastructure
 - **Authentication:** Firebase Auth (Google Sign-In integration)
 - **Database:** Cloud Firestore (NoSQL real-time document store)
-- **Storage:** Firebase Storage (App binaries and user media)
+- **Media Hosting:** [Cloudinary](https://cloudinary.com) (Asset management & image optimization)
 - **Security:** Firebase App Check
 
 ### Key Libraries
 - **Networking:** `Dio` & `http` for RESTful interactions.
 - **Local Persistence:** `shared_preferences` and `path_provider`.
-- **Media & UI:** `google_fonts`, `flutter_svg`, `shimmer`, and `cached_network_image`.
+- **Media & UI:** Cloudinary API, `google_fonts`, `flutter_svg`, `shimmer`, and `cached_network_image`.
 - **Platform Integration:** `flutter_downloader`, `permission_handler`, `external_app_launcher`, and `device_info_plus`.
 
 ---
@@ -105,27 +105,15 @@ graph TD
 
 ---
 
-## 🧪 Testing
+## 📖 Project Documentation
 
-We maintain a rigorous testing standard to ensure the reliability of the app store ecosystem.
+For in-depth technical details, please refer to our internal documentation:
 
-### Unit Tests
-Validate business logic, Use Cases, and ViewModel states:
-```bash
-flutter test test/unit
-```
-
-### UI & Widget Tests
-Ensure components render correctly across different screen densities:
-```bash
-flutter test test/widget
-```
-
-### Integration Tests (E2E)
-Verify full user journeys on real devices or emulators:
-```bash
-flutter test integration_test/app_test.dart
-```
+- **[Architecture Overview](docs/ARCHITECTURE.md)**: Design patterns, state management, and project structure.
+- **[Database Schema](docs/DATABASE_SCHEMA.md)**: Firestore collection mappings and data models.
+- **[Media Strategy](docs/MEDIA_STRATEGY.md)**: Cloudinary configuration and image optimization logic.
+- **[Security & Roles](docs/SECURITY_ROLES.md)**: RBAC (Role-Based Access Control) and authorization flow.
+- **[Release Guide](docs/RELEASE_GUIDE.md)**: Building, signing, and deploying the application.
 
 ---
 
