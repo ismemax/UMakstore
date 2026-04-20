@@ -16,7 +16,16 @@ Stores student and staff profile information.
 | `course` | `String` | Current course/degree. |
 | `role` | `String` | User role (`student`, `developer`, or `admin`). |
 | `photoBase64` | `String` | Base64 encoded profile string (for small icons). |
+| `user_feedbacks` | `List<Map>` | Array of feedback objects submitted by the user. |
 | `createdAt` | `Timestamp` | Account creation server timestamp. |
+
+### 📂 Sub-collection: `users/{userId}/bookmarks`
+Stores a reference to apps bookmarked by the user.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `appId` | `String` | The ID of the bookmarked application. |
+| `timestamp` | `Timestamp` | When the bookmark was added. |
 
 ## 📁 Collection: `submitted_apps`
 Stores metadata for all applications submitted to the store.
