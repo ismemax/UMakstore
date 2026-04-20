@@ -163,7 +163,7 @@ class AboutAppScreen extends StatelessWidget {
           children: [
             _buildSectionTitle("What's New", fontSize: 20),
             Text(
-              'Version 1.2.0',
+              'Version 1.4.0',
               style: GoogleFonts.lexend(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -199,7 +199,7 @@ class AboutAppScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'UPDATED APR 10, 2026',
+                    'UPDATED APR 20, 2026',
                     style: GoogleFonts.lexend(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -215,16 +215,16 @@ class AboutAppScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _buildUpdateItem(
-                'Enhanced Security:',
-                "Added comprehensive DDoS protection and rate limiting to ensure secure app downloads and user data protection.",
+                'Feedback & Support:',
+                "Launched a robust feedback system with secure storage and an integrated admin dashboard for better student-developer communication.",
               ),
               _buildUpdateItem(
-                'Improved Developer Portal:',
-                'Enhanced app submission process with better validation and real-time status tracking for developers.',
+                'Role Management API:',
+                'Implemented a secure server-side API for administrative role assignments, ensuring stable and reliable permission handling.',
               ),
               _buildUpdateItem(
-                'Performance Optimizations:',
-                'Faster app browsing, improved search functionality, and reduced loading times across all sections.',
+                'Readability & UI Polish:',
+                'Enhanced visual contrast across all screens and fixed mobile layout regressions for a more premium experience.',
               ),
             ],
           ),

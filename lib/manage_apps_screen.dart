@@ -520,7 +520,7 @@ class _ManageAppsScreenState extends State<ManageAppsScreen> {
         category: 'Security',
         college: 'University-wide',
         downloadUrl: '',
-        version: '1.2.0',
+        version: '1.4.0',
         size: '14 MB',
         rating: '4.8',
         reviews: '120',

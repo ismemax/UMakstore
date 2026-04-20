@@ -4,6 +4,28 @@ This document tracks major changes, optimizations, and bug fixes implemented dur
 
 ---
 
+## 📅 April 20, 2026 - Version 1.4.0
+
+### 🚀 New Features & Enhancements
+
+#### 💬 Advanced Feedback System
+- **Secure Persistence**: Implemented user-specific document arrays for feedback submissions, bypassing Firestore security rule limitations.
+- **Admin Insights**: Developed a unified Admin Dashboard view that aggregates and displays all user feedback in real-time.
+- **Improved UX**: Refined the "Help & Feedback" screen for better reliability and user experience.
+
+#### 🔑 Server-Side Role Management
+- **Security API**: Migrated role promotion logic from client-side Firestore writes to a secure server-side API using Firebase Admin SDK.
+- **Permission Reliability**: Resolved "Permission Denied" errors when promoting users to developer roles.
+
+#### 🎨 Readability & UI Refinement
+- **Theme Contrast**: Optimized text and container colors across major screens (Notifications, Legal, Admin) to ensure WCAG-compliant contrast.
+- **Layout Fixes**: Corrected mobile header overlaps and MCQ labeling algorithms for better consistency on all devices.
+
+#### 📖 Documentation
+- **Architecture Log**: Created comprehensive system documentation for the University Academic Questionnaire System (UAQS).
+
+---
+
 ## 📅 April 10, 2026
 
 ### 🚀 New Features & Enhancements
